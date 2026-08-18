@@ -46,7 +46,7 @@ public struct NotchRootView: View {
 
     /// Camera gap width ensures that the hardware notch area is completely clear of text.
     private var cameraGapWidth: CGFloat {
-        hasPhysicalNotch ? max(hardwareNotchWidth + 16, 160) : 12
+        hasPhysicalNotch ? hardwareNotchWidth : 8
     }
 
     public var body: some View {
@@ -110,33 +110,31 @@ public struct NotchRootView: View {
     private var collapsedContent: some View {
         Button(action: { stateController.transition(to: .expanded) }) {
             HStack(spacing: 0) {
-                // LEFT WING — status dot + app name (placed to the left of notch)
-                HStack(spacing: 4) {
+                // LEFT WING — status dot + app name (placed completely to the left of notch)
+                HStack(spacing: 5) {
                     Circle()
-                        .fill(Color.white.opacity(0.8))
+                        .fill(Color.white.opacity(0.85))
                         .frame(width: 5, height: 5)
                     Text("NotchDeck")
-                        .font(.system(size: 9.5, weight: .medium, design: .rounded))
-                        .foregroundColor(.white.opacity(0.85))
+                        .font(.system(size: 10, weight: .medium, design: .rounded))
+                        .foregroundColor(.white.opacity(0.9))
                 }
                 .frame(maxWidth: .infinity, alignment: .center)
-                .padding(.leading, 6)
 
                 // CAMERA GAP — covers hardware camera area entirely
                 Color.clear.frame(width: cameraGapWidth)
 
-                // RIGHT WING — active model indicator with status dot (placed to the right of notch)
-                HStack(spacing: 4) {
+                // RIGHT WING — active model indicator with status dot (placed completely to the right of notch)
+                HStack(spacing: 5) {
                     Circle()
                         .fill(Color.green.opacity(0.95))
                         .frame(width: 5, height: 5)
                     Text(stateController.activeAIModel)
-                        .font(.system(size: 9.5, weight: .semibold, design: .rounded))
-                        .foregroundColor(.white.opacity(0.8))
+                        .font(.system(size: 10, weight: .semibold, design: .rounded))
+                        .foregroundColor(.white.opacity(0.85))
                         .lineLimit(1)
                 }
                 .frame(maxWidth: .infinity, alignment: .center)
-                .padding(.trailing, 6)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .contentShape(Rectangle())

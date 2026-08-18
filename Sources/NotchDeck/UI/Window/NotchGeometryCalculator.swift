@@ -94,8 +94,8 @@ public struct NotchGeometryCalculator: Sendable {
             return NSRect(x: screenFrame.midX, y: screenFrame.maxY, width: 0, height: 0)
 
         case .collapsed:
-            // Collapsed: window spans notchWidth + wings on both sides (100pt wing each side)
-            let wingW: CGFloat = hasNotch ? 100 : 0
+            // Collapsed: window spans notchWidth + wings on both sides (115pt wing each side)
+            let wingW: CGFloat = hasNotch ? 115 : 0
             let w = hasNotch ? notchW + (2 * wingW) : 160
             let h = hasNotch ? notchH : 32
             let x = screenFrame.midX - (w / 2.0)
@@ -103,20 +103,20 @@ public struct NotchGeometryCalculator: Sendable {
             return NSRect(x: x, y: y, width: w, height: h)
 
         case .voiceActive:
-            let w: CGFloat = 380
+            let w: CGFloat = 400
             let h: CGFloat = 64 + notchH
             return NSRect(x: screenFrame.midX - (w / 2.0), y: screenFrame.maxY - h, width: w, height: h)
 
         case .liveActivity:
-            let w: CGFloat = 340
+            let w: CGFloat = 360
             let h: CGFloat = 48 + notchH
             return NSRect(x: screenFrame.midX - (w / 2.0), y: screenFrame.maxY - h, width: w, height: h)
 
         case .expanded:
-            // Expanded: width has enough room for all components comfortably
-            let rawW = hasNotch ? max(540, notchW + (2 * wingExtension)) : 520
+            // Expanded: width and height have ample room for all components comfortably
+            let rawW = hasNotch ? max(580, notchW + (2 * wingExtension)) : 560
             let w = min(rawW, screenFrame.width - 48)
-            let h: CGFloat = 330 + notchH
+            let h: CGFloat = 360 + notchH
             return NSRect(x: screenFrame.midX - (w / 2.0), y: screenFrame.maxY - h, width: w, height: h)
         }
     }
