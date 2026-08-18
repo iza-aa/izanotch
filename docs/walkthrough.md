@@ -40,11 +40,12 @@ NotchDeck berfungsi sebagai **HUD Interaktif & Notification Hub Aktual**:
 
 | # | Temuan Audit | Solusi Teknis | Status |
 |---|---|---|:---:|
-| 1 | **Routing Argumen Prompt Codex CLI** | [`MultiAIClient.swift`](file:///Users/heizaaa/Desktop/cdev/iza-3/Sources/NotchDeck/AIBridge/MultiAIClient.swift): Menjalankan argumen biner bervariabel tepat `["exec", text]` via helper `buildCodexCLIArguments(prompt:)`. | ✅ **Fixed** |
-| 2 | **Error Stdin Ditutup / Tidak Tersedia** | [`AISubprocessBridge.swift`](file:///Users/heizaaa/Desktop/cdev/iza-3/Sources/NotchDeck/AIBridge/AISubprocessBridge.swift): Melempar `AISubprocessError.stdinNotAvailable` alih-alih mengembalikan sukses diam-diam saat pipe tertutup. | ✅ **Fixed** |
-| 3 | **Validasi Pre-Flight Atomik pada Reply Session** | [`ActiveSessionBridge.swift`](file:///Users/heizaaa/Desktop/cdev/iza-3/Sources/NotchDeck/AIBridge/ActiveSessionBridge.swift): Memvalidasi eksistensi direktori dan file log terlebih dahulu sebelum melakukan dispatch ke stdin atau session log. | ✅ **Fixed** |
-| 4 | **Alignment Geometri Hardware Notch (Foto User)** | [`NotchGeometryCalculator.swift`](file:///Users/heizaaa/Desktop/cdev/iza-3/Sources/NotchDeck/UI/Window/NotchGeometryCalculator.swift) & [`NotchRootView.swift`](file:///Users/heizaaa/Desktop/cdev/iza-3/Sources/NotchDeck/UI/Views/NotchRootView.swift): Dimensi collapsed disesuaikan (`200x42pt`) dan teks `● NotchDeck` diberi top padding `14pt` agar berada di area OLED yang terlihat di bawah kamera fisik MacBook. | ✅ **Fixed** |
-| 5 | **Metrik Repositori Terverifikasi** | Aktual terverifikasi **28 `@Suite`** dan **53 `@Test`** di repositori. | ✅ **Verified** |
+| 1 | **Sinkronisasi Ekspektasi Test Geometri** | [`NotchGeometryCalculatorTests.swift`](file:///Users/heizaaa/Desktop/cdev/iza-3/Tests/NotchDeckTests/NotchGeometryCalculatorTests.swift): Nilai ekspektasi diperbarui secara presisi (`200x36pt` untuk physical notch, `180x32pt` untuk external display). | ✅ **Fixed** |
+| 2 | **Visual Clipping & Ghost Views (Berdasarkan Screenshot Pengguna)** | [`NotchRootView.swift`](file:///Users/heizaaa/Desktop/cdev/iza-3/Sources/NotchDeck/UI/Views/NotchRootView.swift): Menambahkan `.clipped()` pada root `ZStack` sehingga item filter bar/card tidak bocor ke luar jendela saat collapsed. | ✅ **Fixed** |
+| 3 | **Routing Argumen Prompt Codex CLI** | [`MultiAIClient.swift`](file:///Users/heizaaa/Desktop/cdev/iza-3/Sources/NotchDeck/AIBridge/MultiAIClient.swift): Mengirimkan argumen biner bervariabel tepat `["exec", text]` via helper `buildCodexCLIArguments(prompt:)`. | ✅ **Fixed** |
+| 4 | **Error Stdin Ditutup / Tidak Tersedia** | [`AISubprocessBridge.swift`](file:///Users/heizaaa/Desktop/cdev/iza-3/Sources/NotchDeck/AIBridge/AISubprocessBridge.swift): Melempar `AISubprocessError.stdinNotAvailable` secara eksplisit. | ✅ **Fixed** |
+| 5 | **Validasi Pre-Flight Atomik pada Reply Session** | [`ActiveSessionBridge.swift`](file:///Users/heizaaa/Desktop/cdev/iza-3/Sources/NotchDeck/AIBridge/ActiveSessionBridge.swift): Memvalidasi target sebelum melakukan dispatch. | ✅ **Fixed** |
+| 6 | **Metrik Repositori Terverifikasi** | Aktual terverifikasi **28 `@Suite`** dan **53 `@Test`** di repositori. | ✅ **Verified** |
 
 ---
 
@@ -52,5 +53,5 @@ NotchDeck berfungsi sebagai **HUD Interaktif & Notification Hub Aktual**:
 
 * **`swift build`** $\rightarrow$ **Succeed (0 error, 0 warning)**
 * **`swift test`** $\rightarrow$ **100% PASS** (28 Test Suites, 53 Unit Tests).
-* **Git Status:** Merged cleanly into `main` (commit `e9b6ea6`).
+* **Git Status:** Merged cleanly into `main` (commit `943512f`).
 * **App Process:** Berjalan aktif di background (`swift run NotchDeck`).
