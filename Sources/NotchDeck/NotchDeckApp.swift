@@ -50,14 +50,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func requestSystemPermissions() {
         Task { @MainActor in
-            do {
-                let permissions = try await EventKitService.shared.requestAccess()
-                if !permissions.calendarGranted || !permissions.reminderGranted {
-                    self.stateController.systemStatusMessage = "ℹ️ Calendar/Reminder access limited in System Settings."
-                }
-            } catch {
-                self.stateController.systemStatusMessage = "⚠️ EventKit error: \(error.localizedDescription)"
-            }
+            _ = try? await EventKitService.shared.requestAccess()
             _ = await SystemNotificationService.shared.requestAuthorization()
         }
     }
