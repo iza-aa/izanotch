@@ -18,63 +18,71 @@ public struct SchedulePanelView: View {
     }
 
     public var body: some View {
-        VStack(spacing: 8) {
-            // 1. Header
+        VStack(spacing: 10) {
+            // 1. Header Bar
             HStack {
-                Text("Schedule & Reminders")
-                    .font(.system(size: 11.5, weight: .semibold))
-                    .foregroundColor(.white.opacity(0.9))
+                HStack(spacing: 6) {
+                    Image(systemName: "calendar.badge.clock")
+                        .font(.system(size: 11, weight: .semibold))
+                        .foregroundColor(.white.opacity(0.8))
+                    Text("Schedule & Reminders")
+                        .font(.system(size: 12, weight: .semibold, design: .rounded))
+                        .foregroundColor(.white.opacity(0.9))
+                }
 
                 Spacer()
 
                 Text("\(scheduleItems.count) upcoming")
-                    .font(.system(size: 10))
-                    .foregroundColor(.white.opacity(0.4))
+                    .font(.system(size: 10, weight: .medium, design: .rounded))
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 3)
+                    .background(Capsule().fill(Color.white.opacity(0.1)))
+                    .foregroundColor(.white.opacity(0.6))
             }
-            .padding(.horizontal, 24)   // page inset per design reference
+            .padding(.horizontal, 28)
 
-            // 2. Schedule List
+            // 2. Schedule List (Takes up middle flexible area)
             if scheduleItems.isEmpty {
-                VStack(spacing: 6) {
-                    Spacer(minLength: 16)
+                VStack(spacing: 8) {
+                    Spacer()
                     Image(systemName: "calendar.badge.clock")
-                        .font(.system(size: 20))
-                        .foregroundColor(.white.opacity(0.2))
+                        .font(.system(size: 26))
+                        .foregroundColor(.white.opacity(0.25))
                     Text("No upcoming reminders")
-                        .font(.system(size: 11, weight: .medium, design: .rounded))
-                        .foregroundColor(.white.opacity(0.4))
-                    Text("Add one below.")
-                        .font(.system(size: 10, design: .rounded))
+                        .font(.system(size: 12, weight: .medium, design: .rounded))
+                        .foregroundColor(.white.opacity(0.45))
+                    Text("Add a reminder below (e.g. 'Meeting with client at 3pm').")
+                        .font(.system(size: 10.5, design: .rounded))
                         .foregroundColor(.white.opacity(0.28))
-                    Spacer(minLength: 16)
+                    Spacer()
                 }
-                .frame(maxHeight: 120)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 ScrollView(.vertical, showsIndicators: false) {
-                    VStack(spacing: 6) {
+                    VStack(spacing: 8) {
                         ForEach(scheduleItems) { item in
-                            HStack(spacing: 8) {
+                            HStack(spacing: 10) {
                                 Image(systemName: "clock.fill")
-                                    .font(.system(size: 10))
-                                    .foregroundColor(.white.opacity(0.7))
+                                    .font(.system(size: 11))
+                                    .foregroundColor(.white.opacity(0.75))
 
-                                VStack(alignment: .leading, spacing: 2) {
+                                VStack(alignment: .leading, spacing: 3) {
                                     Text(item.title)
-                                        .font(.system(size: 11.5, weight: .medium, design: .rounded))
+                                        .font(.system(size: 12, weight: .medium, design: .rounded))
                                         .foregroundColor(.white)
                                         .lineLimit(1)
 
                                     Text(item.subtitle)
-                                        .font(.system(size: 9.5, design: .rounded))
+                                        .font(.system(size: 10, design: .rounded))
                                         .foregroundColor(.white.opacity(0.5))
                                 }
 
                                 Spacer()
 
                                 Text(item.badge)
-                                    .font(.system(size: 9.5, weight: .semibold, design: .monospaced))
-                                    .padding(.horizontal, 6)
-                                    .padding(.vertical, 2)
+                                    .font(.system(size: 10, weight: .semibold, design: .monospaced))
+                                    .padding(.horizontal, 7)
+                                    .padding(.vertical, 3)
                                     .background(Capsule().fill(Color.white.opacity(0.15)))
                                     .foregroundColor(.white)
 
@@ -82,29 +90,30 @@ public struct SchedulePanelView: View {
                                     cardStore.removeItem(id: item.id)
                                 }) {
                                     Image(systemName: "checkmark.circle")
-                                        .font(.system(size: 12))
+                                        .font(.system(size: 13))
                                         .foregroundColor(.white.opacity(0.5))
+                                        .padding(4)
                                 }
                                 .buttonStyle(.plain)
                             }
-                            .padding(16)   // card inset per design reference
+                            .padding(14)
                             .background(
-                                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                RoundedRectangle(cornerRadius: 14, style: .continuous)
                                     .fill(Color.white.opacity(0.08))
                             )
                         }
                     }
-                    .padding(.vertical, 2)
-                    .padding(.horizontal, 24)  // page inset for cards
+                    .padding(.vertical, 4)
+                    .padding(.horizontal, 28)
                 }
-                .frame(maxHeight: 120)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
 
-            // 3. Dedicated Bottom Schedule Input Bar
+            // 3. Dedicated Bottom Schedule Input Bar pinned at the bottom
             HStack(spacing: 8) {
                 TextField("Add reminder (e.g. 'Meeting at 3pm')...", text: $newScheduleText)
                     .textFieldStyle(.plain)
-                    .font(.system(size: 12, weight: .medium, design: .rounded))
+                    .font(.system(size: 12.5, design: .rounded))
                     .foregroundColor(.white)
                     .onSubmit {
                         submitSchedule()
@@ -113,20 +122,22 @@ public struct SchedulePanelView: View {
                 if !newScheduleText.isEmpty {
                     Button(action: { submitSchedule() }) {
                         Image(systemName: "calendar.badge.plus")
-                            .font(.system(size: 15))
+                            .font(.system(size: 16))
                             .foregroundColor(.white)
                     }
                     .buttonStyle(.plain)
                 }
             }
-            .padding(.horizontal, 16)   // input inset per design reference
-            .padding(.vertical, 12)      // input vertical inset per design reference
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
             .background(
                 RoundedRectangle(cornerRadius: 16, style: .continuous)
                     .fill(Color.white.opacity(0.08))
             )
-            .padding(.horizontal, 8)
+            .padding(.horizontal, 28)
+            .padding(.bottom, 8)
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
     private func submitSchedule() {

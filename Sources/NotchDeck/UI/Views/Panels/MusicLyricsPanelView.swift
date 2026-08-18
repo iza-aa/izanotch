@@ -8,7 +8,7 @@ public struct MusicLyricsPanelView: View {
     }
 
     public var body: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: 10) {
             if musicService.isLoading {
                 loadingView
             } else if let track = musicService.currentTrack {
@@ -17,6 +17,7 @@ public struct MusicLyricsPanelView: View {
                 emptyView
             }
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .onAppear {
             Task { await musicService.fetchCurrentTrack() }
         }
@@ -27,142 +28,151 @@ public struct MusicLyricsPanelView: View {
     /// State when no track or Spotify is not running.
     private var emptyView: some View {
         VStack(spacing: 10) {
-            Spacer(minLength: 12)
+            Spacer()
 
             Image(systemName: "music.slash")
-                .font(.system(size: 24))
+                .font(.system(size: 26))
                 .foregroundColor(.white.opacity(0.25))
 
             Text(musicService.musicError ?? "Spotify belum terhubung")
-                .font(.system(size: 11))
-                .foregroundColor(.white.opacity(0.4))
+                .font(.system(size: 12, weight: .medium, design: .rounded))
+                .foregroundColor(.white.opacity(0.45))
                 .multilineTextAlignment(.center)
-                .padding(.horizontal, 24)
+                .padding(.horizontal, 28)
 
             Button(action: {
                 Task { await musicService.fetchCurrentTrack() }
             }) {
                 Label("Coba Lagi", systemImage: "arrow.clockwise")
-                    .font(.system(size: 10.5, weight: .medium))
-                    .padding(.horizontal, 24)
-                    .padding(.vertical, 5)
+                    .font(.system(size: 11, weight: .semibold, design: .rounded))
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 7)
                     .background(Capsule().fill(Color.white.opacity(0.12)))
-                    .foregroundColor(.white.opacity(0.8))
+                    .foregroundColor(.white.opacity(0.85))
             }
             .buttonStyle(.plain)
 
-            Spacer(minLength: 12)
+            Spacer()
         }
-        .frame(maxWidth: .infinity)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
     private var loadingView: some View {
-        VStack(spacing: 8) {
-            Spacer(minLength: 20)
+        VStack(spacing: 10) {
+            Spacer()
             ProgressView()
-                .scaleEffect(0.8)
-                .tint(.white.opacity(0.5))
+                .scaleEffect(0.9)
+                .tint(.white.opacity(0.6))
             Text("Menghubungkan ke Spotify...")
-                .font(.system(size: 10.5))
-                .foregroundColor(.white.opacity(0.4))
-            Spacer(minLength: 20)
+                .font(.system(size: 11, weight: .medium, design: .rounded))
+                .foregroundColor(.white.opacity(0.45))
+            Spacer()
         }
-        .frame(maxWidth: .infinity)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
     @ViewBuilder
     private func trackView(_ track: MusicTrack) -> some View {
-        // 1. Now Playing Header & Playback Controls
-        HStack(spacing: 10) {
-            // Album Art placeholder
-            ZStack {
-                RoundedRectangle(cornerRadius: 8, style: .continuous)
-                    .fill(Color.white.opacity(0.12))
-                    .frame(width: 38, height: 38)
-                Image(systemName: "music.note")
-                    .font(.system(size: 16))
-                    .foregroundColor(.white.opacity(0.7))
-            }
-
-            VStack(alignment: .leading, spacing: 2) {
-                Text(track.title)
-                    .font(.system(size: 12, weight: .bold))
-                    .foregroundColor(.white)
-                    .lineLimit(1)
-                Text(track.artist)
-                    .font(.system(size: 10, weight: .medium))
-                    .foregroundColor(.white.opacity(0.6))
-                    .lineLimit(1)
-            }
-
-            Spacer()
-
-            // Playback Controls
-            HStack(spacing: 14) {
-                Button(action: { musicService.previousTrack() }) {
-                    Image(systemName: "backward.fill")
-                        .font(.system(size: 12))
-                        .foregroundColor(.white.opacity(0.8))
+        VStack(spacing: 10) {
+            // 1. Now Playing Header & Playback Controls
+            HStack(spacing: 12) {
+                // Album Art
+                ZStack {
+                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                        .fill(Color.white.opacity(0.12))
+                        .frame(width: 44, height: 44)
+                    Image(systemName: "music.note")
+                        .font(.system(size: 18))
+                        .foregroundColor(.white.opacity(0.75))
                 }
-                .buttonStyle(.plain)
 
-                Button(action: { musicService.togglePlayPause() }) {
-                    Image(systemName: track.isPlaying ? "pause.circle.fill" : "play.circle.fill")
-                        .font(.system(size: 24))
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(track.title)
+                        .font(.system(size: 13, weight: .bold, design: .rounded))
                         .foregroundColor(.white)
+                        .lineLimit(1)
+                    Text(track.artist)
+                        .font(.system(size: 11, weight: .medium, design: .rounded))
+                        .foregroundColor(.white.opacity(0.65))
+                        .lineLimit(1)
                 }
-                .buttonStyle(.plain)
 
-                Button(action: { musicService.nextTrack() }) {
-                    Image(systemName: "forward.fill")
-                        .font(.system(size: 12))
-                        .foregroundColor(.white.opacity(0.8))
-                }
-                .buttonStyle(.plain)
-            }
-        }
-        .padding(.horizontal, 24)
-
-        // 2. Lyrics / No-lyrics state
-        VStack(alignment: .leading, spacing: 4) {
-            HStack {
-                Image(systemName: "quote.bubble.fill")
-                    .font(.system(size: 9))
-                    .foregroundColor(.white.opacity(0.5))
-                Text("Lyrics")
-                    .font(.system(size: 9.5, weight: .semibold))
-                    .foregroundColor(.white.opacity(0.5))
                 Spacer()
-            }
-            .padding(.horizontal, 24)
 
-            if track.lyrics.isEmpty {
-                Text("Lyrics tidak tersedia")
-                    .font(.system(size: 11))
-                    .foregroundColor(.white.opacity(0.3))
-                    .padding(.horizontal, 24)
-                    .padding(.vertical, 8)
-            } else {
-                ScrollView(.vertical, showsIndicators: false) {
-                    VStack(alignment: .leading, spacing: 6) {
-                        ForEach(track.lyrics) { line in
-                            let isActive = line.timeSeconds <= track.playbackPosition
-                            Text(line.text)
-                                .font(.system(size: 11.5, weight: isActive ? .bold : .regular))
-                                .foregroundColor(isActive ? .white : .white.opacity(0.4))
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                        }
+                // Playback Controls
+                HStack(spacing: 16) {
+                    Button(action: { musicService.previousTrack() }) {
+                        Image(systemName: "backward.fill")
+                            .font(.system(size: 13))
+                            .foregroundColor(.white.opacity(0.8))
                     }
-                    .padding(.vertical, 4)
-                    .padding(.horizontal, 24)
+                    .buttonStyle(.plain)
+
+                    Button(action: { musicService.togglePlayPause() }) {
+                        Image(systemName: track.isPlaying ? "pause.circle.fill" : "play.circle.fill")
+                            .font(.system(size: 26))
+                            .foregroundColor(.white)
+                    }
+                    .buttonStyle(.plain)
+
+                    Button(action: { musicService.nextTrack() }) {
+                        Image(systemName: "forward.fill")
+                            .font(.system(size: 13))
+                            .foregroundColor(.white.opacity(0.8))
+                    }
+                    .buttonStyle(.plain)
                 }
-                .frame(maxHeight: 90)
             }
+            .padding(.horizontal, 28)
+
+            // 2. Lyrics / No-lyrics state (Fills bottom area)
+            VStack(alignment: .leading, spacing: 6) {
+                HStack {
+                    Image(systemName: "quote.bubble.fill")
+                        .font(.system(size: 10))
+                        .foregroundColor(.white.opacity(0.55))
+                    Text("Lyrics")
+                        .font(.system(size: 10.5, weight: .semibold, design: .rounded))
+                        .foregroundColor(.white.opacity(0.55))
+                    Spacer()
+                }
+                .padding(.horizontal, 14)
+                .padding(.top, 10)
+
+                if track.lyrics.isEmpty {
+                    VStack {
+                        Spacer()
+                        Text("Lyrics tidak tersedia")
+                            .font(.system(size: 11.5, weight: .medium, design: .rounded))
+                            .foregroundColor(.white.opacity(0.35))
+                        Spacer()
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                } else {
+                    ScrollView(.vertical, showsIndicators: false) {
+                        VStack(alignment: .leading, spacing: 8) {
+                            ForEach(track.lyrics) { line in
+                                let isActive = line.timeSeconds <= track.playbackPosition
+                                Text(line.text)
+                                    .font(.system(size: 12, weight: isActive ? .bold : .regular, design: .rounded))
+                                    .foregroundColor(isActive ? .white : .white.opacity(0.4))
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                            }
+                        }
+                        .padding(.vertical, 6)
+                        .padding(.horizontal, 14)
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                }
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .fill(Color.white.opacity(0.06))
+            )
+            .padding(.horizontal, 28)
+            .padding(.bottom, 8)
         }
-        .padding(.vertical, 8)
-        .background(
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .fill(Color.white.opacity(0.06))
-        )
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
