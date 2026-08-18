@@ -1,21 +1,39 @@
-# 📄 NOTCHDECK SPECIFICATION & ARCHITECTURE DESIGN DOCUMENT
+# 📄 NOTCHDECK MASTER SPECIFICATION & ARCHITECTURE DESIGN DOCUMENT
 **App Name:** NotchDeck (macOS Dynamic Island & Developer Command Center)  
-**Target Platform:** macOS 14.0+ (Sonoma) & macOS 15.0+ (Sequoia)  
-**Distribution:** Direct Notarized DMG (Non-App Store, Apple Developer ID signed)  
+**Target Platform:** macOS 14.0+ (Sonoma), macOS 15.0+ (Sequoia), macOS 26.0+ (Tahoe - Primary QA Target)  
+**Distribution Model:** Direct Notarized DMG (Apple Developer ID signed, Non-App Store)  
 **Date:** 2026-08-18  
-**Status:** VALIDATED & READY FOR IMPLEMENTATION PLAN  
+**Status:** CANONICAL SINGLE SOURCE OF TRUTH (VALIDATED & APPROVED)  
 
 ---
 
-## 1. System Overview & Executive Architecture
+## 1. Executive Summary & UI Reference Mapping
 
-NotchDeck is a native macOS developer utility built with **Swift 6, SwiftUI, and AppKit**. It anchors a fluid, hardware-adaptive Dynamic Island HUD to the MacBook notch (and floats on external displays). 
+NotchDeck is a native macOS developer utility built with **Swift 6, SwiftUI, and AppKit**. It transforms the MacBook notch (and floating space on external displays) into an active **Developer Command Center & Dynamic Island HUD**.
 
-### Core Capabilities
-1. **Multi-AI Command Deck:** Subprocess & SDK-backed bridges to Antigravity, Claude, and Codex with transcript mirroring.
-2. **Hybrid Voice & Smart Scheduler:** Offline `SFSpeechRecognizer` audio HUD + Dual-engine Scheduler (Cloud NLP + Local Regex/NSDataDetector Fallback) synced to **Apple EventKit** (Calendar & Reminders).
-3. **Deterministic Verbal Voice-Over:** Instant, offline spoken alerts via `AVSpeechSynthesizer` with localized Indonesian phonetic number conversion.
-4. **Smart Clipboard Hub & Dropzone:** Persistent clipboard history with strict 100% secret token masking and temporary drag-and-drop staging.
+```
+┌──────────────────────────────────────────────────────────────────────────┐
+│                             MacBook Notch                                │
+├──────────────────────────────────────────────────────────────────────────┤
+│  [✨ Antigravity ▾]  [ 🔍 Universal Command & Prompt Bar... ]  [🎙️ Mic] │  <- Header (Images 1 & 2)
+├──────────────────────────────────────────────────────────────────────────┤
+│  [ History 24 ]  [ Prompts 12 ]  [ Schedule 3 ]  [ Clipboard ]  [ + ]    │  <- Filter Pills (Image 1)
+├──────────────────────────────────────────────────────────────────────────┤
+│  ┌─────────────────────────┐  ┌────────────────────────────────────────┐ │
+│  │ 🤖 Active AI Stream     │  │ 🎙️ Voice Waveform & Transcript        │ │  <- Dynamic Cards
+│  │ (Claude / Antigravity)  │  │ "Saya ada meeting jam 2..." (Image 4)  │ │     (Images 2 & 4)
+│  └─────────────────────────┘  └────────────────────────────────────────┘ │
+│  ┌─────────────────────────────────────────────────────────────────────┐ │
+│  │ 📋 Clipboard Cards with Secret Masking & Drag Dropzone (Image 1)    │ │
+│  └─────────────────────────────────────────────────────────────────────┘ │
+└──────────────────────────────────────────────────────────────────────────┘
+```
+
+### Visual Reference Mapping (from Uploaded Designs)
+1. **Header & Carousel Deck (Image 1 - Supaste Style):** Curved ear integration into menu bar, universal search bar, filter pills (`History`, `Prompts`, `Schedule`, `Clipboard`), and horizontal card carousel.
+2. **AI Card & Model Switcher (Image 2 - Claude/Sonnet Card):** Model dropdown selector (`Antigravity ▾`, `Claude Code ▾`, `Codex ▾`), streaming response preview, action dock (`Copy`, `Send to Editor`).
+3. **Dynamic Island Live Activities (Images 3 & 5):** Compact pills showing status dots, meeting countdown (`10m to Meeting`), and task progress scrubber.
+4. **Push-to-Talk Waveform HUD (Image 4):** Compact black capsule displaying blue audio waveform (`||||||`), live streaming speech-to-text transcript, Stop button, and quick-action chips.
 
 ---
 
@@ -23,67 +41,85 @@ NotchDeck is a native macOS developer utility built with **Swift 6, SwiftUI, and
 
 ### 2.1 Windowing Architecture
 * **Class:** `NotchPanel: NSPanel`
-* **Window Level:** `.statusBar + 1`
+* **Window Level:** `.statusBar + 1` (floats above fullscreen windows and across all spaces)
 * **Collection Behaviors:** `[.canJoinAllSpaces, .fullScreenAuxiliary, .ignoresCycle]`
 * **Style Mask:** `[.borderless, .nonactivatingPanel]`
 * **Hardware Detection:** Reads `NSScreen.main?.auxiliaryTopLeftArea` and `safeAreaInsets.top`.
-  * *MacBook Notch:* Anchors with curved side ears merging with menu bar.
-  * *External Monitor:* Floats as a standalone Dynamic Island pill 10px below screen top.
+  * *MacBook Notch:* Anchors precisely under physical notch with curved ears.
+  * *External Monitor:* Renders as a floating pill with `24px` corner radius positioned `10px` below the top screen edge.
 
-### 2.2 Visual State Machine
-* **`.collapsed`:** Width: 180px, Height: 32px. Standby pill with status dots. RAM target $\le 55\text{ MB}$.
-* **`.voiceActive`:** Width: 360px, Height: 70px. Blue audio waveform (`||||||`) + live streaming transcript + Stop button.
-* **`.liveActivity`:** Width: 320px, Height: 44px. Progress bar, countdown badge (`10m to Meeting`).
-* **`.expanded`:** Width: 640px, Height: 460px. Full Command Bar + Model Selector + Filter Pills + Horizontal Card Carousel. Active RAM target $\le 120\text{ MB}$.
+### 2.2 Visual State Machine & Resource Budget
+* **`.collapsed` (Standby):** $180\text{px} \times 32\text{px}$. Standby pill with status dots. **RAM budget $\le 55\text{ MB}$**.
+* **`.voiceActive` (Push-to-Talk):** $360\text{px} \times 70\text{px}$. Audio waveform + live transcript stream + Stop button.
+* **`.liveActivity` (Compact HUD):** $320\text{px} \times 44\text{px}$. Countdown badge, task progress bar.
+* **`.expanded` (Full Command Center):** $640\text{px} \times 460\text{px}$. Command bar, filter pills, card carousel. **Active RAM budget $\le 120\text{ MB}$**.
+* **Frame Rate Target:** Locked at **60 FPS / 120 FPS ProMotion** with SwiftUI spring animations.
 
 ---
 
-## 3. Multi-AI Bridge & Dispatcher Architecture (EPIC 2 - RE-ARCHITECTED)
+## 3. Multi-AI Bridge & Dispatcher Architecture (EPIC 2)
 
-### 3.1 Strategy & Phased Integration
-Instead of unverified Accessibility GUI injection, NotchDeck employs standard, robust adapters:
+### 3.1 Strategy & Adapter Pattern
+NotchDeck integrates with desktop developer AI tools via official CLIs, SDKs, and local session watchers rather than fragile GUI injection:
 
 ```
 ┌────────────────────────────────────────────────────────────┐
 │                  NotchDeck AI Coordinator                  │
 ├─────────────────────────────┬──────────────────────────────┤
-│ 1. Antigravity Adapter      │ 2. Claude / Codex Adapters   │
-│ - Local Transcript Watcher  │ - CLI Subprocess Execution   │
-│   (~/.gemini/antigravity)   │   (Headless claude / codex)  │
-│ - Official SDK / CLI Runner │ - AppleScript fallback       │
-└─────────────────────────────┴──────────────────────────────┘
+│ 1. Antigravity Adapter      │ 2. Claude Code CLI Adapter   │
+│ - Local Transcript Watcher  │ - Headless Subprocess Exec   │
+│ - Official SDK / CLI Runner │   (`claude --print ...`)     │
+│ - (Phase 1 Spike Target)    │ - Apple Events fallback      │
+├─────────────────────────────┴──────────────────────────────┤
+│ 3. Codex CLI Adapter                                       │
+│ - Subprocess Runner (stdin / stdout stream)                │
+└────────────────────────────────────────────────────────────┘
 ```
 
-### 3.2 Technical Spike & Milestones
-* **Phase 1 (MVP Target):** Antigravity CLI/SDK Integration & Local Transcript Watcher.
-* **Phase 2:** Headless Claude Code CLI stream reader.
-* **Phase 3:** Open-source Codex CLI runner.
+### 3.2 Phased Roadmap
+* **Phase 1 (MVP Spike):** Antigravity CLI/SDK Integration + Local Session Watcher spike (verify `~/.gemini/antigravity/brain/` session stability).
+* **Phase 2:** Claude Code CLI headless execution integration (`claude` binary bridge).
+* **Phase 3:** Codex CLI integration.
 
 ---
 
-## 4. Hybrid Scheduler & Speech Engine (EPIC 3 & 4)
+## 4. Hybrid Voice, Smart Scheduler & Deterministic Audio Engine (EPIC 3 & 4)
 
-### 4.1 Speech-to-Text Engine
+### 4.1 Speech-to-Text (`SFSpeechRecognizer`)
 * Uses `SFSpeechRecognizer(locale: Locale(identifier: "id-ID"))`.
-* **Runtime Verification:** Checks `recognizer.supportsOnDeviceRecognition`. If false/missing, prompts user or falls back gracefully to standard online speech recognition.
+* **Runtime Verification:** Checks `recognizer.supportsOnDeviceRecognition`. If false or language pack not installed in macOS System Settings, automatically switches to Apple online dictation or displays an actionable prompt to download the offline Indonesian language pack.
 
 ### 4.2 Dual-Engine Schedule Parsing
-1. **Primary (Online):** Cloud API (`Gemini 2.5 Flash`) with timeout at $1.5\text{s}$.
-2. **Fallback (Offline / Timeout):** Native Swift `LocalScheduleParser` using regex rules and `NSDataDetector` (matches "jam 2", "10 menit lagi", "besok 09:00").
+1. **Primary (Online):** Cloud API (`Gemini 2.5 Flash`) with strict $1.5\text{s}$ timeout.
+2. **Fallback (Offline / Timeout):** Native Swift `LocalScheduleParser` using regex rules and `NSDataDetector`.
+   * **Mandatory Offline Coverage:** Standard hours ("jam X", "pukul X"), relative minutes ("X menit lagi"), relative hours ("X jam lagi"), colloquial Indonesian ("setengah jam lagi", "besok jam X", "lusa jam X", "makan siang").
 
 ### 4.3 Deterministic Offline Voice-Over Generator (Zero LLM Dependency)
-Spoken alerts are built locally in Swift to guarantee 0ms latency and 100% offline reliability:
+Spoken alerts are built locally in Swift to guarantee **0 ms network lag** and **100% offline reliability** using a general Indonesian number-to-words algorithm (0–59 minutes):
 
 ```swift
+import Foundation
+
 public struct LocalVoiceOverBuilder {
+    public static func numberToIndonesianWords(_ n: Int) -> String {
+        let units = ["nol", "satu", "dua", "tiga", "empat", "lima", "enam", "tujuh", "delapan", "sembilan", "sepuluh", "sebelas"]
+        if n < 12 { return units[n] }
+        if n < 20 { return "\(units[n - 10]) belas" }
+        if n < 100 {
+            let tens = n / 10
+            let rem = n % 10
+            return rem == 0 ? "\(units[tens]) puluh" : "\(units[tens]) puluh \(units[rem])"
+        }
+        return "\(n)"
+    }
+
     public static func buildScript(title: String, offsetMinutes: Int) -> String {
-        let numberWords = ["0": "nol", "1": "satu", "2": "dua", "3": "tiga", "4": "empat", "5": "lima", "10": "sepuluh", "15": "lima belas", "20": "dua puluh", "30": "tiga puluh"]
-        let offsetStr = numberWords[String(offsetMinutes)] ?? "\(offsetMinutes)"
-        
-        if offsetMinutes == 0 {
-            return "Pengingat: Agenda \(title) dimulai sekarang."
+        let cleanTitle = title.trimmingCharacters(in: .whitespacesAndNewlines)
+        if offsetMinutes <= 0 {
+            return "Pengingat: Agenda \(cleanTitle) dimulai sekarang."
         } else {
-            return "Pengingat: Agenda \(title) akan dimulai dalam \(offsetStr) menit."
+            let offsetWords = numberToIndonesianWords(offsetMinutes)
+            return "Pengingat: Agenda \(cleanTitle) akan dimulai dalam \(offsetWords) menit."
         }
     }
 }
@@ -94,23 +130,60 @@ public struct LocalVoiceOverBuilder {
 ## 5. Security, Secrets & macOS Permissions Matrix
 
 ### 5.1 Permissions Matrix
-| Permission | Info.plist Key | Purpose | Required For |
+| Permission | Info.plist Key | Purpose & User Prompt Description | Required For |
 | :--- | :--- | :--- | :--- |
-| **Microphone** | `NSMicrophoneUsageDescription` | Merekam suara saat Push-to-Talk | US-3.1 |
-| **Speech Recognition** | `NSSpeechRecognitionUsageDescription` | Mengubah suara menjadi transkrip teks | US-3.1 |
-| **Calendars** | `NSCalendarsUsageDescription` | Menulis jadwal meeting ke Apple Calendar | US-3.1 |
-| **Reminders** | `NSRemindersUsageDescription` | Menulis alarm pengingat ke Apple Reminders | US-3.1 |
-| **Accessibility** | System Settings Prompt | Deteksi posisi notch & focus management | US-1.1 |
+| **Microphone** | `NSMicrophoneUsageDescription` | "NotchDeck requires microphone access for Push-to-Talk voice scheduling." | US-3.1 |
+| **Speech Recognition** | `NSSpeechRecognitionUsageDescription` | "NotchDeck needs speech recognition to transcribe your spoken voice into text." | US-3.1 |
+| **Calendars** | `NSCalendarsUsageDescription` | "NotchDeck adds scheduled meetings to your Apple Calendar." | US-3.1 |
+| **Reminders** | `NSRemindersUsageDescription` | "NotchDeck creates alerts in Apple Reminders." | US-3.1 |
+| **Accessibility** | System Settings Prompt | "Required for global Push-to-Talk hotkey (⌥ Space) and active window awareness." | US-1.1 & US-3.1 |
 
 ### 5.2 Clipboard Secret Masking Standard
-* **Rule:** If a secret token is detected (OpenAI `sk-...`, AWS `AKIA...`, GitHub `ghp_...`, JWT), mask characters starting after the 8th character until the 4th character from the end.
-* **Example:** `sk-proj-1234567890abcdef1234567890` $\rightarrow$ `sk-proj-12******************7890` (Clearly stated with badge `⚠️ Masked Secret`).
+* **Rule:** If a secret token is detected (OpenAI `sk-proj-...`, GitHub `ghp_...`, AWS `AKIA...`, JWT), mask characters starting immediately after the provider prefix (first 8 characters) until the last 4 characters.
+* **Math Proof:**
+  * Input: `sk-proj-1234567890abcdef1234567890` (34 characters)
+  * Prefix (Chars 1–8): `sk-proj-`
+  * Suffix (Chars 31–34): `7890`
+  * Masked Segment (Chars 9–30): `**********************` (22 asterisks)
+  * Output: `sk-proj-**********************7890` (Badge: `⚠️ Masked Secret`)
 
 ---
 
-## 6. Comprehensive Gherkin BDD Scenarios (Including Failure States)
+## 6. Complete INVEST Backlog & User Stories
 
-### 6.1 Happy Path: Voice to Calendar with Offset
+```
+EPIC 1: Hardware Notch Dynamic Windowing Engine
+├── US-1.1: Hardware Notch Detection & Adaptive Floating Panel
+└── US-1.2: Interactive Spring Animation & State Controller
+
+EPIC 2: Multi-AI Command Deck & CLI Bridge
+├── US-2.1: Universal Prompt Dispatcher (Antigravity & Claude Code CLI)
+├── US-2.2: Phase 1 Spike - Antigravity SDK/Session Investigation
+└── US-2.3: BYOK Onboarding & Keychain Settings Manager
+
+EPIC 3: Hybrid Voice & Smart NLP Scheduler
+├── US-3.1: Push-to-Talk Speech-to-Text HUD (Offline SFSpeechRecognizer)
+├── US-3.2: Dual-Engine NLP Scheduler (Cloud Gemini 2.5 + Local Fallback)
+└── US-3.3: Two-Way Sync with Apple EventKit (Calendar & Reminders)
+
+EPIC 4: Deterministic Verbal Voice-Over Engine
+└── US-4.1: Offline Spoken TTS Alert Engine (AVSpeechSynthesizer)
+
+EPIC 5: Developer Utilities (Clipboard & Dropzone Hub)
+├── US-5.1: Clipboard History with Strict Secret Masking & Carousel
+└── US-5.2: Notch Drag-and-Drop Staging Zone
+```
+
+### Key User Story: US-2.3 (BYOK Onboarding & Keychain Settings)
+* **As a:** Developer yang pertama kali memakai NotchDeck.
+* **I want to:** Memasukkan Gemini/Anthropic API Key saya di menu Settings dengan tombol "Test Connection".
+* **So that:** Kunci API saya tersimpan aman di macOS Keychain dan saya siap menggunakan fitur AI cloud.
+
+---
+
+## 7. Comprehensive Gherkin BDD Scenarios (Including Failure States)
+
+### 7.1 Happy Path: Voice to Calendar with Offset
 ```gherkin
 Scenario: Sukses mem-parsing perintah suara dengan offset reminder
   Given Jam sistem saat ini 2026-08-18T11:30:00+07:00
@@ -121,7 +194,7 @@ Scenario: Sukses mem-parsing perintah suara dengan offset reminder
   And Notch menampilkan badge sukses "Meeting @ 13:50".
 ```
 
-### 6.2 Edge Case: Jam Sudah Lewat Hari Ini (Past-Time Rollover)
+### 7.2 Edge Case: Past-Time Rollover (Jam Sudah Lewat Hari Ini)
 ```gherkin
 Scenario: Waktu yang disebutkan sudah lewat hari ini
   Given Jam sistem saat ini 2026-08-18T15:00:00+07:00
@@ -131,51 +204,159 @@ Scenario: Waktu yang disebutkan sudah lewat hari ini
   And Notch menampilkan konfirmasi "Disetel untuk Besok, 14:00 (Konfirmasi / Ubah)".
 ```
 
-### 6.3 Failure State: Izin Microphone Ditolak (Permission Denied)
+### 7.3 Failure State: Izin Microphone Ditolak
 ```gherkin
 Scenario: Izin Microphone ditolak oleh pengguna
   Given Izin Microphone berstatus .denied di System Settings
   When Pengguna menekan shortcut Opt+Space
-  Then Perekaman audio tidak dijalankan
+  Then Perekaman audio dibatalkan secara aman
   And Notch menampilkan alert banner "Izin Mic Dibutuhkan [Buka Pengaturan]"
   And Input bar otomatis beralih ke mode ketik teks.
 ```
 
-### 6.4 Failure State: Offline Network Fallback
+### 7.4 Failure State: Offline Network Fallback
 ```gherkin
 Scenario: Pengguna offline saat menjadwalkan reminder
   Given Koneksi internet terputus (NWPathMonitor status .unsatisfied)
   When Pengguna mengetik "meeting jam 4 sore"
-  Then Cloud API dilewati (bypass)
-  And Local Regex Parser mengekstrak waktu 16:00:00
+  Then Cloud API di-bypass
+  And Local Schedule Parser mengekstrak waktu 16:00:00
   And Jadwal berhasil ditulis secara lokal ke Apple EventKit
   And Notch menampilkan badge "Disimpan Offline: Meeting @ 16:00".
 ```
 
+### 7.5 Failure State: Target CLI / App Integration Fails Gracefully
+```gherkin
+Scenario: Claude Code CLI binary tidak ditemukan pada PATH
+  Given Binary `claude` belum terpasang di sistem pengguna
+  When Pengguna memilih model "Claude Code" dan mengirim prompt
+  Then Notch menangkap error non-zero exit code
+  And Notch menampilkan notifikasi banner yang jelas "Claude CLI tidak ditemukan [Petunjuk Instalasi]"
+  And Aplikasi tidak mengalami crash atau silent failure.
+```
+
 ---
 
-## 7. Golden Dataset & Evals (10 Comprehensive Suites with Edge Cases)
+## 8. System Prompts & Structured JSON Schemas
 
-| ID | Ref Time | Utterance Input | Expected Start Time | Expected Reminder Time | Offset | Edge Case Handling |
+### 8.1 `NLP_SCHEDULE_REMINDER_PARSER`
+```text
+You are the high-speed deterministic NLP Scheduling Engine for NotchDeck.
+Parse raw natural language (Indonesian/English) relative to `reference_datetime`.
+If the time has already passed today without an explicit date, rollover to tomorrow.
+If ambiguous or missing time, return "is_ambiguous": true with a concise "clarification_question" in Indonesian.
+Output MUST be raw valid JSON matching the schema.
+```
+
+#### JSON Schema
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["success", "is_ambiguous", "clarification_question", "payload"],
+  "properties": {
+    "success": { "type": "boolean" },
+    "is_ambiguous": { "type": "boolean" },
+    "clarification_question": { "type": ["string", "null"] },
+    "payload": {
+      "type": ["object", "null"],
+      "required": ["title", "event_type", "event_start_iso", "reminder_iso", "offset_minutes", "confidence_score"],
+      "properties": {
+        "title": { "type": "string", "maxLength": 40 },
+        "event_type": { "type": "string", "enum": ["meeting", "task", "break", "deadline", "call", "custom"] },
+        "event_start_iso": { "type": "string", "format": "date-time" },
+        "reminder_iso": { "type": "string", "format": "date-time" },
+        "offset_minutes": { "type": "integer", "minimum": 0 },
+        "confidence_score": { "type": "number", "minimum": 0.0, "maximum": 1.0 }
+      }
+    }
+  }
+}
+```
+
+### 8.2 `SMART_CLIPBOARD_INSPECTOR`
+```text
+You are the Smart Clipboard Security & Developer Classification Engine for NotchDeck.
+Analyze copied strings from NSPasteboard: detect secret tokens (OpenAI, AWS, GitHub, JWT), classify code languages, and generate safe masked strings.
+Output MUST be raw valid JSON.
+```
+
+#### JSON Schema
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["category", "has_secret", "detected_type", "masked_preview", "language", "suggested_actions", "card_badge"],
+  "properties": {
+    "category": { "type": "string", "enum": ["secret_token", "code_snippet", "url", "plain_text", "color_hex"] },
+    "has_secret": { "type": "boolean" },
+    "detected_type": { "type": ["string", "null"] },
+    "masked_preview": { "type": "string" },
+    "language": { "type": ["string", "null"] },
+    "suggested_actions": { "type": "array", "items": { "type": "string" } },
+    "card_badge": { "type": "string" }
+  }
+}
+```
+
+---
+
+## 9. Golden Dataset & Evals (10 Comprehensive Suites)
+
+| ID | Ref Time | Utterance Input | Expected Start Time | Expected Reminder Time | Offset | Offline Fallback Capable |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **TC-01** | `11:30` | *"meeting jam 2 nanti tolong ingatkan 10 menit sebelum"* | `14:00` (Hari ini) | `13:50` (Hari ini) | 10m | Standar happy path |
-| **TC-02** | `15:30` | *"meeting jam 2"* | `14:00` (**Besok**) | `14:00` (**Besok**) | 0m | **Past-time rollover ke besok** |
-| **TC-03** | `23:50` | *"20 menit lagi minum vitamin"* | `00:10` (**Besok**) | `00:10` (**Besok**) | 0m | **Midnight date rollover** |
-| **TC-04** | `10:00` | *"ingatkan ada sync"* | `null` | `null` | 0m | **Ambiguity check (`is_ambiguous: true`)** |
-| **TC-05** | `14:00` | *"besok lusa jam 9 pagi release"* | `+2 days 09:00` | `+2 days 09:00` | 0m | Multi-day relative offset |
-| **TC-06** | `08:00` | *"setengah jam lagi call client"* | `08:30` | `08:30` | 0m | Indonesian colloquial "setengah jam" |
-| **TC-07** | `12:00` | *"3 jam lagi jemput anak"* | `15:00` | `15:00` | 0m | Relative hour addition |
-| **TC-08** | `16:00` | *"jam 5 sore review PR 15 menit sebelumnya alarm"* | `17:00` | `16:45` | 15m | Double time specification (start vs alert) |
-| **TC-09** | `11:00` | *"makan siang"* | `12:00` (Inferred) | `12:00` | 0m | Default meal time inference with confidence 0.7 |
-| **TC-10** | `13:00` | *"kemarin jam 4"* | `null` | `null` | 0m | **Invalid past date guard rejection** |
+| **TC-01** | `11:30` | *"meeting jam 2 nanti tolong ingatkan 10 menit sebelum"* | `14:00` (Today) | `13:50` (Today) | 10m | YES (Regex) |
+| **TC-02** | `15:30` | *"meeting jam 2"* | `14:00` (**Tomorrow**) | `14:00` (**Tomorrow**) | 0m | YES (Rollover) |
+| **TC-03** | `23:50` | *"20 menit lagi minum vitamin"* | `00:10` (**Tomorrow**) | `00:10` (**Tomorrow**) | 0m | YES (Midnight) |
+| **TC-04** | `10:00` | *"ingatkan ada sync"* | `null` | `null` | 0m | YES (`is_ambiguous`) |
+| **TC-05** | `14:00` | *"lusa jam 9 pagi release"* | `+2 days 09:00` | `+2 days 09:00` | 0m | YES (Relative days) |
+| **TC-06** | `08:00` | *"setengah jam lagi call client"* | `08:30` | `08:30` | 0m | YES ("setengah jam") |
+| **TC-07** | `12:00` | *"3 jam lagi jemput anak"* | `15:00` | `15:00` | 0m | YES (Relative hours) |
+| **TC-08** | `16:00` | *"jam 5 sore review PR 15 menit sebelumnya alarm"* | `17:00` | `16:45` | 15m | YES (Start + Alert) |
+| **TC-09** | `11:00` | *"makan siang"* | `12:00` (Inferred) | `12:00` | 0m | YES (Meal rule, conf: 0.7) |
+| **TC-10** | `13:00` | *"kemarin jam 4"* | `null` | `null` | 0m | YES (Invalid past rejection) |
 
 ---
 
-## 8. Production-Grade API Client (`AIClient.swift`)
+## 10. Production-Grade Swift Architecture Code
 
 ```swift
 import Foundation
 
+// MARK: - Codable Data Models
+public struct NLPScheduleResult: Codable, Sendable {
+    public let success: Bool
+    public let isAmbiguous: Bool
+    public let clarificationQuestion: String?
+    public let payload: ScheduleDetail?
+
+    enum CodingKeys: String, CodingKey {
+        case success
+        case isAmbiguous = "is_ambiguous"
+        case clarificationQuestion = "clarification_question"
+        case payload
+    }
+}
+
+public struct ScheduleDetail: Codable, Sendable {
+    public let title: String
+    public let eventType: String
+    public let eventStartISO: String
+    public let reminderISO: String
+    public let offsetMinutes: Int
+    public let confidenceScore: Double
+
+    enum CodingKeys: String, CodingKey {
+        case title
+        case eventType = "event_type"
+        case eventStartISO = "event_start_iso"
+        case reminderISO = "reminder_iso"
+        case offsetMinutes = "offset_minutes"
+        case confidenceScore = "confidence_score"
+    }
+}
+
+// MARK: - Error Types
 public enum AIClientError: Error, LocalizedError {
     case invalidURL
     case httpError(statusCode: Int, message: String?)
@@ -194,6 +375,7 @@ public enum AIClientError: Error, LocalizedError {
     }
 }
 
+// MARK: - Production API Client
 public final class NotchDeckAIClient: Sendable {
     public static let shared = NotchDeckAIClient()
     private let urlSession: URLSession
@@ -225,9 +407,7 @@ public final class NotchDeckAIClient: Sendable {
         Output ONLY valid raw JSON matching the schema.
         """
 
-        let prompt = """
-        User Utterance: "\(userUtterance)"
-        """
+        let prompt = "User Utterance: \"\(userUtterance)\""
 
         let payload: [String: Any] = [
             "system_instruction": ["parts": [["text": systemInstruction]]],
