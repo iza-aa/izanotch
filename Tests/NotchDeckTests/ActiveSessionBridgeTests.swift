@@ -9,7 +9,7 @@ struct ActiveSessionBridgeTests {
         let bridge = ActiveSessionBridge()
         let acc = OutputAccumulator()
 
-        // 1. Start interactive session with initial prompt
+        // 1. Start interactive session
         try await bridge.startInteractiveSession(
             executable: "/usr/bin/cat",
             arguments: [],
@@ -37,6 +37,40 @@ struct ActiveSessionBridgeTests {
         #expect(fullOutput.contains("Turn 2: Clarification Reply"))
     }
 
+    @Test("Simulate interactive agent session protocol with ask_question and user reply")
+    func testRealisticAgentInteractiveProtocol() async throws {
+        let bridge = ActiveSessionBridge()
+        let acc = OutputAccumulator()
+
+        // Interactive script simulating an agent that asks a question on stdin and confirms answer
+        let agentScript = """
+        echo 'Agent: Processing request...'
+        echo 'Agent: Question: Pilih Database? (Postgres/SQLite)'
+        read user_reply
+        echo "Agent: Database configured as: $user_reply"
+        echo 'Agent: DONE'
+        """
+
+        try await bridge.startInteractiveSession(
+            executable: "/bin/sh",
+            arguments: ["-c", agentScript],
+            initialPrompt: nil
+        ) { chunk in
+            acc.append(chunk)
+        }
+
+        try await Task.sleep(nanoseconds: 40_000_000)
+        #expect(acc.get().contains("Pilih Database?"))
+
+        // User responds via NotchDeck
+        try await bridge.sendClarificationResponse("Postgres")
+        let exitCode = try await bridge.waitForInteractiveSessionExit()
+
+        #expect(exitCode == 0)
+        #expect(acc.get().contains("Database configured as: Postgres"))
+        #expect(acc.get().contains("Agent: DONE"))
+    }
+
     @Test("Dispatch interactive prompt and verify non-zero exit code throws error")
     func testDispatchInteractivePromptErrorOnFailure() async throws {
         let bridge = ActiveSessionBridge()
@@ -46,7 +80,7 @@ struct ActiveSessionBridgeTests {
             try await bridge.startInteractiveSession(
                 executable: "/bin/sh",
                 arguments: ["-c", "exit 42"],
-                initialPrompt: "test"
+                initialPrompt: nil
             ) { chunk in
                 acc.append(chunk)
             }
@@ -87,6 +121,24 @@ struct ActiveSessionBridgeTests {
         #expect(parsed?["content"] as? String == complexResponse)
 
         try? FileManager.default.removeItem(at: tempDir)
+    }
+
+    @Test("Send clarification response throws sessionDirectoryNotFound when directory or transcript does not exist")
+    func testSendClarificationThrowsWhenDirectoryInvalid() async throws {
+        let nonExistentDir = FileManager.default.temporaryDirectory.appendingPathComponent("non_existent_\(UUID().uuidString)")
+        let bridge = ActiveSessionBridge()
+
+        do {
+            try await bridge.sendClarificationResponse("Answer", sessionDirectory: nonExistentDir)
+            #expect(Bool(false), "Should have thrown sessionDirectoryNotFound")
+        } catch let err as ActiveSessionError {
+            switch err {
+            case .sessionDirectoryNotFound:
+                #expect(Bool(true))
+            default:
+                #expect(Bool(false), "Expected sessionDirectoryNotFound error, got \(err)")
+            }
+        }
     }
 
     @Test("Send clarification response throws error when neither session nor directory exists")

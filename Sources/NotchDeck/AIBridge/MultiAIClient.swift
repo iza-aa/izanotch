@@ -162,7 +162,7 @@ public final class MultiAIClient: @unchecked Sendable {
                 try await sessionBridge.startInteractiveSession(
                     executable: claudeBin,
                     arguments: ["-p", text],
-                    initialPrompt: text
+                    initialPrompt: nil
                 ) { chunk in
                     acc.append(chunk)
                 }
@@ -196,8 +196,8 @@ public final class MultiAIClient: @unchecked Sendable {
                 let acc = OutputAccumulator()
                 try await sessionBridge.startInteractiveSession(
                     executable: codexBin,
-                    arguments: ["exec"],
-                    initialPrompt: text
+                    arguments: ["exec", text],
+                    initialPrompt: nil
                 ) { chunk in
                     acc.append(chunk)
                 }
