@@ -20,7 +20,7 @@ public final class NotchWindowController: NSWindowController {
         let panel = NotchPanel(contentRect: initialFrame)
         super.init(window: panel)
 
-        let rootView = NotchRootView(stateController: stateController)
+        let rootView = NotchRootView(stateController: stateController, hasPhysicalNotch: hasNotch)
         let hostingView = NSHostingView(rootView: rootView)
         panel.contentView = hostingView
 
