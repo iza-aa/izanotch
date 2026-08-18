@@ -33,16 +33,32 @@ public struct NotchRootView: View {
             VStack(spacing: 0) {
                 switch stateController.currentState {
                 case .collapsed:
-                    HStack(spacing: 8) {
-                        Circle()
-                            .fill(Color.white.opacity(0.8))
-                            .frame(width: 7, height: 7)
+                    Button(action: {
+                        withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+                            stateController.transition(to: .expanded)
+                        }
+                    }) {
+                        HStack(spacing: 8) {
+                            Circle()
+                                .fill(Color.white.opacity(0.85))
+                                .frame(width: 7, height: 7)
 
-                        Text("NotchDeck")
-                            .font(.system(size: 11.5, weight: .medium, design: .rounded))
-                            .foregroundColor(.white.opacity(0.85))
+                            Text("NotchDeck")
+                                .font(.system(size: 11.5, weight: .medium, design: .rounded))
+                                .foregroundColor(.white.opacity(0.9))
+                        }
+                        .padding(.horizontal, 16)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .contentShape(Rectangle())
                     }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .buttonStyle(.plain)
+                    .onHover { isHovered in
+                        if isHovered {
+                            withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+                                stateController.transition(to: .expanded)
+                            }
+                        }
+                    }
 
                 case .voiceActive:
                     VStack {

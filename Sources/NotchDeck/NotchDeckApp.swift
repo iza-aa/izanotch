@@ -8,6 +8,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     var hoverMonitor: NotchHoverMonitor?
     var speechManager: SpeechRecognitionManager?
     var alarmMonitor: ReminderAlarmMonitor?
+    private var globalEventMonitor: Any?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.accessory)
@@ -18,38 +19,53 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         self.alarmMonitor = ReminderAlarmMonitor(stateController: stateController)
         wc.showWindow(nil)
 
-        setupGlobalHotkeys()
+        setupHotkeys()
     }
 
-    private func setupGlobalHotkeys() {
+    private func setupHotkeys() {
+        // Local Monitor (when NotchDeck is key/active)
         NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
             guard let self = self else { return event }
-            let action = HotkeyManager.resolveAction(keyCode: event.keyCode, flags: event.modifierFlags)
-            switch action {
-            case .toggleExpand:
-                let target: NotchState = self.stateController.currentState == .expanded ? .collapsed : .expanded
-                self.stateController.transition(to: target)
+            if self.handleKey(keyCode: event.keyCode, flags: event.modifierFlags) {
                 return nil
-            case .pushToTalk:
-                if self.stateController.currentState == .voiceActive {
-                    self.speechManager?.stopRecording()
-                    self.submitCurrentPrompt()
-                } else {
-                    self.stateController.transition(to: .voiceActive)
-                    try? self.speechManager?.startRecording()
-                }
-                return nil
-            case .dismiss:
-                if self.stateController.currentState != .collapsed {
-                    self.speechManager?.stopRecording()
-                    self.stateController.transition(to: .collapsed)
-                    return nil
-                }
-            case .none:
-                break
             }
             return event
         }
+
+        // Global Monitor (when another app/IDE/browser is active)
+        globalEventMonitor = NSEvent.addGlobalMonitorForEvents(matching: .keyDown) { [weak self] event in
+            Task { @MainActor [weak self] in
+                _ = self?.handleKey(keyCode: event.keyCode, flags: event.modifierFlags)
+            }
+        }
+    }
+
+    private func handleKey(keyCode: UInt16, flags: NSEvent.ModifierFlags) -> Bool {
+        let action = HotkeyManager.resolveAction(keyCode: keyCode, flags: flags)
+        switch action {
+        case .toggleExpand:
+            let target: NotchState = self.stateController.currentState == .expanded ? .collapsed : .expanded
+            self.stateController.transition(to: target)
+            return true
+        case .pushToTalk:
+            if self.stateController.currentState == .voiceActive {
+                self.speechManager?.stopRecording()
+                self.submitCurrentPrompt()
+            } else {
+                self.stateController.transition(to: .voiceActive)
+                try? self.speechManager?.startRecording()
+            }
+            return true
+        case .dismiss:
+            if self.stateController.currentState != .collapsed {
+                self.speechManager?.stopRecording()
+                self.stateController.transition(to: .collapsed)
+                return true
+            }
+        case .none:
+            break
+        }
+        return false
     }
 
     public func submitCurrentPrompt() {
