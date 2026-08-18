@@ -67,7 +67,7 @@ public struct NotchGeometryCalculator: Sendable {
         case .liveActivity:
             return (360, 48 + notchH)
         case .expanded:
-            let expandedW = hasPhysicalNotch ? max(680, fallbackNotchW + 480) : 640
+            let expandedW = hasPhysicalNotch ? max(740, fallbackNotchW + 540) : 700
             return (expandedW, 400 + notchH)
         }
     }
@@ -113,9 +113,9 @@ public struct NotchGeometryCalculator: Sendable {
             return NSRect(x: screenFrame.midX - (w / 2.0), y: screenFrame.maxY - h, width: w, height: h)
 
         case .expanded:
-            // Expanded: width accommodates main tray plus floating side buttons on the left
-            let rawW = hasNotch ? max(680, notchW + 480) : 640
-            let w = min(rawW, screenFrame.width - 32)
+            // Expanded: width accommodates main tray plus floating side docks on left and right
+            let rawW = hasNotch ? max(740, notchW + 540) : 700
+            let w = min(rawW, screenFrame.width - 24)
             let h: CGFloat = 400 + notchH
             return NSRect(x: screenFrame.midX - (w / 2.0), y: screenFrame.maxY - h, width: w, height: h)
         }

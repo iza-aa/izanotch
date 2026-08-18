@@ -54,9 +54,9 @@ public struct NotchRootView: View {
             if stateController.currentState == .hidden {
                 Color.clear.frame(width: 0, height: 0)
             } else if stateController.currentState == .expanded {
-                // EXPANDED: Floating Side Dock (Rapat menempel di samping kiri notch) + Main Notch Tray
+                // EXPANDED: Left AI Model Dock + Center Main Tray + Right Feature Tabs Dock
                 HStack(alignment: .top, spacing: -14) {
-                    // 1. FLOATING SIDE DOCK (Rapat presisi di samping kiri bodi notch)
+                    // 1. LEFT FLOATING SIDE DOCK: AI Model Switcher (Antigravity, Codex, Claude Code)
                     VStack(spacing: 7) {
                         floatingSideButton(id: "Antigravity", icon: "sparkles", color: .cyan, name: "Antigravity 2.0")
                         floatingSideButton(id: "Codex", icon: "cpu.fill", color: .green, name: "Codex ChatGPT")
@@ -74,7 +74,7 @@ public struct NotchRootView: View {
                     .padding(.top, contentTopPadding)
                     .zIndex(2)
 
-                    // 2. MAIN TRAY NOTCH (Pure black, zero shadow)
+                    // 2. MAIN TRAY NOTCH (Pure black, full vertical content)
                     ZStack {
                         NotchShape(
                             topCornerRadius: 19,
@@ -85,6 +85,24 @@ public struct NotchRootView: View {
                         expandedContent
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+                    // 3. RIGHT FLOATING SIDE DOCK: Feature Tabs Switcher (AI Chat, Notes, Schedule, Music, Clipboard)
+                    VStack(spacing: 7) {
+                        ForEach(NotchFeatureTab.allCases) { tab in
+                            floatingTabButton(tab: tab)
+                        }
+                    }
+                    .padding(4)
+                    .background(
+                        Capsule()
+                            .fill(Color.black)
+                            .overlay(
+                                Capsule()
+                                    .strokeBorder(Color.white.opacity(0.12), lineWidth: 0.8)
+                            )
+                    )
+                    .padding(.top, contentTopPadding)
+                    .zIndex(2)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .clipped()
@@ -345,46 +363,66 @@ public struct NotchRootView: View {
         text.unicodeScalars.filter { !$0.properties.isEmojiPresentation && $0.value > 127 ? false : true }.map(String.init).joined().trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
-    // MARK: - Expanded: Feature Panels
+    private func floatingTabButton(tab: NotchFeatureTab) -> some View {
+        let isSelected = stateController.activeTab == tab
+        return Button(action: {
+            withAnimation(.easeInOut(duration: 0.2)) {
+                stateController.selectTab(tab)
+            }
+        }) {
+            ZStack {
+                Circle()
+                    .fill(isSelected ? Color.white.opacity(0.24) : Color.white.opacity(0.1))
+                    .frame(width: 28, height: 28)
+
+                if isSelected {
+                    Circle()
+                        .strokeBorder(Color.white.opacity(0.85), lineWidth: 1.5)
+                        .frame(width: 28, height: 28)
+                }
+
+                Image(systemName: tab.iconName)
+                    .font(.system(size: 11.5, weight: isSelected ? .bold : .medium))
+                    .foregroundColor(isSelected ? .white : .white.opacity(0.65))
+            }
+        }
+        .buttonStyle(.plain)
+        .help(tab.rawValue)
+    }
+
+    // MARK: - Expanded: Feature Panels (Full vertical space)
 
     private var expandedContent: some View {
-        VStack(spacing: 0) {
-            // Top Feature Navigation Dock
-            FeatureNavigationDock(stateController: stateController)
-                .padding(.top, contentTopPadding)
-                .padding(.bottom, 12)
+        Group {
+            switch stateController.activeTab {
+            case .aiChat:
+                AIChatPanelView(
+                    stateController: stateController,
+                    onSubmitPrompt: onSubmitPrompt,
+                    onReplyClarification: onReplyClarification,
+                    onToggleMic: onToggleMic
+                )
 
-            // Active Feature Panel — each panel owns its own internal padding (16pt cards, 24pt page)
-            Group {
-                switch stateController.activeTab {
-                case .aiChat:
-                    AIChatPanelView(
-                        stateController: stateController,
-                        onSubmitPrompt: onSubmitPrompt,
-                        onReplyClarification: onReplyClarification,
-                        onToggleMic: onToggleMic
-                    )
+            case .notes:
+                NotesPanelView(cardStore: cardStore)
 
-                case .notes:
-                    NotesPanelView(cardStore: cardStore)
+            case .schedule:
+                SchedulePanelView(
+                    cardStore: cardStore,
+                    onAddSchedule: onAddSchedule
+                )
 
-                case .schedule:
-                    SchedulePanelView(
-                        cardStore: cardStore,
-                        onAddSchedule: onAddSchedule
-                    )
+            case .music:
+                MusicLyricsPanelView()
 
-                case .music:
-                    MusicLyricsPanelView()
-
-                case .clipboard:
-                    ClipboardPanelView(cardStore: cardStore)
-                }
+            case .clipboard:
+                ClipboardPanelView(cardStore: cardStore)
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .transition(.opacity.animation(.easeInOut(duration: 0.2)))
         }
+        .padding(.top, contentTopPadding)
         .padding(.bottom, 8)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .transition(.opacity.animation(.easeInOut(duration: 0.2)))
     }
 
     // MARK: - Helpers
