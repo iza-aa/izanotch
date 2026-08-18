@@ -159,16 +159,21 @@ public final class MultiAIClient: @unchecked Sendable {
                 return MultiAIResponse(text: responseText, provider: .claudeCode, executionTimeMs: duration)
             } else if let claudeBin = Self.findExecutable(named: "claude") {
                 let acc = OutputAccumulator()
-                _ = try await sessionBridge.dispatchPromptInteractive(
+                try await sessionBridge.startInteractiveSession(
                     executable: claudeBin,
                     arguments: ["-p", text],
                     initialPrompt: text
                 ) { chunk in
                     acc.append(chunk)
                 }
+                let exitCode = try await sessionBridge.waitForInteractiveSessionExit()
                 let duration = Int(Date().timeIntervalSince(startTime) * 1000)
                 let cliOutput = acc.get()
-                return MultiAIResponse(text: cliOutput.isEmpty ? "Claude CLI execution complete." : cliOutput, provider: .claudeCode, executionTimeMs: duration)
+                return MultiAIResponse(
+                    text: cliOutput.isEmpty ? "Claude CLI execution complete (exit \(exitCode))." : cliOutput,
+                    provider: .claudeCode,
+                    executionTimeMs: duration
+                )
             } else {
                 throw AIClientError.missingAPIKey
             }
@@ -189,15 +194,20 @@ public final class MultiAIClient: @unchecked Sendable {
                 return MultiAIResponse(text: responseText, provider: .codex, executionTimeMs: duration)
             } else if let codexBin = Self.findExecutable(named: "codex") {
                 let acc = OutputAccumulator()
-                _ = try await sessionBridge.dispatchPromptInteractive(
+                try await sessionBridge.startInteractiveSession(
                     executable: codexBin,
                     arguments: ["exec"],
                     initialPrompt: text
                 ) { chunk in
                     acc.append(chunk)
                 }
+                let exitCode = try await sessionBridge.waitForInteractiveSessionExit()
                 let duration = Int(Date().timeIntervalSince(startTime) * 1000)
-                return MultiAIResponse(text: acc.get(), provider: .codex, executionTimeMs: duration)
+                return MultiAIResponse(
+                    text: acc.get().isEmpty ? "Codex execution complete (exit \(exitCode))." : acc.get(),
+                    provider: .codex,
+                    executionTimeMs: duration
+                )
             } else {
                 throw AIClientError.missingAPIKey
             }

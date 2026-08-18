@@ -168,13 +168,21 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     public func replyToActiveSession(_ response: String) {
         let activeDir = currentActiveSessionDir
         Task { @MainActor in
-            try? await ActiveSessionBridge.shared.sendClarificationResponse(response, sessionDirectory: activeDir)
-            self.stateController.clearClarification()
-            self.stateController.transition(to: .collapsed)
-            CardDataStore.shared.items.insert(
-                CardItem(title: "Answer Dispatched", subtitle: response, category: .prompts, badge: "Sent", timestamp: "Just now"),
-                at: 0
-            )
+            do {
+                try await ActiveSessionBridge.shared.sendClarificationResponse(response, sessionDirectory: activeDir)
+                self.stateController.clearClarification()
+                self.stateController.transition(to: .collapsed)
+                CardDataStore.shared.items.insert(
+                    CardItem(title: "Answer Dispatched", subtitle: response, category: .prompts, badge: "Sent", timestamp: "Just now"),
+                    at: 0
+                )
+            } catch {
+                self.stateController.systemStatusMessage = "❌ Dispatch error: \(error.localizedDescription)"
+                CardDataStore.shared.items.insert(
+                    CardItem(title: "Dispatch Failed", subtitle: error.localizedDescription, category: .prompts, badge: "Error", timestamp: "Just now"),
+                    at: 0
+                )
+            }
         }
     }
 
