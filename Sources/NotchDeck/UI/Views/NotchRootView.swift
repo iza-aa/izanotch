@@ -24,48 +24,23 @@ public struct NotchRootView: View {
 
     public var body: some View {
         ZStack {
-            // 1. Dynamic Liquid Glass Background with Bézier Notch Ears
+            // 1. Deep Matte Pitch Black Background (Zero Outer Borders)
             NotchEarShape(hasPhysicalNotch: hasPhysicalNotch, cornerRadius: 24, earRadius: 14)
-                .fill(
-                    LinearGradient(
-                        colors: [
-                            Color.black.opacity(0.98),
-                            Color(red: 0.05, green: 0.06, blue: 0.08).opacity(0.96)
-                        ],
-                        startPoint: .top,
-                        endPoint: .bottom
-                    )
-                )
-                .overlay(
-                    NotchEarShape(hasPhysicalNotch: hasPhysicalNotch, cornerRadius: 24, earRadius: 14)
-                        .stroke(
-                            LinearGradient(
-                                colors: [
-                                    Color.white.opacity(0.28),
-                                    Color.white.opacity(0.08),
-                                    Color.clear
-                                ],
-                                startPoint: .top,
-                                endPoint: .bottom
-                            ),
-                            lineWidth: 1
-                        )
-                )
-                .shadow(color: Color.black.opacity(0.5), radius: 16, x: 0, y: 8)
+                .fill(Color.black.opacity(0.98))
+                .shadow(color: Color.black.opacity(0.4), radius: 12, x: 0, y: 6)
 
-            // 2. Foreground Content Switched by State
+            // 2. Foreground Content
             VStack(spacing: 0) {
                 switch stateController.currentState {
                 case .collapsed:
                     HStack(spacing: 8) {
                         Circle()
-                            .fill(LinearGradient(colors: [.cyan, .blue], startPoint: .top, endPoint: .bottom))
-                            .frame(width: 8, height: 8)
-                            .shadow(color: .cyan.opacity(0.6), radius: 4)
+                            .fill(Color.white.opacity(0.8))
+                            .frame(width: 7, height: 7)
 
                         Text("NotchDeck")
-                            .font(.system(size: 11.5, weight: .semibold, design: .rounded))
-                            .foregroundColor(.white.opacity(0.9))
+                            .font(.system(size: 11.5, weight: .medium, design: .rounded))
+                            .foregroundColor(.white.opacity(0.85))
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
 
@@ -75,7 +50,7 @@ public struct NotchRootView: View {
                         HStack(spacing: 12) {
                             AudioWaveformView(levels: audioLevels)
 
-                            Text(stateController.commandPrompt.isEmpty ? "Mendengarkan ucapan Anda..." : stateController.commandPrompt)
+                            Text(stateController.commandPrompt.isEmpty ? "Listening..." : stateController.commandPrompt)
                                 .font(.system(size: 13, weight: .medium))
                                 .foregroundColor(.white)
                                 .lineLimit(1)
@@ -84,8 +59,8 @@ public struct NotchRootView: View {
 
                             Button(action: { stateController.transition(to: .collapsed) }) {
                                 Image(systemName: "stop.circle.fill")
-                                    .font(.system(size: 20))
-                                    .foregroundColor(.orange)
+                                    .font(.system(size: 18))
+                                    .foregroundColor(.white.opacity(0.6))
                             }
                             .buttonStyle(.plain)
                         }
@@ -97,45 +72,44 @@ public struct NotchRootView: View {
                     VStack {
                         Spacer(minLength: hasPhysicalNotch ? 30 : 4)
                         HStack(spacing: 10) {
-                            Image(systemName: "calendar.badge.clock")
-                                .font(.system(size: 14))
-                                .foregroundColor(.green)
+                            Image(systemName: "calendar")
+                                .font(.system(size: 13))
+                                .foregroundColor(.white.opacity(0.7))
 
                             Text(title)
-                                .font(.system(size: 12, weight: .semibold))
+                                .font(.system(size: 12, weight: .medium))
                                 .foregroundColor(.white)
                                 .lineLimit(1)
 
                             Spacer()
 
                             Text(countdown)
-                                .font(.system(size: 11, weight: .bold, design: .monospaced))
+                                .font(.system(size: 11, weight: .semibold, design: .monospaced))
                                 .padding(.horizontal, 8)
                                 .padding(.vertical, 3)
-                                .background(Capsule().fill(Color.green.opacity(0.2)))
-                                .foregroundColor(.green)
+                                .background(Capsule().fill(Color.white.opacity(0.12)))
+                                .foregroundColor(.white)
                         }
                         .padding(.horizontal, 16)
                         .padding(.bottom, 10)
                     }
 
                 case .expanded:
-                    VStack(spacing: 12) {
-                        // 1. Header Command Bar (Positioned safely below the notch cutout)
+                    VStack(spacing: 10) {
+                        // 1. Header Command Bar (Monochrome & Borderless)
                         HStack(spacing: 8) {
                             Menu {
-                                Button("✨ Antigravity") { stateController.activeAIModel = "Antigravity" }
-                                Button(" Claude Code") { stateController.activeAIModel = "Claude Code" }
+                                Button("Antigravity") { stateController.activeAIModel = "Antigravity" }
+                                Button("Claude Code") { stateController.activeAIModel = "Claude Code" }
                             } label: {
                                 HStack(spacing: 4) {
                                     Image(systemName: "sparkles")
-                                        .font(.system(size: 10, weight: .bold))
-                                        .foregroundColor(.cyan)
+                                        .font(.system(size: 10, weight: .medium))
                                     Text(stateController.activeAIModel)
-                                        .font(.system(size: 11, weight: .semibold))
+                                        .font(.system(size: 11, weight: .medium))
                                     Image(systemName: "chevron.down")
                                         .font(.system(size: 8, weight: .bold))
-                                        .foregroundColor(.white.opacity(0.6))
+                                        .foregroundColor(.white.opacity(0.4))
                                 }
                                 .padding(.horizontal, 8)
                                 .padding(.vertical, 5)
@@ -143,13 +117,13 @@ public struct NotchRootView: View {
                                     Capsule()
                                         .fill(Color.white.opacity(0.1))
                                 )
-                                .foregroundColor(.white)
+                                .foregroundColor(.white.opacity(0.9))
                             }
                             .menuStyle(.borderlessButton)
 
                             Image(systemName: "magnifyingglass")
                                 .font(.system(size: 11))
-                                .foregroundColor(.white.opacity(0.4))
+                                .foregroundColor(.white.opacity(0.35))
 
                             TextField("Ask AI or speak reminder...", text: $stateController.commandPrompt)
                                 .textFieldStyle(.plain)
@@ -158,10 +132,10 @@ public struct NotchRootView: View {
 
                             Button(action: { stateController.transition(to: .voiceActive) }) {
                                 Image(systemName: "mic.fill")
-                                    .font(.system(size: 12))
+                                    .font(.system(size: 11))
                                     .padding(6)
-                                    .background(Circle().fill(Color.cyan.opacity(0.2)))
-                                    .foregroundColor(.cyan)
+                                    .background(Circle().fill(Color.white.opacity(0.1)))
+                                    .foregroundColor(.white.opacity(0.85))
                             }
                             .buttonStyle(.plain)
                         }
@@ -170,23 +144,19 @@ public struct NotchRootView: View {
                         .background(
                             RoundedRectangle(cornerRadius: 14, style: .continuous)
                                 .fill(Color.white.opacity(0.06))
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                        .stroke(Color.white.opacity(0.1), lineWidth: 1)
-                                )
                         )
 
-                        // 2. Category Filter Bar (Image 1 Style)
+                        // 2. Category Filter Bar (Monochrome)
                         CategoryFilterBarView(store: cardStore)
 
-                        // 3. Horizontal Card Carousel (Image 1 & 2 Style)
+                        // 3. Horizontal Card Carousel (Monochrome)
                         CardCarouselView(store: cardStore)
 
                         Spacer(minLength: 0)
                     }
                     .padding(.top, contentTopPadding)
                     .padding(.horizontal, 16)
-                    .padding(.bottom, 14)
+                    .padding(.bottom, 12)
                 }
             }
         }

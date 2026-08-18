@@ -11,17 +11,11 @@ public struct AudioWaveformView: View {
         HStack(spacing: 3) {
             ForEach(0..<levels.count, id: \.self) { index in
                 RoundedRectangle(cornerRadius: 2)
-                    .fill(
-                        LinearGradient(
-                            colors: [Color.cyan, Color.blue],
-                            startPoint: .bottom,
-                            endPoint: .top
-                        )
-                    )
-                    .frame(width: 3, height: max(6, levels[index] * 24))
+                    .fill(Color.white.opacity(0.85))
+                    .frame(width: 2.5, height: max(6, levels[index] * 22))
                     .animation(.spring(response: 0.15, dampingFraction: 0.7), value: levels[index])
             }
         }
-        .frame(height: 26)
+        .frame(height: 24)
     }
 }
