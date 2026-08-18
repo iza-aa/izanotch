@@ -111,7 +111,7 @@ public struct AIChatPanelView: View {
                                     if msg.isUser {
                                         Spacer(minLength: 40)
                                         VStack(alignment: .trailing, spacing: 3) {
-                                            Text(msg.text)
+                                            Text(renderMarkdown(msg.text))
                                                 .font(.system(size: 12, design: .rounded))
                                                 .foregroundColor(.white)
                                                 .padding(.horizontal, 14)
@@ -134,7 +134,7 @@ public struct AIChatPanelView: View {
                                                     .font(.system(size: 9, design: .rounded))
                                                     .foregroundColor(.white.opacity(0.35))
                                             }
-                                            Text(msg.text)
+                                            Text(renderMarkdown(msg.text))
                                                 .font(.system(size: 12, design: .rounded))
                                                 .foregroundColor(.white.opacity(0.95))
                                                 .padding(.horizontal, 14)
@@ -260,5 +260,15 @@ public struct AIChatPanelView: View {
         // single source of truth and will append the user bubble itself.
         onSubmitPrompt?(text)
         stateController.commandPrompt = ""
+    }
+
+    private func renderMarkdown(_ text: String) -> AttributedString {
+        let options = AttributedString.MarkdownParsingOptions(
+            interpretedSyntax: .inlineOnlyPreservingWhitespace
+        )
+        if let attr = try? AttributedString(markdown: text, options: options) {
+            return attr
+        }
+        return AttributedString(text)
     }
 }
