@@ -54,9 +54,9 @@ public struct NotchRootView: View {
             if stateController.currentState == .hidden {
                 Color.clear.frame(width: 0, height: 0)
             } else if stateController.currentState == .expanded {
-                // EXPANDED: Floating Side Dock (DI LUAR TRAY SEBELAH KIRI) + Main Notch Tray
-                HStack(alignment: .top, spacing: 4) {
-                    // 1. FLOATING SIDE DOCK (Rapat di samping kiri notch tanpa shadow)
+                // EXPANDED: Floating Side Dock (Rapat menempel di samping kiri notch) + Main Notch Tray
+                HStack(alignment: .top, spacing: -14) {
+                    // 1. FLOATING SIDE DOCK (Rapat presisi di samping kiri bodi notch)
                     VStack(spacing: 7) {
                         floatingSideButton(id: "Antigravity", icon: "sparkles", color: .cyan, name: "Antigravity 2.0")
                         floatingSideButton(id: "Codex", icon: "cpu.fill", color: .green, name: "Codex ChatGPT")
@@ -72,6 +72,7 @@ public struct NotchRootView: View {
                             )
                     )
                     .padding(.top, contentTopPadding)
+                    .zIndex(2)
 
                     // 2. MAIN TRAY NOTCH (Pure black, zero shadow)
                     ZStack {
