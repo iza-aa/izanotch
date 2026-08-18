@@ -5,6 +5,8 @@ public enum TranscriptEvent: Equatable, Sendable {
     case userClarificationNeeded(question: String, options: [String]?)
     case toolExecuted(name: String, summary: String)
     case streamingContent(text: String)
+    /// A user message from the Antigravity conversation (USER_INPUT event)
+    case userMessage(text: String)
     case none
 }
 
@@ -47,8 +49,20 @@ public final class LiveTranscriptWatcher: @unchecked Sendable {
         let content = json["content"] as? String ?? ""
         let toolCalls = json["tool_calls"] as? [[String: Any]] ?? []
 
-        // If this is a user input event, do not treat it as agent planner completion
-        if type == "USER_INPUT" {
+        // USER_INPUT — show the user's message as a chat bubble in the notch
+        if type == "USER_INPUT" && status == "DONE" {
+            // Extract clean content (strip XML tags like <USER_REQUEST>...)
+            var userText = content
+            if let range = content.range(of: "<USER_REQUEST>") {
+                userText = String(content[range.upperBound...])
+                if let endRange = userText.range(of: "</USER_REQUEST>") {
+                    userText = String(userText[..<endRange.lowerBound])
+                }
+            }
+            let trimmed = userText.trimmingCharacters(in: .whitespacesAndNewlines)
+            if !trimmed.isEmpty {
+                return .userMessage(text: trimmed)
+            }
             return .none
         }
 
@@ -178,17 +192,31 @@ public final class LiveTranscriptWatcher: @unchecked Sendable {
 
     public func findAndWatchLatestSession(in brainDirectory: URL) {
         guard let onEvent = self.onEventCallback else { return }
-        if let contents = try? FileManager.default.contentsOfDirectory(at: brainDirectory, includingPropertiesForKeys: [.contentModificationDateKey]),
-           let latestSession = contents.filter({ $0.hasDirectoryPath && !$0.lastPathComponent.hasPrefix(".") }).sorted(by: {
-               let d1 = (try? $0.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate) ?? Date.distantPast
-               let d2 = (try? $1.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate) ?? Date.distantPast
-               return d1 > d2
-           }).first {
-            let logFile = latestSession.appendingPathComponent(".system_generated/logs/transcript.jsonl")
-            if currentWatchedURL != logFile && FileManager.default.fileExists(atPath: logFile.path) {
-                onActiveSessionChanged?(latestSession)
-                startWatching(fileURL: logFile, onEvent: onEvent)
-            }
+        guard let contents = try? FileManager.default.contentsOfDirectory(
+            at: brainDirectory,
+            includingPropertiesForKeys: [.contentModificationDateKey]
+        ) else { return }
+
+        // Only consider UUID-named session folders that actually contain a transcript.
+        // This excludes auxiliary folders like "tempmediaStorage" which have a newer mtime
+        // but no transcript.jsonl, causing the watcher to get stuck on a dead-end path.
+        let sessionFolders = contents.filter {
+            $0.hasDirectoryPath
+            && !$0.lastPathComponent.hasPrefix(".")
+            && $0.lastPathComponent != "tempmediaStorage"
+            && FileManager.default.fileExists(atPath: $0.appendingPathComponent(".system_generated/logs/transcript.jsonl").path)
+        }
+
+        guard let latestSession = sessionFolders.sorted(by: {
+            let d1 = (try? $0.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate) ?? Date.distantPast
+            let d2 = (try? $1.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate) ?? Date.distantPast
+            return d1 > d2
+        }).first else { return }
+
+        let logFile = latestSession.appendingPathComponent(".system_generated/logs/transcript.jsonl")
+        if currentWatchedURL != logFile {
+            onActiveSessionChanged?(latestSession)
+            startWatching(fileURL: logFile, onEvent: onEvent)
         }
     }
 

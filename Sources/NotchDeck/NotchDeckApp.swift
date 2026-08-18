@@ -73,6 +73,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             onSessionChanged: { [weak self] sessionDir in
                 Task { @MainActor [weak self] in
                     self?.currentActiveSessionDir = sessionDir
+                    // Register active conversation with agentapi bridge so the notch
+                    // can send messages directly into the Antigravity 2.0 session.
+                    await AntigravityAgentAPI.shared.setActiveConversation(sessionDirectory: sessionDir)
                 }
             },
             onEvent: { [weak self] event in
@@ -85,6 +88,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func handleTranscriptEvent(_ event: TranscriptEvent) {
         switch event {
+        case .userMessage(let text):
+            // User's own message from the Antigravity conversation — show as a right-side bubble
+            stateController.appendChatMessage(sender: "You", text: text, isUser: true)
+
         case .taskCompleted(let summary):
             VoiceOverSpeaker.shared.speak(text: "Antigravity: Task selesai.", language: "id-ID")
             stateController.appendChatMessage(sender: "Antigravity", text: "✅ " + summary, isUser: false)
@@ -238,24 +245,25 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 case "Codex":
                     provider = .codex
                 default:
-                    // "Antigravity" observer mode: route to Gemini → Claude → error.
-                    // The live transcript from Antigravity 2.0 is displayed automatically by
-                    // LiveTranscriptWatcher — no subprocess stdin injection needed.
-                    if let key = geminiKey, !key.isEmpty {
-                        provider = .gemini
-                    } else if let key = claudeKey, !key.isEmpty {
-                        provider = .claudeCode
-                    } else {
-                        // No API keys configured and no subprocess — explain the observer model.
+                    // "Antigravity" mode: send directly into the active Antigravity 2.0
+                    // conversation via agentapi send-message. The response will appear
+                    // automatically via LiveTranscriptWatcher reading the updated transcript.
+                    do {
+                        try await AntigravityAgentAPI.shared.sendMessage(prompt)
+                        // Don't append a response bubble — the real reply will stream in
+                        // via the transcript watcher as Antigravity processes the message.
+                    } catch AntigravityAgentAPI.AgentAPIError.noActiveConversation {
                         self.stateController.appendChatMessage(
                             sender: "Antigravity",
-                            text: "ℹ️ Notch ini memantau sesi Antigravity 2.0 yang aktif secara real-time. Pesan dari Antigravity akan muncul otomatis di sini. Untuk chat mandiri, konfigurasikan Gemini/Claude API key di Pengaturan.",
+                            text: "⚠️ Belum ada sesi Antigravity yang terdeteksi. Buka Antigravity 2.0 dan mulai percakapan, lalu pesan kamu akan tersambung otomatis.",
                             isUser: false
                         )
-                        self.stateController.commandPrompt = ""
-                        self.stateController.clearClarification()
-                        return
+                    } catch {
+                        self.stateController.systemStatusMessage = "❌ agentapi error: \(error.localizedDescription)"
                     }
+                    self.stateController.commandPrompt = ""
+                    self.stateController.clearClarification()
+                    return
                 }
 
                 do {
