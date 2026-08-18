@@ -6,6 +6,20 @@ public struct AIChatPanelView: View {
     public var onReplyClarification: (@MainActor (String) -> Void)?
     public var onToggleMic: (@MainActor () -> Void)?
 
+    public struct SupportedAIModel: Identifiable, Sendable {
+        public let id: String
+        public let name: String
+        public let shortName: String
+        public let iconName: String
+        public let accentColor: Color
+    }
+
+    private let availableModels: [SupportedAIModel] = [
+        SupportedAIModel(id: "Antigravity", name: "Antigravity 2.0", shortName: "Antigravity", iconName: "sparkles", accentColor: Color.cyan),
+        SupportedAIModel(id: "Codex", name: "Codex ChatGPT", shortName: "Codex", iconName: "cpu.fill", accentColor: Color.green),
+        SupportedAIModel(id: "Claude Code", name: "Claude Code", shortName: "Claude", iconName: "terminal.fill", accentColor: Color.orange)
+    ]
+
     public init(
         stateController: NotchStateController,
         onSubmitPrompt: (@MainActor (String) -> Void)? = nil,
@@ -48,29 +62,48 @@ public struct AIChatPanelView: View {
                 .padding(.horizontal, 28)
             }
 
-            // 1. Model Header Bar
-            HStack(spacing: 8) {
-                Menu {
-                    Button("Antigravity") { stateController.activeAIModel = "Antigravity" }
-                    Button("Claude Code") { stateController.activeAIModel = "Claude Code" }
-                    Button("Gemini Flash") { stateController.activeAIModel = "Gemini Flash" }
-                    Button("Codex") { stateController.activeAIModel = "Codex" }
-                } label: {
-                    HStack(spacing: 4) {
-                        Image(systemName: "sparkles")
-                            .font(.system(size: 10, weight: .semibold))
-                        Text(stateController.activeAIModel)
-                            .font(.system(size: 11, weight: .semibold, design: .rounded))
-                        Image(systemName: "chevron.down")
-                            .font(.system(size: 8, weight: .bold))
-                            .foregroundColor(.white.opacity(0.4))
+            // 1. Floating Circular App Switcher Bar (Left-side notch floating buttons)
+            HStack(spacing: 10) {
+                // Floating Circular App Switcher Dock
+                HStack(spacing: 6) {
+                    ForEach(availableModels) { model in
+                        let isSelected = stateController.activeAIModel == model.id
+                        Button(action: {
+                            withAnimation(.spring(response: 0.28, dampingFraction: 0.75)) {
+                                stateController.activeAIModel = model.id
+                            }
+                        }) {
+                            ZStack {
+                                Circle()
+                                    .fill(isSelected ? model.accentColor.opacity(0.25) : Color.white.opacity(0.08))
+                                    .frame(width: 28, height: 28)
+
+                                if isSelected {
+                                    Circle()
+                                        .strokeBorder(model.accentColor.opacity(0.7), lineWidth: 1.5)
+                                        .frame(width: 28, height: 28)
+                                }
+
+                                Image(systemName: model.iconName)
+                                    .font(.system(size: 11.5, weight: isSelected ? .bold : .medium))
+                                    .foregroundColor(isSelected ? model.accentColor : .white.opacity(0.55))
+                            }
+                        }
+                        .buttonStyle(.plain)
+                        .help(model.name)
                     }
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .background(Capsule().fill(Color.white.opacity(0.12)))
-                    .foregroundColor(.white)
                 }
-                .menuStyle(.borderlessButton)
+                .padding(3)
+                .background(
+                    Capsule()
+                        .fill(Color.white.opacity(0.07))
+                )
+
+                // Active Model Label
+                Text(availableModels.first(where: { $0.id == stateController.activeAIModel })?.name ?? stateController.activeAIModel)
+                    .font(.system(size: 11.5, weight: .semibold, design: .rounded))
+                    .foregroundColor(.white.opacity(0.92))
+                    .transition(.opacity)
 
                 Spacer()
 
@@ -83,7 +116,7 @@ public struct AIChatPanelView: View {
                         .foregroundColor(.white.opacity(0.7))
                 }
             }
-            .padding(.horizontal, 28)   // spacious page inset per design reference
+            .padding(.horizontal, 28)
 
             // 2. Chat Stream or Empty State (Fills available vertical space)
             if stateController.chatMessages.isEmpty && stateController.pendingClarification == nil {
