@@ -82,41 +82,41 @@ public struct AIChatPanelView: View {
                         .foregroundColor(.white.opacity(0.7))
                 }
             }
-            .padding(.horizontal, 24)   // page inset per design reference
+            .padding(.horizontal, 28)   // spacious page inset per design reference
 
             // 2. Chat Stream or Empty State (Fills available vertical space)
             if stateController.chatMessages.isEmpty && stateController.pendingClarification == nil {
                 // Honest empty state centered in the middle of tray
-                VStack(spacing: 6) {
+                VStack(spacing: 8) {
                     Spacer()
                     Image(systemName: "message.badge.waveform")
-                        .font(.system(size: 24))
+                        .font(.system(size: 26))
                         .foregroundColor(.white.opacity(0.25))
                     Text("Tidak ada pesan AI")
-                        .font(.system(size: 11.5, weight: .medium, design: .rounded))
-                        .foregroundColor(.white.opacity(0.4))
+                        .font(.system(size: 12, weight: .medium, design: .rounded))
+                        .foregroundColor(.white.opacity(0.45))
                     Text("Ketik di bawah untuk mulai.")
-                        .font(.system(size: 10, design: .rounded))
-                        .foregroundColor(.white.opacity(0.25))
+                        .font(.system(size: 10.5, design: .rounded))
+                        .foregroundColor(.white.opacity(0.28))
                     Spacer()
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 ScrollViewReader { proxy in
                     ScrollView(.vertical, showsIndicators: false) {
-                        VStack(alignment: .leading, spacing: 8) {
+                        VStack(alignment: .leading, spacing: 10) {
                             ForEach(stateController.chatMessages) { msg in
                                 HStack {
                                     if msg.isUser {
                                         Spacer(minLength: 40)
-                                        VStack(alignment: .trailing, spacing: 2) {
+                                        VStack(alignment: .trailing, spacing: 3) {
                                             Text(msg.text)
-                                                .font(.system(size: 11.5, design: .rounded))
+                                                .font(.system(size: 12, design: .rounded))
                                                 .foregroundColor(.white)
-                                                .padding(.horizontal, 12)
-                                                .padding(.vertical, 7)
+                                                .padding(.horizontal, 14)
+                                                .padding(.vertical, 8)
                                                 .background(
-                                                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                                    RoundedRectangle(cornerRadius: 14, style: .continuous)
                                                         .fill(Color.white.opacity(0.2))
                                                 )
                                             Text(msg.timestamp)
@@ -124,22 +124,22 @@ public struct AIChatPanelView: View {
                                                 .foregroundColor(.white.opacity(0.4))
                                         }
                                     } else {
-                                        VStack(alignment: .leading, spacing: 2) {
+                                        VStack(alignment: .leading, spacing: 3) {
                                             HStack(spacing: 4) {
                                                 Text(msg.sender)
-                                                    .font(.system(size: 9.5, weight: .semibold, design: .rounded))
-                                                    .foregroundColor(.white.opacity(0.7))
+                                                    .font(.system(size: 10, weight: .semibold, design: .rounded))
+                                                    .foregroundColor(.white.opacity(0.75))
                                                 Text("• " + msg.timestamp)
                                                     .font(.system(size: 9, design: .rounded))
                                                     .foregroundColor(.white.opacity(0.35))
                                             }
                                             Text(msg.text)
-                                                .font(.system(size: 11.5, design: .rounded))
+                                                .font(.system(size: 12, design: .rounded))
                                                 .foregroundColor(.white.opacity(0.95))
-                                                .padding(.horizontal, 12)
-                                                .padding(.vertical, 7)
+                                                .padding(.horizontal, 14)
+                                                .padding(.vertical, 8)
                                                 .background(
-                                                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                                    RoundedRectangle(cornerRadius: 14, style: .continuous)
                                                         .fill(Color.white.opacity(0.08))
                                                 )
                                         }
@@ -208,7 +208,7 @@ public struct AIChatPanelView: View {
                             withAnimation { proxy.scrollTo(last.id, anchor: .bottom) }
                         }
                     }
-                    .padding(.horizontal, 24)
+                    .padding(.horizontal, 28)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
@@ -217,7 +217,7 @@ public struct AIChatPanelView: View {
             HStack(spacing: 8) {
                 TextField("Reply to \(stateController.activeAIModel)...", text: $stateController.commandPrompt)
                     .textFieldStyle(.plain)
-                    .font(.system(size: 12, design: .rounded))
+                    .font(.system(size: 12.5, design: .rounded))
                     .foregroundColor(.white)
                     .onSubmit {
                         submitReply()
@@ -242,13 +242,13 @@ public struct AIChatPanelView: View {
                 .buttonStyle(.plain)
             }
             .padding(.horizontal, 16)   // input inset per design reference
-            .padding(.vertical, 11)      // input vertical inset per design reference
+            .padding(.vertical, 12)      // input vertical inset per design reference
             .background(
                 RoundedRectangle(cornerRadius: 16, style: .continuous)
                     .fill(Color.white.opacity(0.08))
             )
-            .padding(.horizontal, 24)    // outer margin aligning with panels
-            .padding(.bottom, 6)
+            .padding(.horizontal, 28)    // outer margin aligning with panels
+            .padding(.bottom, 8)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }

@@ -40,7 +40,7 @@ public struct NotchGeometryCalculator: Sendable {
     // MARK: - Content Insets
 
     public static func contentTopInset(hasPhysicalNotch: Bool) -> CGFloat {
-        return hasPhysicalNotch ? defaultNotchHeight + 10.0 : 14.0
+        return hasPhysicalNotch ? defaultNotchHeight + 22.0 : 18.0
     }
 
     // MARK: - Dimensions (static fallback — no NSScreen required)
@@ -58,17 +58,17 @@ public struct NotchGeometryCalculator: Sendable {
         case .hidden:
             return (0, 0)
         case .collapsed:
-            // Collapsed pill aligns to hardware notch area + wings (100pt each side)
-            let w: CGFloat = hasPhysicalNotch ? fallbackNotchW + 200 : 160
+            // Collapsed pill aligns to hardware notch area + wings (115pt each side)
+            let w: CGFloat = hasPhysicalNotch ? fallbackNotchW + 230 : 160
             let h: CGFloat = hasPhysicalNotch ? defaultNotchHeight : 32
             return (w, h)
         case .voiceActive:
-            return (380, 64 + notchH)
+            return (400, 64 + notchH)
         case .liveActivity:
-            return (340, 48 + notchH)
+            return (360, 48 + notchH)
         case .expanded:
-            let expandedW = hasPhysicalNotch ? max(540, fallbackNotchW + (2 * wingExtension)) : 520
-            return (expandedW, 330 + notchH)
+            let expandedW = hasPhysicalNotch ? max(620, fallbackNotchW + 420) : 580
+            return (expandedW, 400 + notchH)
         }
     }
 
@@ -114,9 +114,9 @@ public struct NotchGeometryCalculator: Sendable {
 
         case .expanded:
             // Expanded: width and height have ample room for all components comfortably
-            let rawW = hasNotch ? max(580, notchW + (2 * wingExtension)) : 560
+            let rawW = hasNotch ? max(620, notchW + 420) : 580
             let w = min(rawW, screenFrame.width - 48)
-            let h: CGFloat = 360 + notchH
+            let h: CGFloat = 400 + notchH
             return NSRect(x: screenFrame.midX - (w / 2.0), y: screenFrame.maxY - h, width: w, height: h)
         }
     }

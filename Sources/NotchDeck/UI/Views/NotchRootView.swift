@@ -205,7 +205,7 @@ public struct NotchRootView: View {
             // Top Feature Navigation Dock
             FeatureNavigationDock(stateController: stateController)
                 .padding(.top, contentTopPadding)
-                .padding(.bottom, 8)
+                .padding(.bottom, 12)
 
             // Active Feature Panel — each panel owns its own internal padding (16pt cards, 24pt page)
             Group {
