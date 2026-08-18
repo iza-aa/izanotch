@@ -81,7 +81,7 @@ public struct AIChatPanelView: View {
                         .foregroundColor(.white.opacity(0.6))
                 }
             }
-            .padding(.horizontal, 12)   // was 4
+            .padding(.horizontal, 24)   // page inset per design reference
 
             // 2. Chat Stream or Empty State
             if stateController.chatMessages.isEmpty && stateController.pendingClarification == nil {
@@ -239,12 +239,13 @@ public struct AIChatPanelView: View {
                 }
                 .buttonStyle(.plain)
             }
-            .padding(.horizontal, 12)   // was 10
-            .padding(.vertical, 7)
+            .padding(.horizontal, 16)   // input inset per design reference
+            .padding(.vertical, 12)      // input vertical inset per design reference
             .background(
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
                     .fill(Color.white.opacity(0.08))
             )
+            .padding(.horizontal, 8)    // outer margin
         }
     }
 

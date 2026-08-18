@@ -30,7 +30,7 @@ public struct ClipboardPanelView: View {
                     .font(.system(size: 10))
                     .foregroundColor(.white.opacity(0.4))
             }
-            .padding(.horizontal, 4)
+            .padding(.horizontal, 24)   // page inset per design reference
 
             // 2. Clipboard Items List
             if clipboardItems.isEmpty {
@@ -39,9 +39,12 @@ public struct ClipboardPanelView: View {
                     Image(systemName: "doc.on.clipboard")
                         .font(.system(size: 20))
                         .foregroundColor(.white.opacity(0.2))
-                    Text("Clipboard history is empty. Copy text or files to stage here.")
-                        .font(.system(size: 11))
+                    Text("Clipboard history is empty")
+                        .font(.system(size: 11, weight: .medium, design: .rounded))
                         .foregroundColor(.white.opacity(0.4))
+                    Text("Copy text or files to stage here.")
+                        .font(.system(size: 10, design: .rounded))
+                        .foregroundColor(.white.opacity(0.28))
                     Spacer(minLength: 16)
                 }
                 .frame(maxHeight: 120)
@@ -56,7 +59,7 @@ public struct ClipboardPanelView: View {
 
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text(item.title)
-                                        .font(.system(size: 11.5, weight: .medium))
+                                        .font(.system(size: 11.5, weight: .medium, design: .rounded))
                                         .foregroundColor(.white)
                                         .lineLimit(1)
 
@@ -86,14 +89,15 @@ public struct ClipboardPanelView: View {
                                 }
                                 .buttonStyle(.plain)
                             }
-                            .padding(8)
+                            .padding(16)   // card inset per design reference
                             .background(
-                                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                RoundedRectangle(cornerRadius: 16, style: .continuous)
                                     .fill(Color.white.opacity(0.08))
                             )
                         }
                     }
                     .padding(.vertical, 2)
+                    .padding(.horizontal, 24)   // page inset for cards
                 }
                 .frame(maxHeight: 120)
             }
@@ -104,16 +108,17 @@ public struct ClipboardPanelView: View {
                     .font(.system(size: 11))
                     .foregroundColor(.white.opacity(0.6))
                 Text("Drop files here to stage or drag to other apps")
-                    .font(.system(size: 10.5))
+                    .font(.system(size: 10.5, design: .rounded))
                     .foregroundColor(.white.opacity(0.6))
                 Spacer()
             }
-            .padding(.horizontal, 10)
-            .padding(.vertical, 7)
+            .padding(.horizontal, 16)   // matches input horizontal inset
+            .padding(.vertical, 12)      // matches input vertical inset
             .background(
-                RoundedRectangle(cornerRadius: 10)
+                RoundedRectangle(cornerRadius: 16)
                     .strokeBorder(Color.white.opacity(0.15), style: StrokeStyle(lineWidth: 1, dash: [4]))
             )
+            .padding(.horizontal, 8)
         }
     }
 }

@@ -37,14 +37,14 @@ public struct MusicLyricsPanelView: View {
                 .font(.system(size: 11))
                 .foregroundColor(.white.opacity(0.4))
                 .multilineTextAlignment(.center)
-                .padding(.horizontal, 12)
+                .padding(.horizontal, 24)
 
             Button(action: {
                 Task { await musicService.fetchCurrentTrack() }
             }) {
                 Label("Coba Lagi", systemImage: "arrow.clockwise")
                     .font(.system(size: 10.5, weight: .medium))
-                    .padding(.horizontal, 12)
+                    .padding(.horizontal, 24)
                     .padding(.vertical, 5)
                     .background(Capsule().fill(Color.white.opacity(0.12)))
                     .foregroundColor(.white.opacity(0.8))
@@ -121,7 +121,7 @@ public struct MusicLyricsPanelView: View {
                 .buttonStyle(.plain)
             }
         }
-        .padding(.horizontal, 12)
+        .padding(.horizontal, 24)
 
         // 2. Lyrics / No-lyrics state
         VStack(alignment: .leading, spacing: 4) {
@@ -134,13 +134,13 @@ public struct MusicLyricsPanelView: View {
                     .foregroundColor(.white.opacity(0.5))
                 Spacer()
             }
-            .padding(.horizontal, 12)
+            .padding(.horizontal, 24)
 
             if track.lyrics.isEmpty {
                 Text("Lyrics tidak tersedia")
                     .font(.system(size: 11))
                     .foregroundColor(.white.opacity(0.3))
-                    .padding(.horizontal, 12)
+                    .padding(.horizontal, 24)
                     .padding(.vertical, 8)
             } else {
                 ScrollView(.vertical, showsIndicators: false) {
@@ -154,7 +154,7 @@ public struct MusicLyricsPanelView: View {
                         }
                     }
                     .padding(.vertical, 4)
-                    .padding(.horizontal, 12)
+                    .padding(.horizontal, 24)
                 }
                 .frame(maxHeight: 90)
             }

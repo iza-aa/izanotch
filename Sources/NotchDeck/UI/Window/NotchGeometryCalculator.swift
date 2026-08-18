@@ -5,24 +5,29 @@ public struct NotchGeometryCalculator: Sendable {
     /// Default notch height used as fallback when `safeAreaInsets` cannot be read.
     public static let defaultNotchHeight: CGFloat = 36.0
 
+    /// Wing extension on each side of the notch for expanded state.
+    /// Per NotchKit reference: expandedWidth = notchWidth + 2 * wingExtension
+    public static let wingExtension: CGFloat = 180
+
     // MARK: - Hardware Notch Metrics
 
-    /// Returns the physical notch width on the given screen by reading `auxiliaryTopLeftArea`
-    /// and `auxiliaryTopRightArea`.  Falls back to `200` if the auxiliary areas are unavailable.
+    /// Returns the physical notch width (camera region only) by reading auxiliary screen areas.
+    /// Falls back to 150pt if auxiliary areas are unavailable (older API or non-notch display).
     @MainActor
     public static func notchWidth(for screen: NSScreen) -> CGFloat {
         if #available(macOS 12.0, *) {
             let leftWidth  = screen.auxiliaryTopLeftArea?.width  ?? 0
             let rightWidth = screen.auxiliaryTopRightArea?.width ?? 0
             let notch = screen.frame.width - leftWidth - rightWidth
-            if notch > 50 && notch < 500 {   // sanity check – real notches are 100-230 pt
+            // Sanity check: real MacBook notches are approx 100–230pt wide
+            if notch > 80 && notch < 300 {
                 return notch
             }
         }
-        return 200   // safe fallback for older APIs or Rosetta
+        return 150  // documented fallback per NotchKit spec
     }
 
-    /// True inset: space between notch bottom and menu-bar bottom (i.e. how tall the notch is).
+    /// Returns the physical notch height from safeAreaInsets.top.
     @MainActor
     public static func notchHeight(for screen: NSScreen) -> CGFloat {
         if #available(macOS 12.0, *) {
@@ -38,35 +43,40 @@ public struct NotchGeometryCalculator: Sendable {
         return hasPhysicalNotch ? defaultNotchHeight + 10.0 : 14.0
     }
 
-    // MARK: - Dimensions
+    // MARK: - Dimensions (static fallback — no NSScreen required)
 
-    /// Dimensions for a given state without access to an NSScreen (unit-test compatible).
-    /// Uses static fallback values.  Prefer `dimensions(for:screen:)` when a real screen is available.
+    /// Returns dimensions using static fallback values.
+    /// Use `calculateFrame(for:screen:)` when a real screen is available for hardware accuracy.
     public static func dimensions(
         for state: NotchState,
         hasPhysicalNotch: Bool = false
     ) -> (width: CGFloat, height: CGFloat) {
         let notchH: CGFloat = hasPhysicalNotch ? defaultNotchHeight : 0
+        // Fallback notch width used when no NSScreen is available
+        let fallbackNotchW: CGFloat = hasPhysicalNotch ? 150 : 0
 
         switch state {
         case .hidden:
             return (0, 0)
         case .collapsed:
-            // Collapsed pill sits exactly over the notch area
-            return (hasPhysicalNotch ? 200 : 160, hasPhysicalNotch ? 36 : 32)
+            // Collapsed pill aligns to hardware notch area + small wings
+            let w: CGFloat = hasPhysicalNotch ? fallbackNotchW + 180 : 160
+            let h: CGFloat = hasPhysicalNotch ? defaultNotchHeight : 32
+            return (w, h)
         case .voiceActive:
             return (360, 60 + notchH)
         case .liveActivity:
             return (320, 44 + notchH)
         case .expanded:
-            // Expanded uses a generous width so content has room; never wider than screen
-            return (480, 250 + notchH)
+            // Expanded = notchWidth + 2 * wingExtension per NotchKit spec
+            let expandedW = fallbackNotchW + (2 * wingExtension)
+            return (expandedW, 250 + notchH)
         }
     }
 
-    // MARK: - Frame Calculation
+    // MARK: - Frame Calculation (preferred — uses actual NSScreen)
 
-    /// Preferred: calculates the correct window frame using actual screen data.
+    /// Calculates the precise window frame using hardware notch metrics from NSScreen.
     @MainActor
     public static func calculateFrame(
         for state: NotchState,
@@ -78,7 +88,7 @@ public struct NotchGeometryCalculator: Sendable {
         }
 
         let hasNotch = hasPhysicalNotch(screen: screen)
-        let notchW   = hasNotch ? notchWidth(for: screen)  : 160
+        let notchW   = hasNotch ? notchWidth(for: screen)  : 0
         let notchH   = hasNotch ? notchHeight(for: screen) : 0
 
         switch state {
@@ -86,8 +96,10 @@ public struct NotchGeometryCalculator: Sendable {
             return NSRect(x: screenFrame.midX, y: screenFrame.maxY, width: 0, height: 0)
 
         case .collapsed:
-            // Collapsed window must sit exactly over the hardware notch
-            let w = hasNotch ? notchW : 160
+            // Collapsed: window spans notchWidth + wings on both sides
+            // This makes the collapsed pill align exactly with the physical notch
+            let wingW: CGFloat = hasNotch ? 90 : 0   // small wing per side
+            let w = hasNotch ? notchW + (2 * wingW) : 160
             let h = hasNotch ? notchH : 32
             let x = screenFrame.midX - (w / 2.0)
             let y = hasNotch ? screenFrame.maxY - h : screenFrame.maxY - h - 10
@@ -96,35 +108,24 @@ public struct NotchGeometryCalculator: Sendable {
         case .voiceActive:
             let w: CGFloat = 360
             let h: CGFloat = 60 + notchH
-            return NSRect(
-                x: screenFrame.midX - (w / 2.0),
-                y: screenFrame.maxY - h,
-                width: w, height: h
-            )
+            return NSRect(x: screenFrame.midX - (w / 2.0), y: screenFrame.maxY - h, width: w, height: h)
 
         case .liveActivity:
             let w: CGFloat = 320
             let h: CGFloat = 44 + notchH
-            return NSRect(
-                x: screenFrame.midX - (w / 2.0),
-                y: screenFrame.maxY - h,
-                width: w, height: h
-            )
+            return NSRect(x: screenFrame.midX - (w / 2.0), y: screenFrame.maxY - h, width: w, height: h)
 
         case .expanded:
-            // Cap expanded width at min(480, screenFrame.width - 48) to avoid overflow
-            let w = min(480, screenFrame.width - 48)
+            // Expanded = notchWidth + 2 * wingExtension, capped to screen width - 48
+            let rawW = hasNotch ? notchW + (2 * wingExtension) : 480
+            let w = min(rawW, screenFrame.width - 48)
             let h: CGFloat = 250 + notchH
-            return NSRect(
-                x: screenFrame.midX - (w / 2.0),
-                y: screenFrame.maxY - h,
-                width: w, height: h
-            )
+            return NSRect(x: screenFrame.midX - (w / 2.0), y: screenFrame.maxY - h, width: w, height: h)
         }
     }
 
-    /// Compatibility overload for call-sites that only pass `screenFrame` + `hasPhysicalNotch`
-    /// (used by unit tests and legacy code paths).
+    /// Compatibility overload for call-sites that only have screenFrame + hasPhysicalNotch.
+    /// Used by unit tests and legacy code paths.
     public static func calculateFrame(
         for state: NotchState,
         screenFrame: NSRect,
@@ -133,12 +134,10 @@ public struct NotchGeometryCalculator: Sendable {
         if state == .hidden {
             return NSRect(x: screenFrame.midX, y: screenFrame.maxY, width: 0, height: 0)
         }
-
         let (width, height) = dimensions(for: state, hasPhysicalNotch: hasPhysicalNotch)
         let originX = screenFrame.midX - (width / 2.0)
         let topOffset: CGFloat = hasPhysicalNotch ? 0 : 10.0
         let originY = screenFrame.maxY - height - topOffset
-
         return NSRect(x: originX, y: originY, width: width, height: height)
     }
 

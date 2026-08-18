@@ -6,6 +6,8 @@ public enum AIClientError: Error, LocalizedError, Sendable {
     case decodingError(String)
     case timeout
     case missingAPIKey
+    /// No interactive agent subprocess is running. Dispatch cannot be confirmed.
+    case sessionUnavailable
 
     public var errorDescription: String? {
         switch self {
@@ -14,6 +16,7 @@ public enum AIClientError: Error, LocalizedError, Sendable {
         case .decodingError(let err): return "Failed to decode response: \(err)"
         case .timeout: return "AI service request timed out."
         case .missingAPIKey: return "API key is not configured in Keychain."
+        case .sessionUnavailable: return "No active Antigravity session. Start the agent first, then try again."
         }
     }
 }

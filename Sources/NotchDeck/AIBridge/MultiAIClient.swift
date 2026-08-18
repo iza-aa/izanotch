@@ -221,14 +221,29 @@ public final class MultiAIClient: @unchecked Sendable {
             }
 
         case .antigravity:
-            // Forward prompt directly into active Antigravity session transcript
-            try await sessionBridge.sendClarificationResponse(text, sessionDirectory: activeBrainSessionDir)
+            // Only dispatch if an interactive subprocess session is running.
+            // We cannot guarantee delivery without an active subprocess to accept stdin.
+            guard await sessionBridge.isInteractiveSessionActive else {
+                // Per handoff rule: do not report delivery without confirmation.
+                // Surface the failure clearly so the UI can show "No active session".
+                throw AIClientError.sessionUnavailable
+            }
+            // Attempt to send via subprocess stdin.
+            // sendInput() returns .sent (pipe write OK) or throws on write failure.
+            let result = try await sessionBridge.sendInput(text)
             let duration = Int(Date().timeIntervalSince(startTime) * 1000)
-            return MultiAIResponse(
-                text: "Prompt '\(text)' dispatched to active Antigravity session.",
-                provider: .antigravity,
-                executionTimeMs: duration
-            )
+            switch result {
+            case .sent:
+                // Pipe write succeeded. Note: this does NOT confirm the agent consumed the message.
+                // The response text is intentionally honest about delivery state.
+                return MultiAIResponse(
+                    text: "⏳ Sent to Antigravity session — awaiting agent response.",
+                    provider: .antigravity,
+                    executionTimeMs: duration
+                )
+            case .noSession:
+                throw AIClientError.sessionUnavailable
+            }
         }
     }
 }

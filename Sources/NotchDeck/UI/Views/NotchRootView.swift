@@ -6,6 +6,8 @@ public struct NotchRootView: View {
     public var hoverMonitor: NotchHoverMonitor?
     public var audioLevels: [CGFloat]
     public var hasPhysicalNotch: Bool
+    /// The physical hardware notch width (camera region), used to keep camera gap clear.
+    public var hardwareNotchWidth: CGFloat
     public var onSubmitPrompt: (@MainActor (String) -> Void)?
     public var onReplyClarification: (@MainActor (String) -> Void)?
     public var onToggleMic: (@MainActor () -> Void)?
@@ -18,6 +20,7 @@ public struct NotchRootView: View {
         hoverMonitor: NotchHoverMonitor? = nil,
         audioLevels: [CGFloat] = [0.2, 0.5, 0.8, 0.6, 0.3, 0.7],
         hasPhysicalNotch: Bool = true,
+        hardwareNotchWidth: CGFloat = 150,
         onSubmitPrompt: (@MainActor (String) -> Void)? = nil,
         onReplyClarification: (@MainActor (String) -> Void)? = nil,
         onToggleMic: (@MainActor () -> Void)? = nil,
@@ -29,6 +32,7 @@ public struct NotchRootView: View {
         self.hoverMonitor = hoverMonitor
         self.audioLevels = audioLevels
         self.hasPhysicalNotch = hasPhysicalNotch
+        self.hardwareNotchWidth = hardwareNotchWidth
         self.onSubmitPrompt = onSubmitPrompt
         self.onReplyClarification = onReplyClarification
         self.onToggleMic = onToggleMic
@@ -40,16 +44,27 @@ public struct NotchRootView: View {
         NotchGeometryCalculator.contentTopInset(hasPhysicalNotch: hasPhysicalNotch)
     }
 
+    /// Camera gap width per NotchKit spec: notchWidth - 30 (for camera lens clearance)
+    private var cameraGapWidth: CGFloat {
+        max(hardwareNotchWidth - 30, 60)
+    }
+
     public var body: some View {
         Group {
             if stateController.currentState == .hidden {
                 Color.clear.frame(width: 0, height: 0)
             } else {
                 ZStack {
-                    // 1. Matte Pitch Black Notch Background
-                    NotchEarShape(hasPhysicalNotch: hasPhysicalNotch, cornerRadius: 24, earRadius: 14)
-                        .fill(Color.black.opacity(0.98))
-                        .shadow(color: Color.black.opacity(0.45), radius: 14, x: 0, y: 7)
+                    // 1. Black notch background — merges with hardware
+                    //    Use NotchShape with correct radii per NotchKit spec.
+                    //    Collapsed: top=6 bottom=14 / Expanded: top=19 bottom=24
+                    NotchShape(
+                        topCornerRadius: isExpanded ? 19 : 6,
+                        bottomCornerRadius: isExpanded ? 24 : 14
+                    )
+                    .fill(Color.black)
+                    // Shadow: subtle downward-only per design reference (opacity 0.03–0.08, no x offset)
+                    .shadow(color: Color.black.opacity(0.06), radius: 8, x: 0, y: 4)
 
                     // 2. Foreground Content
                     Group {
@@ -58,115 +73,16 @@ public struct NotchRootView: View {
                             EmptyView()
 
                         case .collapsed:
-                            Button(action: {
-                                stateController.transition(to: .expanded)
-                            }) {
-                                HStack(spacing: 8) {
-                                    Circle()
-                                        .fill(Color.white.opacity(0.85))
-                                        .frame(width: 7, height: 7)
-
-                                    Text("NotchDeck")
-                                        .font(.system(size: 11.5, weight: .medium, design: .rounded))
-                                        .foregroundColor(.white.opacity(0.9))
-                                }
-                                .padding(.horizontal, 16)
-                                .padding(.top, hasPhysicalNotch ? 10 : 0)
-                                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                                .contentShape(Rectangle())
-                            }
-                            .buttonStyle(.plain)
+                            collapsedContent
 
                         case .voiceActive:
-                            VStack {
-                                Spacer(minLength: hasPhysicalNotch ? 34 : 4)
-                                HStack(spacing: 12) {
-                                    AudioWaveformView(levels: audioLevels)
-
-                                    Text(stateController.commandPrompt.isEmpty ? "Listening..." : stateController.commandPrompt)
-                                        .font(.system(size: 13, weight: .medium))
-                                        .foregroundColor(.white)
-                                        .lineLimit(1)
-
-                                    Spacer()
-
-                                    Button(action: {
-                                        onStopMic?()
-                                    }) {
-                                        Image(systemName: "stop.circle.fill")
-                                            .font(.system(size: 20))
-                                            .foregroundColor(.white.opacity(0.75))
-                                    }
-                                    .buttonStyle(.plain)
-                                }
-                                .padding(.horizontal, 16)
-                                .padding(.bottom, 12)
-                            }
+                            voiceActiveContent
 
                         case .liveActivity(let title, let countdown):
-                            VStack {
-                                Spacer(minLength: hasPhysicalNotch ? 30 : 4)
-                                HStack(spacing: 10) {
-                                    Image(systemName: "calendar")
-                                        .font(.system(size: 13))
-                                        .foregroundColor(.white.opacity(0.7))
-
-                                    Text(title)
-                                        .font(.system(size: 12, weight: .medium))
-                                        .foregroundColor(.white)
-                                        .lineLimit(1)
-
-                                    Spacer()
-
-                                    Text(countdown)
-                                        .font(.system(size: 11, weight: .semibold, design: .monospaced))
-                                        .padding(.horizontal, 8)
-                                        .padding(.vertical, 3)
-                                        .background(Capsule().fill(Color.white.opacity(0.12)))
-                                        .foregroundColor(.white)
-                                }
-                                .padding(.horizontal, 16)
-                                .padding(.bottom, 10)
-                            }
+                            liveActivityContent(title: title, countdown: countdown)
 
                         case .expanded:
-                            VStack(spacing: 10) {
-                                // 1. Top Feature Navigation Dock
-                                FeatureNavigationDock(stateController: stateController)
-
-                                // 2. Active Feature Panel
-                                Group {
-                                    switch stateController.activeTab {
-                                    case .aiChat:
-                                        AIChatPanelView(
-                                            stateController: stateController,
-                                            onSubmitPrompt: onSubmitPrompt,
-                                            onReplyClarification: onReplyClarification,
-                                            onToggleMic: onToggleMic
-                                        )
-
-                                    case .notes:
-                                        NotesPanelView(cardStore: cardStore)
-
-                                    case .schedule:
-                                        SchedulePanelView(
-                                            cardStore: cardStore,
-                                            onAddSchedule: onAddSchedule
-                                        )
-
-                                    case .music:
-                                        MusicLyricsPanelView()
-
-                                    case .clipboard:
-                                        ClipboardPanelView(cardStore: cardStore)
-                                    }
-                                }
-                                .transition(.opacity)
-
-                                Spacer(minLength: 0)
-                            }
-                            .padding(.top, contentTopPadding)
-                            .padding(.bottom, 10)
+                            expandedContent
                         }
                     }
                 }
@@ -184,6 +100,147 @@ public struct NotchRootView: View {
                 }
             }
         }
+    }
+
+    // MARK: - Collapsed: Left Wing + Camera Gap + Right Wing (NotchKit spec)
+
+    private var collapsedContent: some View {
+        Button(action: { stateController.transition(to: .expanded) }) {
+            HStack(spacing: 0) {
+                // LEFT WING — status dot + app name (~90px)
+                HStack(spacing: 4) {
+                    Circle()
+                        .fill(Color.white.opacity(0.8))
+                        .frame(width: 5, height: 5)
+                    Text("NotchDeck")
+                        .font(.system(size: 9, weight: .medium, design: .rounded))
+                        .foregroundColor(.white.opacity(0.85))
+                }
+                .frame(maxWidth: .infinity, alignment: .center)
+
+                // CAMERA GAP — never render content here
+                Color.clear.frame(width: cameraGapWidth)
+
+                // RIGHT WING — active model indicator (~90px)
+                HStack(spacing: 4) {
+                    Circle()
+                        .fill(Color.green.opacity(0.9))
+                        .frame(width: 5, height: 5)
+                    Text(stateController.activeAIModel.prefix(4))
+                        .font(.system(size: 8, weight: .semibold, design: .monospaced))
+                        .foregroundColor(.white.opacity(0.7))
+                }
+                .frame(maxWidth: .infinity, alignment: .center)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+    }
+
+    // MARK: - Voice Active
+
+    private var voiceActiveContent: some View {
+        VStack {
+            Spacer(minLength: hasPhysicalNotch ? 34 : 4)
+            HStack(spacing: 12) {
+                AudioWaveformView(levels: audioLevels)
+
+                Text(stateController.commandPrompt.isEmpty ? "Listening..." : stateController.commandPrompt)
+                    .font(.system(size: 13, weight: .medium, design: .rounded))
+                    .foregroundColor(.white)
+                    .lineLimit(1)
+
+                Spacer()
+
+                Button(action: { onStopMic?() }) {
+                    Image(systemName: "stop.circle.fill")
+                        .font(.system(size: 20))
+                        .foregroundColor(.white.opacity(0.75))
+                }
+                .buttonStyle(.plain)
+            }
+            .padding(.horizontal, 24)
+            .padding(.bottom, 12)
+        }
+    }
+
+    // MARK: - Live Activity
+
+    private func liveActivityContent(title: String, countdown: String) -> some View {
+        VStack {
+            Spacer(minLength: hasPhysicalNotch ? 30 : 4)
+            HStack(spacing: 10) {
+                Image(systemName: "calendar")
+                    .font(.system(size: 13))
+                    .foregroundColor(.white.opacity(0.7))
+
+                Text(title)
+                    .font(.system(size: 12, weight: .medium, design: .rounded))
+                    .foregroundColor(.white)
+                    .lineLimit(1)
+
+                Spacer()
+
+                Text(countdown)
+                    .font(.system(size: 11, weight: .semibold, design: .monospaced))
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 3)
+                    .background(Capsule().fill(Color.white.opacity(0.12)))
+                    .foregroundColor(.white)
+            }
+            .padding(.horizontal, 24)
+            .padding(.bottom, 10)
+        }
+    }
+
+    // MARK: - Expanded: Feature Panels
+
+    private var expandedContent: some View {
+        VStack(spacing: 0) {
+            // Top Feature Navigation Dock
+            FeatureNavigationDock(stateController: stateController)
+                .padding(.top, contentTopPadding)
+                .padding(.bottom, 8)
+
+            // Active Feature Panel — each panel owns its own internal padding (16pt cards, 24pt page)
+            Group {
+                switch stateController.activeTab {
+                case .aiChat:
+                    AIChatPanelView(
+                        stateController: stateController,
+                        onSubmitPrompt: onSubmitPrompt,
+                        onReplyClarification: onReplyClarification,
+                        onToggleMic: onToggleMic
+                    )
+
+                case .notes:
+                    NotesPanelView(cardStore: cardStore)
+
+                case .schedule:
+                    SchedulePanelView(
+                        cardStore: cardStore,
+                        onAddSchedule: onAddSchedule
+                    )
+
+                case .music:
+                    MusicLyricsPanelView()
+
+                case .clipboard:
+                    ClipboardPanelView(cardStore: cardStore)
+                }
+            }
+            .transition(.opacity.animation(.easeInOut(duration: 0.2)))
+
+            Spacer(minLength: 0)
+        }
+        .padding(.bottom, 12)
+    }
+
+    // MARK: - Helpers
+
+    private var isExpanded: Bool {
+        stateController.currentState == .expanded
     }
 
     private func widthForState(_ state: NotchState) -> CGFloat {

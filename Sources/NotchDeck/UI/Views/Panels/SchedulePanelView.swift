@@ -31,7 +31,7 @@ public struct SchedulePanelView: View {
                     .font(.system(size: 10))
                     .foregroundColor(.white.opacity(0.4))
             }
-            .padding(.horizontal, 12)
+            .padding(.horizontal, 24)   // page inset per design reference
 
             // 2. Schedule List
             if scheduleItems.isEmpty {
@@ -40,9 +40,12 @@ public struct SchedulePanelView: View {
                     Image(systemName: "calendar.badge.clock")
                         .font(.system(size: 20))
                         .foregroundColor(.white.opacity(0.2))
-                    Text("No upcoming reminders. Add one below.")
-                        .font(.system(size: 11))
+                    Text("No upcoming reminders")
+                        .font(.system(size: 11, weight: .medium, design: .rounded))
                         .foregroundColor(.white.opacity(0.4))
+                    Text("Add one below.")
+                        .font(.system(size: 10, design: .rounded))
+                        .foregroundColor(.white.opacity(0.28))
                     Spacer(minLength: 16)
                 }
                 .frame(maxHeight: 120)
@@ -57,12 +60,12 @@ public struct SchedulePanelView: View {
 
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text(item.title)
-                                        .font(.system(size: 11.5, weight: .medium))
+                                        .font(.system(size: 11.5, weight: .medium, design: .rounded))
                                         .foregroundColor(.white)
                                         .lineLimit(1)
 
                                     Text(item.subtitle)
-                                        .font(.system(size: 9.5))
+                                        .font(.system(size: 9.5, design: .rounded))
                                         .foregroundColor(.white.opacity(0.5))
                                 }
 
@@ -84,14 +87,15 @@ public struct SchedulePanelView: View {
                                 }
                                 .buttonStyle(.plain)
                             }
-                            .padding(8)
+                            .padding(16)   // card inset per design reference
                             .background(
-                                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                RoundedRectangle(cornerRadius: 16, style: .continuous)
                                     .fill(Color.white.opacity(0.08))
                             )
                         }
                     }
                     .padding(.vertical, 2)
+                    .padding(.horizontal, 24)  // page inset for cards
                 }
                 .frame(maxHeight: 120)
             }
@@ -100,7 +104,7 @@ public struct SchedulePanelView: View {
             HStack(spacing: 8) {
                 TextField("Add reminder (e.g. 'Meeting at 3pm')...", text: $newScheduleText)
                     .textFieldStyle(.plain)
-                    .font(.system(size: 12))
+                    .font(.system(size: 12, weight: .medium, design: .rounded))
                     .foregroundColor(.white)
                     .onSubmit {
                         submitSchedule()
@@ -115,12 +119,13 @@ public struct SchedulePanelView: View {
                     .buttonStyle(.plain)
                 }
             }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 7)
+            .padding(.horizontal, 16)   // input inset per design reference
+            .padding(.vertical, 12)      // input vertical inset per design reference
             .background(
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
                     .fill(Color.white.opacity(0.08))
             )
+            .padding(.horizontal, 8)
         }
     }
 

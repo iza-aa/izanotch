@@ -8,12 +8,7 @@ public final class CardDataStore: ObservableObject {
     @Published public var items: [CardItem] = []
 
     public init() {
-        self.items = [
-            CardItem(title: "struct ContentView: View", subtitle: "SwiftUI Root Component", category: .clipboard, badge: "Swift", timestamp: "2m ago"),
-            CardItem(title: "Meeting Tim Backend", subtitle: "Jam 14:00 (10 menit sebelum)", category: .schedule, badge: "13:50", timestamp: "5m ago"),
-            CardItem(title: "Antigravity Code Review", subtitle: "Generated unit tests for auth", category: .prompts, badge: "AI Done", timestamp: "12m ago"),
-            CardItem(title: "Assets Staging", subtitle: "Drop screenshots or assets here", category: .dropzone, badge: "Drop Target", timestamp: "Ready")
-        ]
+        self.items = []
     }
 
     public func filteredItems() -> [CardItem] {

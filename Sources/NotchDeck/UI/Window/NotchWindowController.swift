@@ -21,10 +21,10 @@ public final class NotchWindowController: NSWindowController {
         self.hoverMonitor = hoverMonitor
         let screen = NSScreen.main ?? NSScreen.screens.first!
         let hasNotch = NotchGeometryCalculator.hasPhysicalNotch(screen: screen)
+        let notchW   = NotchGeometryCalculator.notchWidth(for: screen)
         let initialFrame = NotchGeometryCalculator.calculateFrame(
             for: stateController.currentState,
-            screenFrame: screen.frame,
-            hasPhysicalNotch: hasNotch
+            screen: screen
         )
 
         let panel = NotchPanel(contentRect: initialFrame)
@@ -34,6 +34,7 @@ public final class NotchWindowController: NSWindowController {
             stateController: stateController,
             hoverMonitor: hoverMonitor,
             hasPhysicalNotch: hasNotch,
+            hardwareNotchWidth: notchW,
             onSubmitPrompt: onSubmitPrompt,
             onReplyClarification: onReplyClarification,
             onToggleMic: onToggleMic,

@@ -19,7 +19,7 @@ public struct FeatureNavigationDock: View {
 
                         if stateController.activeTab == tab {
                             Text(tab.rawValue)
-                                .font(.system(size: 11, weight: .semibold))
+                                .font(.system(size: 11, weight: .semibold, design: .rounded))
                                 .transition(.opacity.combined(with: .scale(scale: 0.95)))
                         }
                     }

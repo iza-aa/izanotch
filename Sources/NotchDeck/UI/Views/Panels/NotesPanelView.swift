@@ -27,7 +27,7 @@ public struct NotesPanelView: View {
                     .font(.system(size: 10))
                     .foregroundColor(.white.opacity(0.4))
             }
-            .padding(.horizontal, 12)
+            .padding(.horizontal, 24)    // page inset per design reference
 
             // 2. Notes List
             if noteItems.isEmpty {
@@ -36,9 +36,12 @@ public struct NotesPanelView: View {
                     Image(systemName: "note.text")
                         .font(.system(size: 20))
                         .foregroundColor(.white.opacity(0.2))
-                    Text("No notes yet. Type below to create one.")
-                        .font(.system(size: 11))
+                    Text("No notes yet")
+                        .font(.system(size: 11, weight: .medium, design: .rounded))
                         .foregroundColor(.white.opacity(0.4))
+                    Text("Type below to create one.")
+                        .font(.system(size: 10, design: .rounded))
+                        .foregroundColor(.white.opacity(0.28))
                     Spacer(minLength: 16)
                 }
                 .frame(maxHeight: 120)
@@ -49,7 +52,7 @@ public struct NotesPanelView: View {
                             HStack(alignment: .top, spacing: 8) {
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text(item.title)
-                                        .font(.system(size: 11.5, weight: .medium))
+                                        .font(.system(size: 11.5, weight: .medium, design: .rounded))
                                         .foregroundColor(.white)
                                         .lineLimit(2)
 
@@ -82,23 +85,24 @@ public struct NotesPanelView: View {
                                 }
                                 .buttonStyle(.plain)
                             }
-                            .padding(8)
+                            .padding(16)   // card inset per design reference
                             .background(
-                                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                RoundedRectangle(cornerRadius: 16, style: .continuous)
                                     .fill(Color.white.opacity(0.08))
                             )
                         }
                     }
                     .padding(.vertical, 2)
+                    .padding(.horizontal, 24)  // page inset for cards
                 }
                 .frame(maxHeight: 120)
             }
 
             // 3. Dedicated Bottom Note Input Bar
             HStack(spacing: 8) {
-                TextField("+ Write note or paste snippet...", text: $newNoteText)
+                TextField("Write note or paste snippet...", text: $newNoteText)
                     .textFieldStyle(.plain)
-                    .font(.system(size: 12))
+                    .font(.system(size: 12, weight: .medium, design: .rounded))
                     .foregroundColor(.white)
                     .onSubmit {
                         addNote()
@@ -113,12 +117,13 @@ public struct NotesPanelView: View {
                     .buttonStyle(.plain)
                 }
             }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 7)
+            .padding(.horizontal, 16)   // input inset per design reference
+            .padding(.vertical, 12)      // input vertical inset per design reference
             .background(
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                RoundedRectangle(cornerRadius: 16, style: .continuous)  // 16pt continuous per design ref
                     .fill(Color.white.opacity(0.08))
             )
+            .padding(.horizontal, 8)    // slight outer margin so input doesn't span full width
         }
     }
 

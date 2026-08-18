@@ -9,15 +9,25 @@ public enum ActiveSessionError: Error, LocalizedError, Sendable {
     public var errorDescription: String? {
         switch self {
         case .sessionNotRunning:
-            return "No active interactive AI session is currently running."
+            return "No active Antigravity session is running. Start the agent first."
         case .writeFailed(let msg):
-            return "Failed to write input to active session: \(msg)"
+            return "Failed to deliver input to active session: \(msg)"
         case .executionFailed(let code):
             return "Interactive session exited with error code \(code)."
         case .sessionDirectoryNotFound:
             return "Active session directory or transcript could not be located."
         }
     }
+}
+
+/// Delivery result for a `sendInput()` call.
+/// Callers must inspect this and NOT treat `.unconfirmed` as success.
+public enum DispatchResult: Sendable {
+    /// Input was written to the subprocess stdin pipe.
+    /// Note: this does NOT confirm the agent consumed or processed the message.
+    case sent
+    /// No interactive session is running. Input was NOT delivered anywhere.
+    case noSession
 }
 
 public actor ActiveSessionBridge {
@@ -31,6 +41,8 @@ public actor ActiveSessionBridge {
     }
 
     public init() {}
+
+    // MARK: - Subprocess Lifecycle
 
     public func startInteractiveSession(
         executable: String,
@@ -60,80 +72,58 @@ public actor ActiveSessionBridge {
         }
     }
 
+    // MARK: - Input Dispatch (Subprocess stdin only)
+
+    /// Sends text to the active subprocess stdin.
+    ///
+    /// Returns `.sent` if the write to the stdin pipe succeeded.
+    /// Returns `.noSession` if no subprocess is running — the caller MUST surface this as an error.
+    ///
+    /// IMPORTANT: `.sent` means the pipe write succeeded, NOT that the agent received or processed
+    /// the message. Do not report delivery as confirmed based on this result alone.
+    public func sendInput(_ text: String) async throws -> DispatchResult {
+        guard isSessionRunning else {
+            return .noSession
+        }
+
+        do {
+            try activeSubprocess.sendInput(text + "\n")
+            return .sent
+        } catch {
+            throw ActiveSessionError.writeFailed("Subprocess stdin write failed: \(error.localizedDescription)")
+        }
+    }
+
+    // MARK: - Legacy compatibility (session clarification path)
+
+    /// Delivers a clarification response to the active subprocess only.
+    ///
+    /// - Throws `ActiveSessionError.sessionNotRunning` if no subprocess is active.
+    /// - Does NOT write to transcript.jsonl — transcript is an output/history stream,
+    ///   not an input channel. Writing to it does not deliver input to the agent.
     public func sendClarificationResponse(
         _ response: String,
         sessionDirectory: URL? = nil
     ) async throws {
-        // Pre-flight check: validate session directory upfront if provided
-        var targetLogFile: URL? = nil
+        // Validate session directory if provided (for informational purposes only — not for writing)
         if let sessionDir = sessionDirectory {
             guard FileManager.default.fileExists(atPath: sessionDir.path) else {
                 throw ActiveSessionError.sessionDirectoryNotFound
             }
-            let logFile = sessionDir.appendingPathComponent(".system_generated/logs/transcript.jsonl")
-            guard FileManager.default.fileExists(atPath: logFile.path) else {
-                throw ActiveSessionError.sessionDirectoryNotFound
-            }
-            targetLogFile = logFile
         }
 
-        guard isSessionRunning || targetLogFile != nil else {
+        guard isSessionRunning else {
             throw ActiveSessionError.sessionNotRunning
         }
 
-        var dispatched = false
-
-        // 1. Write to interactive subprocess stdin
-        if isSessionRunning {
-            do {
-                try activeSubprocess.sendInput(response + "\n")
-                dispatched = true
-            } catch {
-                throw ActiveSessionError.writeFailed("Subprocess stdin error: \(error.localizedDescription)")
-            }
-        }
-
-        // 2. Write to session transcript log (if session directory was validated)
-        if let logFile = targetLogFile {
-            guard let handle = try? FileHandle(forWritingTo: logFile) else {
-                throw ActiveSessionError.writeFailed("Cannot open transcript file for writing.")
-            }
-
-            let eventDict: [String: Any] = [
-                "step_index": Int(Date().timeIntervalSince1970),
-                "source": "USER_EXPLICIT",
-                "type": "USER_INPUT",
-                "status": "DONE",
-                "content": response
-            ]
-
-            guard let jsonData = try? JSONSerialization.data(withJSONObject: eventDict, options: []),
-                  var jsonString = String(data: jsonData, encoding: .utf8) else {
-                try? handle.close()
-                throw ActiveSessionError.writeFailed("Failed to encode user input event JSON.")
-            }
-
-            jsonString += "\n"
-            guard let lineData = jsonString.data(using: .utf8) else {
-                try? handle.close()
-                throw ActiveSessionError.writeFailed("Failed to convert JSON to UTF-8 data.")
-            }
-
-            do {
-                _ = try? handle.seekToEnd()
-                try handle.write(contentsOf: lineData)
-                try? handle.close()
-                dispatched = true
-            } catch {
-                try? handle.close()
-                throw ActiveSessionError.writeFailed("Failed writing to transcript: \(error.localizedDescription)")
-            }
-        }
-
-        if !dispatched {
-            throw ActiveSessionError.sessionNotRunning
+        do {
+            try activeSubprocess.sendInput(response + "\n")
+        } catch {
+            throw ActiveSessionError.writeFailed("Subprocess stdin error: \(error.localizedDescription)")
         }
     }
+
+    // MARK: - Session Control
 
     public func closeInteractiveInput() {
         if isSessionRunning {
