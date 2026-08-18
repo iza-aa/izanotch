@@ -55,39 +55,36 @@ public struct NotchRootView: View {
                 Color.clear.frame(width: 0, height: 0)
             } else if stateController.currentState == .expanded {
                 // EXPANDED: Floating Side Dock (DI LUAR TRAY SEBELAH KIRI) + Main Notch Tray
-                HStack(alignment: .top, spacing: 12) {
-                    // 1. FLOATING SIDE DOCK (DI LUAR NOTCH SEBELAH KIRI)
-                    VStack(spacing: 9) {
+                HStack(alignment: .top, spacing: 4) {
+                    // 1. FLOATING SIDE DOCK (Rapat di samping kiri notch tanpa shadow)
+                    VStack(spacing: 7) {
                         floatingSideButton(id: "Antigravity", icon: "sparkles", color: .cyan, name: "Antigravity 2.0")
                         floatingSideButton(id: "Codex", icon: "cpu.fill", color: .green, name: "Codex ChatGPT")
                         floatingSideButton(id: "Claude Code", icon: "terminal.fill", color: .orange, name: "Claude Code")
                     }
-                    .padding(6)
+                    .padding(4)
                     .background(
                         Capsule()
-                            .fill(Color.black.opacity(0.9))
+                            .fill(Color.black)
                             .overlay(
                                 Capsule()
-                                    .strokeBorder(Color.white.opacity(0.15), lineWidth: 1)
+                                    .strokeBorder(Color.white.opacity(0.12), lineWidth: 0.8)
                             )
-                            .shadow(color: Color.black.opacity(0.35), radius: 10, x: -2, y: 4)
                     )
-                    .padding(.top, contentTopPadding + 4)
+                    .padding(.top, contentTopPadding)
 
-                    // 2. MAIN TRAY NOTCH
+                    // 2. MAIN TRAY NOTCH (Pure black, zero shadow)
                     ZStack {
                         NotchShape(
                             topCornerRadius: 19,
                             bottomCornerRadius: 24
                         )
                         .fill(Color.black)
-                        .shadow(color: Color.black.opacity(0.08), radius: 8, x: 0, y: 4)
 
                         expandedContent
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
-                .padding(.leading, 8)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .clipped()
                 .onHover { isHovered in
@@ -98,14 +95,13 @@ public struct NotchRootView: View {
                     }
                 }
             } else {
-                // COLLAPSED / LIVE ACTIVITY / VOICE ACTIVE
+                // COLLAPSED / LIVE ACTIVITY / VOICE ACTIVE (Zero shadow)
                 ZStack {
                     NotchShape(
                         topCornerRadius: 6,
                         bottomCornerRadius: 14
                     )
                     .fill(Color.black)
-                    .shadow(color: Color.black.opacity(0.06), radius: 8, x: 0, y: 4)
 
                     Group {
                         switch stateController.currentState {
@@ -146,16 +142,16 @@ public struct NotchRootView: View {
             ZStack {
                 Circle()
                     .fill(isSelected ? color.opacity(0.3) : Color.white.opacity(0.1))
-                    .frame(width: 32, height: 32)
+                    .frame(width: 28, height: 28)
 
                 if isSelected {
                     Circle()
                         .strokeBorder(color.opacity(0.85), lineWidth: 1.5)
-                        .frame(width: 32, height: 32)
+                        .frame(width: 28, height: 28)
                 }
 
                 Image(systemName: icon)
-                    .font(.system(size: 13, weight: isSelected ? .bold : .medium))
+                    .font(.system(size: 11.5, weight: isSelected ? .bold : .medium))
                     .foregroundColor(isSelected ? color : .white.opacity(0.65))
             }
         }
