@@ -13,7 +13,7 @@ public struct NotchGeometryCalculator: Sendable {
 
         switch state {
         case .collapsed:
-            return (hasPhysicalNotch ? 200 : 180, hasPhysicalNotch ? 36 : 32)
+            return (hasPhysicalNotch ? 200 : 160, hasPhysicalNotch ? 36 : 32)
         case .voiceActive:
             return (360, 60 + notchOffset)
         case .liveActivity:

@@ -26,12 +26,12 @@ struct NotchGeometryCalculatorTests {
         #expect(frame.maxY == mockScreenFrame.maxY)
     }
 
-    @Test("External screen without notch adds 10px top margin")
+    @Test("External screen without notch adds 10px top margin and 160x32 floating pill")
     func testExternalScreenFloatingPill() {
         let mockScreenFrame = NSRect(x: 0, y: 0, width: 1920, height: 1080)
         let frame = NotchGeometryCalculator.calculateFrame(for: .collapsed, screenFrame: mockScreenFrame, hasPhysicalNotch: false)
         
-        #expect(frame.width == 180)
+        #expect(frame.width == 160)
         #expect(frame.height == 32)
         #expect(frame.maxY == mockScreenFrame.maxY - 10)
     }
