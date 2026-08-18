@@ -12,6 +12,8 @@ public struct NotchGeometryCalculator: Sendable {
         let notchOffset: CGFloat = hasPhysicalNotch ? defaultNotchHeight : 0
 
         switch state {
+        case .hidden:
+            return (0, 0)
         case .collapsed:
             return (hasPhysicalNotch ? 200 : 160, hasPhysicalNotch ? 36 : 32)
         case .voiceActive:
@@ -19,7 +21,7 @@ public struct NotchGeometryCalculator: Sendable {
         case .liveActivity:
             return (320, 44 + notchOffset)
         case .expanded:
-            return (560, 240 + notchOffset)
+            return (560, 250 + notchOffset)
         }
     }
 
@@ -28,6 +30,10 @@ public struct NotchGeometryCalculator: Sendable {
         screenFrame: NSRect,
         hasPhysicalNotch: Bool
     ) -> NSRect {
+        if state == .hidden {
+            return NSRect(x: screenFrame.midX, y: screenFrame.maxY, width: 0, height: 0)
+        }
+
         let (width, height) = dimensions(for: state, hasPhysicalNotch: hasPhysicalNotch)
         let originX = screenFrame.midX - (width / 2.0)
         let topOffset: CGFloat = hasPhysicalNotch ? 0 : 10.0

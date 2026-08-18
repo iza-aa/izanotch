@@ -23,6 +23,14 @@ public final class CardDataStore: ObservableObject {
         return items.filter { $0.category == selectedCategory }
     }
 
+    public func addItem(_ item: CardItem) {
+        items.insert(item, at: 0)
+    }
+
+    public func removeItem(id: String) {
+        items.removeAll { $0.id == id }
+    }
+
     public func addClipboardItem(text: String) {
         let analysis = ClipboardManager.analyze(text: text)
         let newItem = CardItem(

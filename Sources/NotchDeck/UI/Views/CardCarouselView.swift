@@ -66,6 +66,7 @@ public struct CardCarouselView: View {
     private func badgeIcon(for category: CardCategory) -> String {
         switch category {
         case .all: return "square.grid.2x2"
+        case .notes: return "note.text"
         case .clipboard: return "doc.on.clipboard"
         case .prompts: return "sparkles"
         case .schedule: return "clock"

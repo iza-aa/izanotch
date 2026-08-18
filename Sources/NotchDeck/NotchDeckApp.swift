@@ -34,6 +34,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             },
             onStopMic: { [weak self] in
                 self?.stopMicrophone()
+            },
+            onAddSchedule: { [weak self] scheduleText in
+                self?.addSchedulePrompt(scheduleText)
             }
         )
         self.windowController = wc
@@ -84,6 +87,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         switch event {
         case .taskCompleted(let summary):
             VoiceOverSpeaker.shared.speak(text: "Antigravity: Task selesai.", language: "id-ID")
+            stateController.appendChatMessage(sender: "Antigravity", text: "✅ " + summary, isUser: false)
             stateController.transition(to: .liveActivity(title: "✨ Task Done", countdown: "Complete"))
             CardDataStore.shared.items.insert(
                 CardItem(title: "Antigravity Task Done", subtitle: summary, category: .prompts, badge: "AI Done", timestamp: "Just now"),
@@ -92,7 +96,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         case .userClarificationNeeded(let question, let options):
             VoiceOverSpeaker.shared.speak(text: "Antigravity membutuhkan respon Anda.", language: "id-ID")
+            stateController.appendChatMessage(sender: "Antigravity", text: "❓ " + question, isUser: false)
             stateController.setClarification(question: question, options: options)
+            stateController.selectTab(.aiChat)
             stateController.transition(to: .expanded)
             CardDataStore.shared.items.insert(
                 CardItem(title: "Needs Clarification", subtitle: question, category: .prompts, badge: "Action", timestamp: "Just now"),
@@ -103,7 +109,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             stateController.transition(to: .liveActivity(title: "⚙️ \(name)", countdown: summary.isEmpty ? "Running" : summary))
 
         case .streamingContent(let text):
-            stateController.commandPrompt = text
+            stateController.appendChatMessage(sender: "Antigravity", text: text, isUser: false)
 
         case .none:
             break
@@ -170,8 +176,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         Task { @MainActor in
             do {
                 try await ActiveSessionBridge.shared.sendClarificationResponse(response, sessionDirectory: activeDir)
+                self.stateController.appendChatMessage(sender: "You", text: response, isUser: true)
                 self.stateController.clearClarification()
-                self.stateController.transition(to: .collapsed)
                 CardDataStore.shared.items.insert(
                     CardItem(title: "Answer Dispatched", subtitle: response, category: .prompts, badge: "Sent", timestamp: "Just now"),
                     at: 0
@@ -186,12 +192,20 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
+    public func addSchedulePrompt(_ prompt: String) {
+        let geminiKey = KeychainManager.load(key: "notchdeck.gemini.apikey")
+        Task { @MainActor in
+            if let detail = await ScheduleCoordinator.shared.processUtterance(prompt, apiKey: geminiKey) {
+                self.alarmMonitor?.scheduleAlarm(for: detail)
+            } else {
+                CardDataStore.shared.addItem(CardItem(title: prompt, subtitle: "Schedule", category: .schedule, badge: "Upcoming"))
+            }
+        }
+    }
+
     public func submitPrompt(_ rawText: String) {
         let prompt = rawText.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !prompt.isEmpty else {
-            stateController.transition(to: .collapsed)
-            return
-        }
+        guard !prompt.isEmpty else { return }
 
         let model = stateController.activeAIModel
         let geminiKey = KeychainManager.load(key: "notchdeck.gemini.apikey")
@@ -199,12 +213,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let openAiKey = KeychainManager.load(key: "notchdeck.openai.apikey")
         let activeDir = currentActiveSessionDir
 
+        stateController.appendChatMessage(sender: "You", text: prompt, isUser: true)
+
         Task { @MainActor in
             let lower = prompt.lowercased()
             if lower.contains("meeting") || lower.contains("ingatkan") || lower.contains("jadwal") || lower.contains("jam ") {
-                if let detail = await ScheduleCoordinator.shared.processUtterance(prompt, apiKey: geminiKey) {
-                    self.alarmMonitor?.scheduleAlarm(for: detail)
-                }
+                self.addSchedulePrompt(prompt)
             } else {
                 let provider: AIProvider
                 switch model {
@@ -222,6 +236,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                     openAiApiKey: openAiKey,
                     activeBrainSessionDir: activeDir
                 ) {
+                    self.stateController.appendChatMessage(sender: model, text: res.text, isUser: false)
                     CardDataStore.shared.items.insert(
                         CardItem(title: "✨ \(model) Response", subtitle: res.text, category: .prompts, badge: "\(res.executionTimeMs)ms", timestamp: "Just now"),
                         at: 0
@@ -231,7 +246,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
             self.stateController.commandPrompt = ""
             self.stateController.clearClarification()
-            self.stateController.transition(to: .collapsed)
         }
     }
 }

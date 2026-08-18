@@ -2,9 +2,10 @@ import Foundation
 
 public enum CardCategory: String, CaseIterable, Identifiable, Sendable {
     case all = "All"
-    case clipboard = "Clipboard"
-    case prompts = "Prompts"
+    case notes = "Notes"
     case schedule = "Schedule"
+    case prompts = "Prompts"
+    case clipboard = "Clipboard"
     case dropzone = "Dropzone"
 
     public var id: String { rawValue }

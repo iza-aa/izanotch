@@ -14,7 +14,8 @@ public final class NotchWindowController: NSWindowController {
         onSubmitPrompt: (@MainActor (String) -> Void)? = nil,
         onReplyClarification: (@MainActor (String) -> Void)? = nil,
         onToggleMic: (@MainActor () -> Void)? = nil,
-        onStopMic: (@MainActor () -> Void)? = nil
+        onStopMic: (@MainActor () -> Void)? = nil,
+        onAddSchedule: (@MainActor (String) -> Void)? = nil
     ) {
         self.stateController = stateController
         self.hoverMonitor = hoverMonitor
@@ -36,7 +37,8 @@ public final class NotchWindowController: NSWindowController {
             onSubmitPrompt: onSubmitPrompt,
             onReplyClarification: onReplyClarification,
             onToggleMic: onToggleMic,
-            onStopMic: onStopMic
+            onStopMic: onStopMic,
+            onAddSchedule: onAddSchedule
         )
         let hostingView = NSHostingView(rootView: rootView)
         panel.contentView = hostingView
@@ -59,6 +61,16 @@ public final class NotchWindowController: NSWindowController {
 
     public func updateFrame(for state: NotchState) {
         guard let window = self.window, let screen = window.screen ?? NSScreen.main else { return }
+
+        if state == .hidden {
+            window.orderOut(nil)
+            return
+        } else {
+            if !window.isVisible {
+                window.orderFrontRegardless()
+            }
+        }
+
         let hasNotch = NotchGeometryCalculator.hasPhysicalNotch(screen: screen)
         let targetFrame = NotchGeometryCalculator.calculateFrame(
             for: state,
