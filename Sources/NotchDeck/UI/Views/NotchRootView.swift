@@ -234,11 +234,10 @@ public struct NotchRootView: View {
                     ClipboardPanelView(cardStore: cardStore)
                 }
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
             .transition(.opacity.animation(.easeInOut(duration: 0.2)))
-
-            Spacer(minLength: 0)
         }
-        .padding(.bottom, 12)
+        .padding(.bottom, 8)
     }
 
     // MARK: - Helpers

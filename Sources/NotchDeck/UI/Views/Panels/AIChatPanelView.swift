@@ -19,7 +19,7 @@ public struct AIChatPanelView: View {
     }
 
     public var body: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: 10) {
             // 0. System status / error banner
             if let statusMsg = stateController.systemStatusMessage, !statusMsg.isEmpty {
                 HStack(spacing: 6) {
@@ -44,7 +44,7 @@ public struct AIChatPanelView: View {
                     RoundedRectangle(cornerRadius: 8, style: .continuous)
                         .fill(statusMsg.hasPrefix("❌") ? Color.red.opacity(0.15) : Color.yellow.opacity(0.1))
                 )
-                .padding(.horizontal, 20)
+                .padding(.horizontal, 24)
             }
 
             // 1. Model Header Bar
@@ -59,7 +59,7 @@ public struct AIChatPanelView: View {
                         Image(systemName: "sparkles")
                             .font(.system(size: 10, weight: .semibold))
                         Text(stateController.activeAIModel)
-                            .font(.system(size: 11, weight: .semibold))
+                            .font(.system(size: 11, weight: .semibold, design: .rounded))
                         Image(systemName: "chevron.down")
                             .font(.system(size: 8, weight: .bold))
                             .foregroundColor(.white.opacity(0.4))
@@ -73,34 +73,34 @@ public struct AIChatPanelView: View {
 
                 Spacer()
 
-                HStack(spacing: 4) {
+                HStack(spacing: 5) {
                     Circle()
                         .fill(Color.green)
                         .frame(width: 6, height: 6)
                     Text("Agent Active")
-                        .font(.system(size: 10, weight: .medium))
-                        .foregroundColor(.white.opacity(0.6))
+                        .font(.system(size: 10, weight: .medium, design: .rounded))
+                        .foregroundColor(.white.opacity(0.7))
                 }
             }
             .padding(.horizontal, 24)   // page inset per design reference
 
-            // 2. Chat Stream or Empty State
+            // 2. Chat Stream or Empty State (Fills available vertical space)
             if stateController.chatMessages.isEmpty && stateController.pendingClarification == nil {
-                // Honest empty state
+                // Honest empty state centered in the middle of tray
                 VStack(spacing: 6) {
-                    Spacer(minLength: 10)
+                    Spacer()
                     Image(systemName: "message.badge.waveform")
-                        .font(.system(size: 22))
-                        .foregroundColor(.white.opacity(0.2))
-                    Text("Tidak ada pesan AI")
-                        .font(.system(size: 11))
-                        .foregroundColor(.white.opacity(0.35))
-                    Text("Ketik di bawah untuk mulai.")
-                        .font(.system(size: 10))
+                        .font(.system(size: 24))
                         .foregroundColor(.white.opacity(0.25))
-                    Spacer(minLength: 10)
+                    Text("Tidak ada pesan AI")
+                        .font(.system(size: 11.5, weight: .medium, design: .rounded))
+                        .foregroundColor(.white.opacity(0.4))
+                    Text("Ketik di bawah untuk mulai.")
+                        .font(.system(size: 10, design: .rounded))
+                        .foregroundColor(.white.opacity(0.25))
+                    Spacer()
                 }
-                .frame(maxHeight: 120)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 ScrollViewReader { proxy in
                     ScrollView(.vertical, showsIndicators: false) {
@@ -111,33 +111,33 @@ public struct AIChatPanelView: View {
                                         Spacer(minLength: 40)
                                         VStack(alignment: .trailing, spacing: 2) {
                                             Text(msg.text)
-                                                .font(.system(size: 11.5))
+                                                .font(.system(size: 11.5, design: .rounded))
                                                 .foregroundColor(.white)
-                                                .padding(.horizontal, 10)
-                                                .padding(.vertical, 6)
+                                                .padding(.horizontal, 12)
+                                                .padding(.vertical, 7)
                                                 .background(
                                                     RoundedRectangle(cornerRadius: 12, style: .continuous)
                                                         .fill(Color.white.opacity(0.2))
                                                 )
                                             Text(msg.timestamp)
-                                                .font(.system(size: 9))
+                                                .font(.system(size: 9, design: .rounded))
                                                 .foregroundColor(.white.opacity(0.4))
                                         }
                                     } else {
                                         VStack(alignment: .leading, spacing: 2) {
                                             HStack(spacing: 4) {
                                                 Text(msg.sender)
-                                                    .font(.system(size: 9.5, weight: .semibold))
+                                                    .font(.system(size: 9.5, weight: .semibold, design: .rounded))
                                                     .foregroundColor(.white.opacity(0.7))
                                                 Text("• " + msg.timestamp)
-                                                    .font(.system(size: 9))
+                                                    .font(.system(size: 9, design: .rounded))
                                                     .foregroundColor(.white.opacity(0.35))
                                             }
                                             Text(msg.text)
-                                                .font(.system(size: 11.5))
+                                                .font(.system(size: 11.5, design: .rounded))
                                                 .foregroundColor(.white.opacity(0.95))
-                                                .padding(.horizontal, 10)
-                                                .padding(.vertical, 6)
+                                                .padding(.horizontal, 12)
+                                                .padding(.vertical, 7)
                                                 .background(
                                                     RoundedRectangle(cornerRadius: 12, style: .continuous)
                                                         .fill(Color.white.opacity(0.08))
@@ -157,7 +157,7 @@ public struct AIChatPanelView: View {
                                             .font(.system(size: 11))
                                             .foregroundColor(.white)
                                         Text(item.question)
-                                            .font(.system(size: 11, weight: .semibold))
+                                            .font(.system(size: 11, weight: .semibold, design: .rounded))
                                             .foregroundColor(.white)
                                         Spacer()
                                         Button(action: { stateController.clearClarification() }) {
@@ -174,7 +174,7 @@ public struct AIChatPanelView: View {
                                                 ForEach(options, id: \.self) { opt in
                                                     Button(action: {
                                                         if let onReply = onReplyClarification {
-                                                            onReply(opt)
+                                                             onReply(opt)
                                                         } else {
                                                             onSubmitPrompt?(opt)
                                                         }
@@ -182,7 +182,7 @@ public struct AIChatPanelView: View {
                                                         stateController.clearClarification()
                                                     }) {
                                                         Text(opt)
-                                                            .font(.system(size: 10.5, weight: .medium))
+                                                            .font(.system(size: 10.5, weight: .medium, design: .rounded))
                                                             .padding(.horizontal, 10)
                                                             .padding(.vertical, 4)
                                                             .background(Capsule().fill(Color.white.opacity(0.18)))
@@ -194,7 +194,7 @@ public struct AIChatPanelView: View {
                                         }
                                     }
                                 }
-                                .padding(8)
+                                .padding(10)
                                 .background(
                                     RoundedRectangle(cornerRadius: 10)
                                         .fill(Color.white.opacity(0.1))
@@ -208,12 +208,12 @@ public struct AIChatPanelView: View {
                             withAnimation { proxy.scrollTo(last.id, anchor: .bottom) }
                         }
                     }
-                    .padding(.horizontal, 20)
+                    .padding(.horizontal, 24)
                 }
-                .frame(maxHeight: 140)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
 
-            // 4. Dedicated Bottom Reply Input Bar
+            // 4. Dedicated Bottom Reply Input Bar pinned at the bottom
             HStack(spacing: 8) {
                 TextField("Reply to \(stateController.activeAIModel)...", text: $stateController.commandPrompt)
                     .textFieldStyle(.plain)
@@ -235,20 +235,22 @@ public struct AIChatPanelView: View {
                 Button(action: { onToggleMic?() }) {
                     Image(systemName: "mic.fill")
                         .font(.system(size: 11))
-                        .padding(5)
+                        .padding(6)
                         .background(Circle().fill(Color.white.opacity(0.12)))
                         .foregroundColor(.white.opacity(0.9))
                 }
                 .buttonStyle(.plain)
             }
             .padding(.horizontal, 16)   // input inset per design reference
-            .padding(.vertical, 12)      // input vertical inset per design reference
+            .padding(.vertical, 11)      // input vertical inset per design reference
             .background(
                 RoundedRectangle(cornerRadius: 16, style: .continuous)
                     .fill(Color.white.opacity(0.08))
             )
-            .padding(.horizontal, 20)    // outer margin aligning with panels
+            .padding(.horizontal, 24)    // outer margin aligning with panels
+            .padding(.bottom, 6)
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
     private func submitReply() {
