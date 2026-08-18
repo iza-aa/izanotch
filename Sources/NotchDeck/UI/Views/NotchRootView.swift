@@ -2,9 +2,11 @@ import SwiftUI
 
 public struct NotchRootView: View {
     @ObservedObject public var stateController: NotchStateController
+    public var audioLevels: [CGFloat]
 
-    public init(stateController: NotchStateController) {
+    public init(stateController: NotchStateController, audioLevels: [CGFloat] = [0.2, 0.5, 0.8, 0.6, 0.3, 0.7]) {
         self.stateController = stateController
+        self.audioLevels = audioLevels
     }
 
     public var body: some View {
@@ -26,8 +28,11 @@ public struct NotchRootView: View {
 
             case .voiceActive:
                 HStack(spacing: 12) {
-                    Image(systemName: "waveform").foregroundColor(.blue).font(.title3)
-                    Text("Mendengarkan...").font(.system(size: 13, weight: .medium)).foregroundColor(.white)
+                    AudioWaveformView(levels: audioLevels)
+                    Text(stateController.commandPrompt.isEmpty ? "Mendengarkan..." : stateController.commandPrompt)
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundColor(.white)
+                        .lineLimit(1)
                     Spacer()
                     Button(action: { stateController.transition(to: .collapsed) }) {
                         Image(systemName: "stop.circle.fill").foregroundColor(.orange).font(.title2)
