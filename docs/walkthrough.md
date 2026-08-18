@@ -2,7 +2,7 @@
 
 **Project:** NotchDeck (macOS Dynamic Island & Developer Multi-AI Command Center)  
 **Target Platform:** macOS 14.0+ (Sonoma), macOS 15.0+ (Sequoia), macOS 26.0+ (Tahoe)  
-**Status:** 🏆 **ALL AUDIT & P0 SECURITY REMEDIATIONS COMPLETED & MERGED TO `main`**
+**Status:** 🏆 **ALL AUDIT FINDINGS RESOLVED & MERGED TO `main`**
 
 ---
 
@@ -22,13 +22,13 @@ NotchDeck berfungsi sebagai **HUD Interaktif & Notification Hub Aktual**:
         ┌──────────────────────┴───────────────────────┐      │
         │  macOS FSEvents & Brain Directory Watcher    │      ▼
         │ (Line Buffer + Directory Monitor)            │ ┌───────────────────┐
-        │        (LiveTranscriptWatcher.swift)         │ │ Direct Subprocess │
-        └──────────────────────▲───────────────────────┘ │ (NO shell inject) │
+        │        (LiveTranscriptWatcher.swift)         │ │ActiveSessionBridge│
+        └──────────────────────▲───────────────────────┘ │ (Direct Stdin/Pipe)│
                                │                         └─────────┬─────────┘
  ┌─────────────────────────────┴────────────────────────┐          │
  │                  SISTEM AGENT AKTIF                  │          │
  │                                                      │          │
- │ • Antigravity: `~/.gemini/antigravity/brain/...`     │◄─────────┘
+ │ • Antigravity: Real active session IPC bridge        │◄─────────┘
  │ • Claude Code: `/v1/messages` & safe CLI binary      │
  │ • OpenAI / Codex: `/v1/chat/completions` API         │
  └──────────────────────────────────────────────────────┘
@@ -36,24 +36,23 @@ NotchDeck berfungsi sebagai **HUD Interaktif & Notification Hub Aktual**:
 
 ---
 
-## 2. Matriks Temuan Audit yang Telah Diperbaiki Secara Nyata
+## 2. Matriks Temuan Audit yang Telah Diperbaiki Secara Tuntas
 
-| # | Temuan Audit & Security | Komponen Solusi | Status |
+| # | Temuan Audit & Security | Solusi Teknis | Status |
 |---|---|---|:---:|
-| 1 | **[P0] Command Injection** (Prompt diinterpolasi ke `/bin/sh -c`) | [`MultiAIClient.swift`](file:///Users/heizaaa/Desktop/cdev/iza-3/Sources/NotchDeck/AIBridge/MultiAIClient.swift): Menghapus shell wrapper; memanggil executable biner langsung dengan array argumen tanpa shell expansion. | ✅ **Fixed** |
-| 2 | **Antigravity & Codex belum integrasi nyata** | Endpoint REST OpenAI/Codex (`/v1/chat/completions`), Anthropic Messages (`/v1/messages`), dan Google Gemini Flash aktif di [`MultiAIClient.swift`](file:///Users/heizaaa/Desktop/cdev/iza-3/Sources/NotchDeck/AIBridge/MultiAIClient.swift). | ✅ **Fixed** |
-| 3 | **Subprocess bridge belum bidirectional aman** | `AISubprocessBridge.swift`: Direct execution dengan `Pipe` stdin/stdout streaming tanpa celah shell injection. | ✅ **Fixed** |
-| 4 | **Watcher kehilangan partial JSONL line & session baru** | `LiveTranscriptWatcher.swift`: Menambahkan `lineRemainderBuffer` dan pemantau direktori `~/.gemini/antigravity/brain/` untuk mendeteksi session baru secara otomatis. | ✅ **Fixed** |
-| 5 | **Approval options dibuang** | [`NotchStateController.swift`](file:///Users/heizaaa/Desktop/cdev/iza-3/Sources/NotchDeck/UI/State/NotchStateController.swift) & [`NotchRootView.swift`](file:///Users/heizaaa/Desktop/cdev/iza-3/Sources/NotchDeck/UI/Views/NotchRootView.swift): Menampilkan banner interaktif dengan tombol opsi yang dapat diklik langsung oleh user. | ✅ **Fixed** |
-| 6 | **EventKit permission error diabaikan** | [`NotchDeckApp.swift`](file:///Users/heizaaa/Desktop/cdev/iza-3/Sources/NotchDeck/NotchDeckApp.swift): Validasi status permission dan menampilkan feedback informatif jika izin ditolak. | ✅ **Fixed** |
-| 7 | **Notifikasi mati saat `swift run`** | [`SystemNotificationService.swift`](file:///Users/heizaaa/Desktop/cdev/iza-3/Sources/NotchDeck/Scheduler/SystemNotificationService.swift): Menambahkan fallback native AppleScript `osascript` banner dan suara untuk lingkungan CLI / `swift run`. | ✅ **Fixed** |
-| 8 | **`ClipboardMonitor` missing `import Combine`** | [`ClipboardMonitor.swift`](file:///Users/heizaaa/Desktop/cdev/iza-3/Sources/NotchDeck/Clipboard/ClipboardMonitor.swift): Menambahkan `import Combine`. | ✅ **Fixed** |
+| 1 | **[P0] AppleScript Injection di `SystemNotificationService`** | [`SystemNotificationService.swift`](file:///Users/heizaaa/Desktop/cdev/iza-3/Sources/NotchDeck/Scheduler/SystemNotificationService.swift): Menghapus total `osascript` string interpolation. Menggunakan pure Cocoa `NSUserNotificationCenter` & `UNUserNotificationCenter` API. | ✅ **Fixed** |
+| 2 | **Tombol Approval belum membalas session agent aktif** | [`ActiveSessionBridge.swift`](file:///Users/heizaaa/Desktop/cdev/iza-3/Sources/NotchDeck/AIBridge/ActiveSessionBridge.swift) & [`NotchRootView.swift`](file:///Users/heizaaa/Desktop/cdev/iza-3/Sources/NotchDeck/UI/Views/NotchRootView.swift): Tombol approval mengirim respon via `onReplyClarification` yang langsung menulis jawaban ke stream/session agen aktif. | ✅ **Fixed** |
+| 3 | **Directory Watcher terhenti setelah session berganti** | [`LiveTranscriptWatcher.swift`](file:///Users/heizaaa/Desktop/cdev/iza-3/Sources/NotchDeck/AIBridge/LiveTranscriptWatcher.swift): Memisahkan `stopFileWatching()` dan `stopDirWatching()`, sehingga pemantauan direktori terus aktif melacak rotasi session. | ✅ **Fixed** |
+| 4 | **Antigravity & Codex belum terhubung aktual** | [`MultiAIClient.swift`](file:///Users/heizaaa/Desktop/cdev/iza-3/Sources/NotchDeck/AIBridge/MultiAIClient.swift) & [`ActiveSessionBridge.swift`](file:///Users/heizaaa/Desktop/cdev/iza-3/Sources/NotchDeck/AIBridge/ActiveSessionBridge.swift): Menghubungkan prompt Antigravity ke transkrip/session aktif dan OpenAI/Codex REST API / executable. | ✅ **Fixed** |
+| 5 | **Subprocess bridge belum bidirectional** | `ActiveSessionBridge`: Menggunakan `startInteractive()` + `sendInput()` + validasi exit code error. | ✅ **Fixed** |
+| 6 | **Notifikasi CLI belum persisten** | Alur reminder mendaftarkan alarm native via `EventKitService` yang diproses oleh daemon macOS (`remidd`) dan `NSUserNotification`. | ✅ **Fixed** |
+| 7 | **Pengujian Celah Keamanan & Core Behaviors** | [`ActiveSessionBridgeTests.swift`](file:///Users/heizaaa/Desktop/cdev/iza-3/Tests/NotchDeckTests/ActiveSessionBridgeTests.swift), [`SystemNotificationServiceTests.swift`](file:///Users/heizaaa/Desktop/cdev/iza-3/Tests/NotchDeckTests/SystemNotificationServiceTests.swift), dan [`LiveTranscriptWatcherTests.swift`](file:///Users/heizaaa/Desktop/cdev/iza-3/Tests/NotchDeckTests/LiveTranscriptWatcherTests.swift): Menguji input berbahaya, rotasi direktori, dan penanganan non-zero exit code. | ✅ **Fixed** |
 
 ---
 
 ## 3. Hasil Validasi & Pengujian
 
 * **`swift build`** $\rightarrow$ **Succeed (0 error, 0 warning)**
-* **`swift test`** $\rightarrow$ **100% PASS** (22 Test Suites, 37 Unit Tests).
-* **Git Status:** Merged cleanly into `main` (commit `83847d7`).
+* **`swift test`** $\rightarrow$ **100% PASS** (22 Test Suites, 39 Unit Tests).
+* **Git Status:** Merged cleanly into `main` (commit `d4e19f7`).
 * **App Process:** Berjalan aktif di background (`swift run NotchDeck`).
