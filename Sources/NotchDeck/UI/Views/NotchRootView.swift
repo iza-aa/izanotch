@@ -105,41 +105,83 @@ public struct NotchRootView: View {
         }
     }
 
-    // MARK: - Collapsed: Left Wing + Camera Gap + Right Wing (NotchKit spec)
+    // MARK: - Collapsed: Left Wing Floating Action Buttons + Camera Gap + Right Wing
 
     private var collapsedContent: some View {
-        Button(action: { stateController.transition(to: .expanded) }) {
-            HStack(spacing: 0) {
-                // LEFT WING — status dot + app name (placed completely to the left of notch)
-                HStack(spacing: 5) {
-                    Circle()
-                        .fill(Color.white.opacity(0.85))
-                        .frame(width: 5, height: 5)
-                    Text("NotchDeck")
-                        .font(.system(size: 10, weight: .medium, design: .rounded))
-                        .foregroundColor(.white.opacity(0.9))
-                }
-                .frame(maxWidth: .infinity, alignment: .center)
+        HStack(spacing: 0) {
+            // LEFT WING — Floating Circular App Switcher Icons (di luar notch, di sebelah kiri status bar)
+            HStack(spacing: 6) {
+                // 1. Antigravity 2.0
+                floatingModelCircle(id: "Antigravity", icon: "sparkles", color: .cyan, name: "Antigravity 2.0")
+                // 2. Codex (ChatGPT)
+                floatingModelCircle(id: "Codex", icon: "cpu.fill", color: .green, name: "Codex ChatGPT")
+                // 3. Claude Code
+                floatingModelCircle(id: "Claude Code", icon: "terminal.fill", color: .orange, name: "Claude Code")
+            }
+            .padding(.horizontal, 6)
+            .frame(maxWidth: .infinity, alignment: .center)
 
-                // CAMERA GAP — covers hardware camera area entirely
-                Color.clear.frame(width: cameraGapWidth)
+            // CAMERA GAP — covers hardware camera area entirely (Klik untuk expand notch)
+            Button(action: { stateController.transition(to: .expanded) }) {
+                Color.clear
+                    .frame(width: cameraGapWidth)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
 
-                // RIGHT WING — active model indicator with status dot (placed completely to the right of notch)
+            // RIGHT WING — active model indicator with status dot (Klik untuk expand notch)
+            Button(action: { stateController.transition(to: .expanded) }) {
                 HStack(spacing: 5) {
                     Circle()
                         .fill(Color.green.opacity(0.95))
                         .frame(width: 5, height: 5)
-                    Text(stateController.activeAIModel)
+                    Text(displayModelName(stateController.activeAIModel))
                         .font(.system(size: 10, weight: .semibold, design: .rounded))
                         .foregroundColor(.white.opacity(0.85))
                         .lineLimit(1)
                 }
                 .frame(maxWidth: .infinity, alignment: .center)
+                .contentShape(Rectangle())
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .contentShape(Rectangle())
+            .buttonStyle(.plain)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    private func floatingModelCircle(id: String, icon: String, color: Color, name: String) -> some View {
+        let isSelected = stateController.activeAIModel == id
+        return Button(action: {
+            withAnimation(.spring(response: 0.28, dampingFraction: 0.75)) {
+                stateController.activeAIModel = id
+            }
+        }) {
+            ZStack {
+                Circle()
+                    .fill(isSelected ? color.opacity(0.3) : Color.white.opacity(0.12))
+                    .frame(width: 22, height: 22)
+
+                if isSelected {
+                    Circle()
+                        .strokeBorder(color.opacity(0.85), lineWidth: 1.5)
+                        .frame(width: 22, height: 22)
+                }
+
+                Image(systemName: icon)
+                    .font(.system(size: 9.5, weight: isSelected ? .bold : .medium))
+                    .foregroundColor(isSelected ? color : .white.opacity(0.6))
+            }
         }
         .buttonStyle(.plain)
+        .help(name)
+    }
+
+    private func displayModelName(_ modelId: String) -> String {
+        switch modelId {
+        case "Antigravity": return "Antigravity"
+        case "Codex": return "Codex"
+        case "Claude Code": return "Claude"
+        default: return modelId
+        }
     }
 
     // MARK: - Voice Active
