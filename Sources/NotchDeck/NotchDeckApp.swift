@@ -226,12 +226,36 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             if lower.contains("meeting") || lower.contains("ingatkan") || lower.contains("jadwal") || lower.contains("jam ") {
                 self.addSchedulePrompt(prompt)
             } else {
+                // Determine provider to actually call.
+                // "Antigravity" mode means the notch is observing an Antigravity session passively —
+                // the notch chat input here acts as a quick AI assistant using the best available API key.
                 let provider: AIProvider
                 switch model {
-                case "Claude Code": provider = .claudeCode
-                case "Gemini Flash": provider = .gemini
-                case "Codex": provider = .codex
-                default: provider = .antigravity
+                case "Claude Code":
+                    provider = claudeKey?.isEmpty == false ? .claudeCode : (geminiKey?.isEmpty == false ? .gemini : .claudeCode)
+                case "Gemini Flash":
+                    provider = .gemini
+                case "Codex":
+                    provider = .codex
+                default:
+                    // "Antigravity" observer mode: route to Gemini → Claude → error.
+                    // The live transcript from Antigravity 2.0 is displayed automatically by
+                    // LiveTranscriptWatcher — no subprocess stdin injection needed.
+                    if let key = geminiKey, !key.isEmpty {
+                        provider = .gemini
+                    } else if let key = claudeKey, !key.isEmpty {
+                        provider = .claudeCode
+                    } else {
+                        // No API keys configured and no subprocess — explain the observer model.
+                        self.stateController.appendChatMessage(
+                            sender: "Antigravity",
+                            text: "ℹ️ Notch ini memantau sesi Antigravity 2.0 yang aktif secara real-time. Pesan dari Antigravity akan muncul otomatis di sini. Untuk chat mandiri, konfigurasikan Gemini/Claude API key di Pengaturan.",
+                            isUser: false
+                        )
+                        self.stateController.commandPrompt = ""
+                        self.stateController.clearClarification()
+                        return
+                    }
                 }
 
                 do {
@@ -249,8 +273,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                         at: 0
                     )
                 } catch AIClientError.sessionUnavailable {
-                    // Antigravity session is not running — explain the architecture clearly.
-                    // NotchDeck observes an Antigravity session; it does not start one.
                     self.stateController.appendChatMessage(
                         sender: "Antigravity",
                         text: "⚠️ Tidak ada sesi Antigravity yang aktif. Buka Antigravity terlebih dahulu, lalu notch akan otomatis memantau percakapannya di sini.",
