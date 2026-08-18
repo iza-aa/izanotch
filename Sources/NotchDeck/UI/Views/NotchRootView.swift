@@ -3,19 +3,31 @@ import SwiftUI
 public struct NotchRootView: View {
     @ObservedObject public var stateController: NotchStateController
     @ObservedObject public var cardStore: CardDataStore = .shared
+    public var hoverMonitor: NotchHoverMonitor?
     public var audioLevels: [CGFloat]
     public var hasPhysicalNotch: Bool
+    public var onSubmitPrompt: (@MainActor () -> Void)?
+    public var onToggleMic: (@MainActor () -> Void)?
+    public var onStopMic: (@MainActor () -> Void)?
 
     public init(
         stateController: NotchStateController,
         cardStore: CardDataStore = .shared,
+        hoverMonitor: NotchHoverMonitor? = nil,
         audioLevels: [CGFloat] = [0.2, 0.5, 0.8, 0.6, 0.3, 0.7],
-        hasPhysicalNotch: Bool = true
+        hasPhysicalNotch: Bool = true,
+        onSubmitPrompt: (@MainActor () -> Void)? = nil,
+        onToggleMic: (@MainActor () -> Void)? = nil,
+        onStopMic: (@MainActor () -> Void)? = nil
     ) {
         self.stateController = stateController
         self.cardStore = cardStore
+        self.hoverMonitor = hoverMonitor
         self.audioLevels = audioLevels
         self.hasPhysicalNotch = hasPhysicalNotch
+        self.onSubmitPrompt = onSubmitPrompt
+        self.onToggleMic = onToggleMic
+        self.onStopMic = onStopMic
     }
 
     private var contentTopPadding: CGFloat {
@@ -34,9 +46,7 @@ public struct NotchRootView: View {
                 switch stateController.currentState {
                 case .collapsed:
                     Button(action: {
-                        withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
-                            stateController.transition(to: .expanded)
-                        }
+                        stateController.transition(to: .expanded)
                     }) {
                         HStack(spacing: 8) {
                             Circle()
@@ -54,9 +64,9 @@ public struct NotchRootView: View {
                     .buttonStyle(.plain)
                     .onHover { isHovered in
                         if isHovered {
-                            withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
-                                stateController.transition(to: .expanded)
-                            }
+                            hoverMonitor?.mouseEntered()
+                        } else {
+                            hoverMonitor?.mouseExited()
                         }
                     }
 
@@ -73,10 +83,12 @@ public struct NotchRootView: View {
 
                             Spacer()
 
-                            Button(action: { stateController.transition(to: .collapsed) }) {
+                            Button(action: {
+                                onStopMic?()
+                            }) {
                                 Image(systemName: "stop.circle.fill")
-                                    .font(.system(size: 18))
-                                    .foregroundColor(.white.opacity(0.6))
+                                    .font(.system(size: 20))
+                                    .foregroundColor(.white.opacity(0.75))
                             }
                             .buttonStyle(.plain)
                         }
@@ -112,11 +124,13 @@ public struct NotchRootView: View {
 
                 case .expanded:
                     VStack(spacing: 10) {
-                        // 1. Header Command Bar (Monochrome & Borderless)
+                        // 1. Header Command Bar (Monochrome & Action Wired)
                         HStack(spacing: 8) {
                             Menu {
                                 Button("Antigravity") { stateController.activeAIModel = "Antigravity" }
                                 Button("Claude Code") { stateController.activeAIModel = "Claude Code" }
+                                Button("Gemini Flash") { stateController.activeAIModel = "Gemini Flash" }
+                                Button("Codex") { stateController.activeAIModel = "Codex" }
                             } label: {
                                 HStack(spacing: 4) {
                                     Image(systemName: "sparkles")
@@ -145,8 +159,24 @@ public struct NotchRootView: View {
                                 .textFieldStyle(.plain)
                                 .font(.system(size: 12.5, weight: .regular))
                                 .foregroundColor(.white)
+                                .onSubmit {
+                                    onSubmitPrompt?()
+                                }
 
-                            Button(action: { stateController.transition(to: .voiceActive) }) {
+                            if !stateController.commandPrompt.isEmpty {
+                                Button(action: {
+                                    onSubmitPrompt?()
+                                }) {
+                                    Image(systemName: "arrow.up.circle.fill")
+                                        .font(.system(size: 16))
+                                        .foregroundColor(.white)
+                                }
+                                .buttonStyle(.plain)
+                            }
+
+                            Button(action: {
+                                onToggleMic?()
+                            }) {
                                 Image(systemName: "mic.fill")
                                     .font(.system(size: 11))
                                     .padding(6)
@@ -162,10 +192,10 @@ public struct NotchRootView: View {
                                 .fill(Color.white.opacity(0.06))
                         )
 
-                        // 2. Category Filter Bar (Monochrome)
+                        // 2. Category Filter Bar
                         CategoryFilterBarView(store: cardStore)
 
-                        // 3. Horizontal Card Carousel (Monochrome)
+                        // 3. Horizontal Card Carousel
                         CardCarouselView(store: cardStore)
 
                         Spacer(minLength: 0)

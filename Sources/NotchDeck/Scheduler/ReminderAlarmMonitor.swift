@@ -20,11 +20,22 @@ public final class ReminderAlarmMonitor: ObservableObject {
         let interval = targetDate.timeIntervalSince(Date())
         let taskId = UUID()
 
+        // 1. System Notification (Persistent via macOS Notification Center)
+        if interval > 0 {
+            SystemNotificationService.shared.scheduleNotification(
+                id: taskId.uuidString,
+                title: "⏰ \(detail.title)",
+                body: "Agenda dimulai dalam \(detail.offsetMinutes) menit.",
+                timeInterval: interval
+            )
+        }
+
         guard interval >= 0 else {
             fireAlarm(for: detail)
             return
         }
 
+        // 2. In-App Live HUD & Voice-Over Speaker
         let task = Task { @MainActor in
             let nano = UInt64(max(0, interval) * 1_000_000_000)
             try? await Task.sleep(nanoseconds: nano)

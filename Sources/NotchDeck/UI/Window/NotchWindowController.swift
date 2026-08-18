@@ -5,10 +5,18 @@ import Combine
 @MainActor
 public final class NotchWindowController: NSWindowController {
     public let stateController: NotchStateController
+    public let hoverMonitor: NotchHoverMonitor?
     private var cancellables = Set<AnyCancellable>()
 
-    public init(stateController: NotchStateController) {
+    public init(
+        stateController: NotchStateController,
+        hoverMonitor: NotchHoverMonitor? = nil,
+        onSubmitPrompt: (@MainActor () -> Void)? = nil,
+        onToggleMic: (@MainActor () -> Void)? = nil,
+        onStopMic: (@MainActor () -> Void)? = nil
+    ) {
         self.stateController = stateController
+        self.hoverMonitor = hoverMonitor
         let screen = NSScreen.main ?? NSScreen.screens.first!
         let hasNotch = NotchGeometryCalculator.hasPhysicalNotch(screen: screen)
         let initialFrame = NotchGeometryCalculator.calculateFrame(
@@ -20,7 +28,14 @@ public final class NotchWindowController: NSWindowController {
         let panel = NotchPanel(contentRect: initialFrame)
         super.init(window: panel)
 
-        let rootView = NotchRootView(stateController: stateController, hasPhysicalNotch: hasNotch)
+        let rootView = NotchRootView(
+            stateController: stateController,
+            hoverMonitor: hoverMonitor,
+            hasPhysicalNotch: hasNotch,
+            onSubmitPrompt: onSubmitPrompt,
+            onToggleMic: onToggleMic,
+            onStopMic: onStopMic
+        )
         let hostingView = NSHostingView(rootView: rootView)
         panel.contentView = hostingView
 
