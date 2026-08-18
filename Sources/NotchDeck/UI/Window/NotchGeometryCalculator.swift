@@ -13,8 +13,7 @@ public struct NotchGeometryCalculator: Sendable {
 
         switch state {
         case .collapsed:
-            // Sits comfortably below physical notch with ear curves
-            return (hasPhysicalNotch ? 200 : 160, hasPhysicalNotch ? defaultNotchHeight + 6 : 32)
+            return (hasPhysicalNotch ? 200 : 180, hasPhysicalNotch ? 36 : 32)
         case .voiceActive:
             return (360, 60 + notchOffset)
         case .liveActivity:

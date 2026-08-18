@@ -4,13 +4,13 @@ import AppKit
 
 @Suite("Notch Geometry Calculator Tests")
 struct NotchGeometryCalculatorTests {
-    @Test("Calculate frame for collapsed state centered at top")
-    func testCollapsedFrame() {
+    @Test("Calculate frame for collapsed state centered at top on physical notch display")
+    func testCollapsedFramePhysicalNotch() {
         let mockScreenFrame = NSRect(x: 0, y: 0, width: 1728, height: 1117)
         let frame = NotchGeometryCalculator.calculateFrame(for: .collapsed, screenFrame: mockScreenFrame, hasPhysicalNotch: true)
         
-        #expect(frame.width == 180)
-        #expect(frame.height == 32)
+        #expect(frame.width == 200)
+        #expect(frame.height == 36)
         #expect(frame.midX == mockScreenFrame.midX)
         #expect(frame.maxY == mockScreenFrame.maxY)
     }
@@ -32,6 +32,7 @@ struct NotchGeometryCalculatorTests {
         let frame = NotchGeometryCalculator.calculateFrame(for: .collapsed, screenFrame: mockScreenFrame, hasPhysicalNotch: false)
         
         #expect(frame.width == 180)
+        #expect(frame.height == 32)
         #expect(frame.maxY == mockScreenFrame.maxY - 10)
     }
 

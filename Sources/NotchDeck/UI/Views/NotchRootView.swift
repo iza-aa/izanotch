@@ -45,7 +45,7 @@ public struct NotchRootView: View {
                 .shadow(color: Color.black.opacity(0.4), radius: 12, x: 0, y: 6)
 
             // 2. Foreground Content
-            VStack(spacing: 0) {
+            Group {
                 switch stateController.currentState {
                 case .collapsed:
                     Button(action: {
@@ -61,7 +61,7 @@ public struct NotchRootView: View {
                                 .foregroundColor(.white.opacity(0.9))
                         }
                         .padding(.horizontal, 16)
-                        .padding(.top, hasPhysicalNotch ? 14 : 0)
+                        .padding(.top, hasPhysicalNotch ? 10 : 0)
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                         .contentShape(Rectangle())
                     }
@@ -276,6 +276,7 @@ public struct NotchRootView: View {
             width: widthForState(stateController.currentState),
             height: heightForState(stateController.currentState)
         )
+        .clipped()
     }
 
     private func widthForState(_ state: NotchState) -> CGFloat {
