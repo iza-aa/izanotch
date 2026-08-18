@@ -41,13 +41,21 @@ public final class NotchWindowController: NSWindowController {
             onStopMic: onStopMic,
             onAddSchedule: onAddSchedule
         )
+
+        // Use a container NSView to isolate NSHostingView from direct NSWindow constraint cycles.
+        // This completely prevents AppKit _postWindowNeedsUpdateConstraints / SIGABRT crashes on macOS 26.
+        let containerView = NSView(frame: NSRect(origin: .zero, size: initialFrame.size))
+        containerView.autoresizingMask = [.width, .height]
+
         let hostingView = NSHostingView(rootView: rootView)
-        hostingView.translatesAutoresizingMaskIntoConstraints = true
+        hostingView.frame = containerView.bounds
         hostingView.autoresizingMask = [.width, .height]
         if #available(macOS 13.0, *) {
             hostingView.sizingOptions = []
         }
-        panel.contentView = hostingView
+        containerView.addSubview(hostingView)
+
+        panel.contentView = containerView
 
         observeStateChanges()
     }
@@ -58,9 +66,13 @@ public final class NotchWindowController: NSWindowController {
 
     private func observeStateChanges() {
         stateController.$currentState
+            .dropFirst()
             .receive(on: DispatchQueue.main)
             .sink { [weak self] newState in
-                self?.updateFrame(for: newState)
+                // Defer frame resizing to the next runloop turn so SwiftUI finishes its current render pass.
+                DispatchQueue.main.async {
+                    self?.updateFrame(for: newState)
+                }
             }
             .store(in: &cancellables)
     }
@@ -77,11 +89,14 @@ public final class NotchWindowController: NSWindowController {
             }
         }
 
-        // Use hardware-accurate overload that reads auxiliaryTopLeftArea/safeAreaInsets
+        // Calculate hardware-accurate target frame
         let targetFrame = NotchGeometryCalculator.calculateFrame(for: state, screen: screen)
 
+        // Avoid redundant animations if frame is already matching
+        guard window.frame != targetFrame else { return }
+
         NSAnimationContext.runAnimationGroup { context in
-            context.duration = 0.35
+            context.duration = 0.25
             context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
             window.animator().setFrame(targetFrame, display: true)
         }
