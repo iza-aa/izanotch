@@ -6,7 +6,16 @@ public final class SystemNotificationService: @unchecked Sendable {
 
     public init() {}
 
+    private var isBundledApp: Bool {
+        Bundle.main.bundleIdentifier != nil && !Bundle.main.bundlePath.contains(".build/")
+    }
+
     public func requestAuthorization() async -> Bool {
+        guard isBundledApp else {
+            // CLI environment without .app bundle structure
+            return true
+        }
+
         do {
             let center = UNUserNotificationCenter.current()
             let granted = try await center.requestAuthorization(options: [.alert, .sound, .badge])
@@ -22,7 +31,7 @@ public final class SystemNotificationService: @unchecked Sendable {
         body: String,
         timeInterval: TimeInterval
     ) {
-        guard timeInterval > 0 else { return }
+        guard timeInterval > 0, isBundledApp else { return }
 
         let content = UNMutableNotificationContent()
         content.title = title
