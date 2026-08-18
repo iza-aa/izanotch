@@ -66,13 +66,6 @@ public struct NotchRootView: View {
                         .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
-                    .onHover { isHovered in
-                        if isHovered {
-                            hoverMonitor?.mouseEntered()
-                        } else {
-                            hoverMonitor?.mouseExited()
-                        }
-                    }
 
                 case .voiceActive:
                     VStack {
@@ -277,6 +270,13 @@ public struct NotchRootView: View {
             height: heightForState(stateController.currentState)
         )
         .clipped()
+        .onHover { isHovered in
+            if isHovered {
+                hoverMonitor?.mouseEntered()
+            } else {
+                hoverMonitor?.mouseExited()
+            }
+        }
     }
 
     private func widthForState(_ state: NotchState) -> CGFloat {
