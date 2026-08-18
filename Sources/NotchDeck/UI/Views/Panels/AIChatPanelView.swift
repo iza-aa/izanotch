@@ -62,48 +62,17 @@ public struct AIChatPanelView: View {
                 .padding(.horizontal, 28)
             }
 
-            // 1. Floating Circular App Switcher Bar (Left-side notch floating buttons)
-            HStack(spacing: 10) {
-                // Floating Circular App Switcher Dock
+            // 1. Model Header Bar (Clean status header — Switcher is floating outside on the left)
+            HStack(spacing: 8) {
                 HStack(spacing: 6) {
-                    ForEach(availableModels) { model in
-                        let isSelected = stateController.activeAIModel == model.id
-                        Button(action: {
-                            withAnimation(.spring(response: 0.28, dampingFraction: 0.75)) {
-                                stateController.activeAIModel = model.id
-                            }
-                        }) {
-                            ZStack {
-                                Circle()
-                                    .fill(isSelected ? model.accentColor.opacity(0.25) : Color.white.opacity(0.08))
-                                    .frame(width: 28, height: 28)
+                    Circle()
+                        .fill(modelAccentColor(stateController.activeAIModel))
+                        .frame(width: 7, height: 7)
 
-                                if isSelected {
-                                    Circle()
-                                        .strokeBorder(model.accentColor.opacity(0.7), lineWidth: 1.5)
-                                        .frame(width: 28, height: 28)
-                                }
-
-                                Image(systemName: model.iconName)
-                                    .font(.system(size: 11.5, weight: isSelected ? .bold : .medium))
-                                    .foregroundColor(isSelected ? model.accentColor : .white.opacity(0.55))
-                            }
-                        }
-                        .buttonStyle(.plain)
-                        .help(model.name)
-                    }
+                    Text(displayModelName(stateController.activeAIModel))
+                        .font(.system(size: 12, weight: .semibold, design: .rounded))
+                        .foregroundColor(.white.opacity(0.92))
                 }
-                .padding(3)
-                .background(
-                    Capsule()
-                        .fill(Color.white.opacity(0.07))
-                )
-
-                // Active Model Label
-                Text(availableModels.first(where: { $0.id == stateController.activeAIModel })?.name ?? stateController.activeAIModel)
-                    .font(.system(size: 11.5, weight: .semibold, design: .rounded))
-                    .foregroundColor(.white.opacity(0.92))
-                    .transition(.opacity)
 
                 Spacer()
 
@@ -347,5 +316,23 @@ public struct AIChatPanelView: View {
         }
 
         return processedLines.joined(separator: "\n").trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    private func displayModelName(_ modelId: String) -> String {
+        switch modelId {
+        case "Antigravity": return "Antigravity 2.0"
+        case "Codex": return "Codex ChatGPT"
+        case "Claude Code": return "Claude Code"
+        default: return modelId
+        }
+    }
+
+    private func modelAccentColor(_ modelId: String) -> Color {
+        switch modelId {
+        case "Antigravity": return Color.cyan
+        case "Codex": return Color.green
+        case "Claude Code": return Color.orange
+        default: return Color.white
+        }
     }
 }

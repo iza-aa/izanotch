@@ -53,23 +53,63 @@ public struct NotchRootView: View {
         Group {
             if stateController.currentState == .hidden {
                 Color.clear.frame(width: 0, height: 0)
+            } else if stateController.currentState == .expanded {
+                // EXPANDED: Floating Side Dock (DI LUAR TRAY SEBELAH KIRI) + Main Notch Tray
+                HStack(alignment: .top, spacing: 12) {
+                    // 1. FLOATING SIDE DOCK (DI LUAR NOTCH SEBELAH KIRI)
+                    VStack(spacing: 9) {
+                        floatingSideButton(id: "Antigravity", icon: "sparkles", color: .cyan, name: "Antigravity 2.0")
+                        floatingSideButton(id: "Codex", icon: "cpu.fill", color: .green, name: "Codex ChatGPT")
+                        floatingSideButton(id: "Claude Code", icon: "terminal.fill", color: .orange, name: "Claude Code")
+                    }
+                    .padding(6)
+                    .background(
+                        Capsule()
+                            .fill(Color.black.opacity(0.9))
+                            .overlay(
+                                Capsule()
+                                    .strokeBorder(Color.white.opacity(0.15), lineWidth: 1)
+                            )
+                            .shadow(color: Color.black.opacity(0.35), radius: 10, x: -2, y: 4)
+                    )
+                    .padding(.top, contentTopPadding + 4)
+
+                    // 2. MAIN TRAY NOTCH
+                    ZStack {
+                        NotchShape(
+                            topCornerRadius: 19,
+                            bottomCornerRadius: 24
+                        )
+                        .fill(Color.black)
+                        .shadow(color: Color.black.opacity(0.08), radius: 8, x: 0, y: 4)
+
+                        expandedContent
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                }
+                .padding(.leading, 8)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .clipped()
+                .onHover { isHovered in
+                    if isHovered {
+                        hoverMonitor?.mouseEntered()
+                    } else {
+                        hoverMonitor?.mouseExited()
+                    }
+                }
             } else {
+                // COLLAPSED / LIVE ACTIVITY / VOICE ACTIVE
                 ZStack {
-                    // 1. Black notch background — merges with hardware
-                    //    Use NotchShape with correct radii per NotchKit spec.
-                    //    Collapsed: top=6 bottom=14 / Expanded: top=19 bottom=24
                     NotchShape(
-                        topCornerRadius: isExpanded ? 19 : 6,
-                        bottomCornerRadius: isExpanded ? 24 : 14
+                        topCornerRadius: 6,
+                        bottomCornerRadius: 14
                     )
                     .fill(Color.black)
-                    // Shadow: subtle downward-only per design reference (opacity 0.03–0.08, no x offset)
                     .shadow(color: Color.black.opacity(0.06), radius: 8, x: 0, y: 4)
 
-                    // 2. Foreground Content
                     Group {
                         switch stateController.currentState {
-                        case .hidden:
+                        case .hidden, .expanded:
                             EmptyView()
 
                         case .collapsed:
@@ -80,18 +120,9 @@ public struct NotchRootView: View {
 
                         case .liveActivity(let title, let countdown):
                             liveActivityContent(title: title, countdown: countdown)
-
-                        case .expanded:
-                            expandedContent
                         }
                     }
                 }
-                // Do NOT set an explicit frame here.
-                // The NSWindow frame is already set correctly by NotchWindowController
-                // via NotchGeometryCalculator.calculateFrame(for:screen:) which reads
-                // real hardware notch dimensions. NSHostingView fills the window frame
-                // automatically — setting a second frame here causes a size mismatch
-                // that makes content overflow or get clipped incorrectly.
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .clipped()
                 .onHover { isHovered in
@@ -103,6 +134,33 @@ public struct NotchRootView: View {
                 }
             }
         }
+    }
+
+    private func floatingSideButton(id: String, icon: String, color: Color, name: String) -> some View {
+        let isSelected = stateController.activeAIModel == id
+        return Button(action: {
+            withAnimation(.spring(response: 0.28, dampingFraction: 0.75)) {
+                stateController.activeAIModel = id
+            }
+        }) {
+            ZStack {
+                Circle()
+                    .fill(isSelected ? color.opacity(0.3) : Color.white.opacity(0.1))
+                    .frame(width: 32, height: 32)
+
+                if isSelected {
+                    Circle()
+                        .strokeBorder(color.opacity(0.85), lineWidth: 1.5)
+                        .frame(width: 32, height: 32)
+                }
+
+                Image(systemName: icon)
+                    .font(.system(size: 13, weight: isSelected ? .bold : .medium))
+                    .foregroundColor(isSelected ? color : .white.opacity(0.65))
+            }
+        }
+        .buttonStyle(.plain)
+        .help(name)
     }
 
     // MARK: - Collapsed: Left Wing Floating Action Buttons + Camera Gap + Right Wing
