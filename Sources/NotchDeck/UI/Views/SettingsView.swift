@@ -11,9 +11,14 @@ public struct SettingsView: View {
 
     public var body: some View {
         VStack(alignment: .leading, spacing: 14) {
-            Text("⚙️ NotchDeck Settings & BYOK API Keys")
-                .font(.headline)
-                .foregroundColor(.primary)
+            HStack(spacing: 8) {
+                Image(systemName: "gearshape.fill")
+                    .font(.system(size: 15))
+                    .foregroundColor(.secondary)
+                Text("NotchDeck Settings & API Keys")
+                    .font(.headline)
+                    .foregroundColor(.primary)
+            }
 
             Divider()
 
@@ -52,9 +57,15 @@ public struct SettingsView: View {
             }
 
             if !statusMessage.isEmpty {
-                Text(statusMessage)
-                    .font(.caption)
-                    .foregroundColor(statusMessage.contains("✅") ? .green : .red)
+                let isSuccess = statusMessage.contains("successful") || statusMessage.contains("saved")
+                HStack(spacing: 6) {
+                    Image(systemName: isSuccess ? "checkmark.circle.fill" : "exclamationmark.circle.fill")
+                        .font(.system(size: 12))
+                        .foregroundColor(isSuccess ? .green : .red)
+                    Text(statusMessage)
+                        .font(.caption)
+                        .foregroundColor(isSuccess ? .green : .red)
+                }
             }
 
             Spacer()
@@ -72,7 +83,7 @@ public struct SettingsView: View {
         try? KeychainManager.save(key: "notchdeck.gemini.apikey", value: geminiKey)
         try? KeychainManager.save(key: "notchdeck.claude.apikey", value: claudeKey)
         try? KeychainManager.save(key: "notchdeck.openai.apikey", value: openAiKey)
-        statusMessage = "✅ Keys saved securely to Keychain."
+        statusMessage = "Keys saved securely to Keychain."
     }
 
     private func testConnection() {
@@ -85,12 +96,12 @@ public struct SettingsView: View {
                     apiKey: geminiKey
                 )
                 await MainActor.run {
-                    self.statusMessage = "✅ Connection successful! AI is ready."
+                    self.statusMessage = "Connection successful! AI is ready."
                     self.isTesting = false
                 }
             } catch {
                 await MainActor.run {
-                    self.statusMessage = "❌ Connection failed: \(error.localizedDescription)"
+                    self.statusMessage = "Connection failed: \(error.localizedDescription)"
                     self.isTesting = false
                 }
             }

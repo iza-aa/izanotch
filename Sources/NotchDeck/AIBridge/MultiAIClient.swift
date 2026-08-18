@@ -237,7 +237,7 @@ public final class MultiAIClient: @unchecked Sendable {
                 // Pipe write succeeded. Note: this does NOT confirm the agent consumed the message.
                 // The response text is intentionally honest about delivery state.
                 return MultiAIResponse(
-                    text: "⏳ Sent to Antigravity session — awaiting agent response.",
+                    text: "Sent to Antigravity session — awaiting agent response.",
                     provider: .antigravity,
                     executionTimeMs: duration
                 )

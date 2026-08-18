@@ -94,16 +94,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         case .taskCompleted(let summary):
             VoiceOverSpeaker.shared.speak(text: "Antigravity: Task selesai.", language: "id-ID")
-            stateController.appendChatMessage(sender: "Antigravity", text: "✅ " + summary, isUser: false)
-            stateController.transition(to: .liveActivity(title: "✨ Task Done", countdown: "Complete"))
+            stateController.appendChatMessage(sender: "Antigravity", text: summary, isUser: false)
+            stateController.transition(to: .liveActivity(title: "Task Done", countdown: "Complete"))
             CardDataStore.shared.items.insert(
-                CardItem(title: "Antigravity Task Done", subtitle: summary, category: .prompts, badge: "AI Done", timestamp: "Just now"),
+                CardItem(title: "Task Done", subtitle: summary, category: .prompts, badge: "Done", timestamp: "Just now"),
                 at: 0
             )
 
         case .userClarificationNeeded(let question, let options):
             VoiceOverSpeaker.shared.speak(text: "Antigravity membutuhkan respon Anda.", language: "id-ID")
-            stateController.appendChatMessage(sender: "Antigravity", text: "❓ " + question, isUser: false)
+            stateController.appendChatMessage(sender: "Antigravity", text: question, isUser: false)
             stateController.setClarification(question: question, options: options)
             stateController.selectTab(.aiChat)
             stateController.transition(to: .expanded)
@@ -113,7 +113,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             )
 
         case .toolExecuted(let name, let summary):
-            stateController.transition(to: .liveActivity(title: "⚙️ \(name)", countdown: summary.isEmpty ? "Running" : summary))
+            stateController.transition(to: .liveActivity(title: name, countdown: summary.isEmpty ? "Running" : summary))
 
         case .streamingContent(let text):
             stateController.appendChatMessage(sender: "Antigravity", text: text, isUser: false)
@@ -170,7 +170,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             do {
                 try speechManager?.startRecording()
             } catch {
-                stateController.systemStatusMessage = "❌ Mic error: \(error.localizedDescription)"
+                stateController.systemStatusMessage = "Mic error: \(error.localizedDescription)"
                 stateController.transition(to: .collapsed)
             }
         }
@@ -195,7 +195,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                     at: 0
                 )
             } catch {
-                self.stateController.systemStatusMessage = "❌ Dispatch error: \(error.localizedDescription)"
+                self.stateController.systemStatusMessage = "Dispatch error: \(error.localizedDescription)"
                 CardDataStore.shared.items.insert(
                     CardItem(title: "Dispatch Failed", subtitle: error.localizedDescription, category: .prompts, badge: "Error", timestamp: "Just now"),
                     at: 0
@@ -255,11 +255,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                     } catch AntigravityAgentAPI.AgentAPIError.noActiveConversation {
                         self.stateController.appendChatMessage(
                             sender: "Antigravity",
-                            text: "⚠️ Belum ada sesi Antigravity yang terdeteksi. Buka Antigravity 2.0 dan mulai percakapan, lalu pesan kamu akan tersambung otomatis.",
+                            text: "Belum ada sesi Antigravity yang terdeteksi. Buka Antigravity 2.0 dan mulai percakapan, lalu pesan kamu akan tersambung otomatis.",
                             isUser: false
                         )
                     } catch {
-                        self.stateController.systemStatusMessage = "❌ agentapi error: \(error.localizedDescription)"
+                        self.stateController.systemStatusMessage = "agentapi error: \(error.localizedDescription)"
                     }
                     self.stateController.commandPrompt = ""
                     self.stateController.clearClarification()
@@ -277,17 +277,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                     )
                     self.stateController.appendChatMessage(sender: model, text: res.text, isUser: false)
                     CardDataStore.shared.items.insert(
-                        CardItem(title: "✨ \(model) Response", subtitle: res.text, category: .prompts, badge: "\(res.executionTimeMs)ms", timestamp: "Just now"),
+                        CardItem(title: "\(model) Response", subtitle: res.text, category: .prompts, badge: "\(res.executionTimeMs)ms", timestamp: "Just now"),
                         at: 0
                     )
                 } catch AIClientError.sessionUnavailable {
                     self.stateController.appendChatMessage(
                         sender: "Antigravity",
-                        text: "⚠️ Tidak ada sesi Antigravity yang aktif. Buka Antigravity terlebih dahulu, lalu notch akan otomatis memantau percakapannya di sini.",
+                        text: "Tidak ada sesi Antigravity yang aktif. Buka Antigravity terlebih dahulu, lalu notch akan otomatis memantau percakapannya di sini.",
                         isUser: false
                     )
                 } catch {
-                    self.stateController.systemStatusMessage = "❌ \(model) error: \(error.localizedDescription)"
+                    self.stateController.systemStatusMessage = "\(model) error: \(error.localizedDescription)"
                 }
             }
 

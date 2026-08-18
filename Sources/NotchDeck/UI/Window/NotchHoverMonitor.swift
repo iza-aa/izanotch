@@ -24,15 +24,25 @@ public final class NotchHoverMonitor: ObservableObject {
         exitTask?.cancel()
         exitTask = nil
 
-        guard stateController.currentState == .collapsed else { return }
+        // Allow hover-expansion from collapsed OR liveActivity states
+        switch stateController.currentState {
+        case .collapsed, .liveActivity:
+            break
+        default:
+            return
+        }
 
         enterTask?.cancel()
         enterTask = Task { @MainActor in
             let nano = UInt64(enterDebounceDuration * 1_000_000_000)
             try? await Task.sleep(nanoseconds: nano)
             guard !Task.isCancelled else { return }
-            if self.stateController.currentState == .collapsed {
+            
+            switch self.stateController.currentState {
+            case .collapsed, .liveActivity:
                 self.stateController.transition(to: .expanded)
+            default:
+                break
             }
         }
     }

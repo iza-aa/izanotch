@@ -41,7 +41,7 @@ public struct ClipboardManager: Sendable {
                 maskedPreview: masked,
                 language: nil,
                 suggestedActions: ["Copy Masked", "Clear Clipboard"],
-                cardBadge: "⚠️ Masked Secret"
+                cardBadge: "Masked Secret"
             )
         }
 
@@ -55,7 +55,7 @@ public struct ClipboardManager: Sendable {
                 maskedPreview: trimmed,
                 language: lang,
                 suggestedActions: ["Explain Code", "Format"],
-                cardBadge: "💻 \(lang.capitalized)"
+                cardBadge: "\(lang.capitalized)"
             )
         }
 

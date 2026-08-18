@@ -22,13 +22,14 @@ public struct AIChatPanelView: View {
         VStack(spacing: 10) {
             // 0. System status / error banner
             if let statusMsg = stateController.systemStatusMessage, !statusMsg.isEmpty {
+                let isError = statusMsg.lowercased().contains("error") || statusMsg.lowercased().contains("failed")
                 HStack(spacing: 6) {
-                    Image(systemName: statusMsg.hasPrefix("❌") ? "exclamationmark.circle.fill" : "info.circle.fill")
+                    Image(systemName: isError ? "exclamationmark.circle.fill" : "info.circle.fill")
                         .font(.system(size: 10))
-                        .foregroundColor(statusMsg.hasPrefix("❌") ? Color.red.opacity(0.9) : Color.yellow.opacity(0.85))
+                        .foregroundColor(isError ? Color.red.opacity(0.9) : Color.yellow.opacity(0.85))
                     Text(statusMsg)
-                        .font(.system(size: 10.5))
-                        .foregroundColor(.white.opacity(0.8))
+                        .font(.system(size: 10.5, weight: .medium, design: .rounded))
+                        .foregroundColor(.white.opacity(0.85))
                         .lineLimit(2)
                     Spacer()
                     Button(action: { stateController.systemStatusMessage = nil }) {
@@ -38,13 +39,13 @@ public struct AIChatPanelView: View {
                     }
                     .buttonStyle(.plain)
                 }
-                .padding(.horizontal, 10)
-                .padding(.vertical, 6)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 7)
                 .background(
                     RoundedRectangle(cornerRadius: 8, style: .continuous)
-                        .fill(statusMsg.hasPrefix("❌") ? Color.red.opacity(0.15) : Color.yellow.opacity(0.1))
+                        .fill(isError ? Color.red.opacity(0.15) : Color.yellow.opacity(0.1))
                 )
-                .padding(.horizontal, 24)
+                .padding(.horizontal, 28)
             }
 
             // 1. Model Header Bar

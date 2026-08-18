@@ -171,31 +171,81 @@ public struct NotchRootView: View {
 
     // MARK: - Live Activity
 
+    // MARK: - Live Activity (Dynamic Island Style Pill)
+
     private func liveActivityContent(title: String, countdown: String) -> some View {
-        VStack {
-            Spacer(minLength: hasPhysicalNotch ? 30 : 4)
-            HStack(spacing: 10) {
-                Image(systemName: "calendar")
-                    .font(.system(size: 13))
-                    .foregroundColor(.white.opacity(0.7))
+        Button(action: { stateController.transition(to: .expanded) }) {
+            VStack {
+                Spacer(minLength: hasPhysicalNotch ? 30 : 4)
+                HStack(spacing: 10) {
+                    // Contextual SF Symbol indicator (no emojis)
+                    ZStack {
+                        Circle()
+                            .fill(liveActivityAccentColor(for: title).opacity(0.2))
+                            .frame(width: 22, height: 22)
 
-                Text(title)
-                    .font(.system(size: 12, weight: .medium, design: .rounded))
-                    .foregroundColor(.white)
-                    .lineLimit(1)
+                        Image(systemName: liveActivityIconName(for: title))
+                            .font(.system(size: 11, weight: .semibold))
+                            .foregroundColor(liveActivityAccentColor(for: title))
+                    }
 
-                Spacer()
+                    Text(cleanTitle(title))
+                        .font(.system(size: 12, weight: .semibold, design: .rounded))
+                        .foregroundColor(.white.opacity(0.95))
+                        .lineLimit(1)
 
-                Text(countdown)
-                    .font(.system(size: 11, weight: .semibold, design: .monospaced))
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 3)
-                    .background(Capsule().fill(Color.white.opacity(0.12)))
-                    .foregroundColor(.white)
+                    Spacer()
+
+                    Text(countdown)
+                        .font(.system(size: 10.5, weight: .semibold, design: .monospaced))
+                        .padding(.horizontal, 9)
+                        .padding(.vertical, 3)
+                        .background(
+                            Capsule()
+                                .fill(Color.white.opacity(0.12))
+                        )
+                        .foregroundColor(.white.opacity(0.85))
+                }
+                .padding(.horizontal, 20)
+                .padding(.bottom, 10)
             }
-            .padding(.horizontal, 24)
-            .padding(.bottom, 10)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .contentShape(Rectangle())
         }
+        .buttonStyle(.plain)
+    }
+
+    private func liveActivityIconName(for title: String) -> String {
+        let lower = title.lowercased()
+        if lower.contains("done") || lower.contains("complete") {
+            return "checkmark"
+        } else if lower.contains("tool") || lower.contains("running") || lower.contains("exec") {
+            return "gearshape.2.fill"
+        } else if lower.contains("clarification") || lower.contains("question") || lower.contains("action") {
+            return "questionmark.bubble.fill"
+        } else if lower.contains("schedule") || lower.contains("meeting") || lower.contains("remind") {
+            return "calendar.badge.clock"
+        } else {
+            return "sparkles"
+        }
+    }
+
+    private func liveActivityAccentColor(for title: String) -> Color {
+        let lower = title.lowercased()
+        if lower.contains("done") || lower.contains("complete") {
+            return Color.green
+        } else if lower.contains("tool") || lower.contains("running") {
+            return Color.orange
+        } else if lower.contains("clarification") || lower.contains("question") {
+            return Color.cyan
+        } else {
+            return Color.white
+        }
+    }
+
+    private func cleanTitle(_ text: String) -> String {
+        // Strip out any accidental unicode emoji characters
+        text.unicodeScalars.filter { !$0.properties.isEmojiPresentation && $0.value > 127 ? false : true }.map(String.init).joined().trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
     // MARK: - Expanded: Feature Panels
