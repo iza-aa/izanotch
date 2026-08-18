@@ -7,6 +7,7 @@ public struct NotchRootView: View {
     public var audioLevels: [CGFloat]
     public var hasPhysicalNotch: Bool
     public var onSubmitPrompt: (@MainActor (String) -> Void)?
+    public var onReplyClarification: (@MainActor (String) -> Void)?
     public var onToggleMic: (@MainActor () -> Void)?
     public var onStopMic: (@MainActor () -> Void)?
 
@@ -17,6 +18,7 @@ public struct NotchRootView: View {
         audioLevels: [CGFloat] = [0.2, 0.5, 0.8, 0.6, 0.3, 0.7],
         hasPhysicalNotch: Bool = true,
         onSubmitPrompt: (@MainActor (String) -> Void)? = nil,
+        onReplyClarification: (@MainActor (String) -> Void)? = nil,
         onToggleMic: (@MainActor () -> Void)? = nil,
         onStopMic: (@MainActor () -> Void)? = nil
     ) {
@@ -26,6 +28,7 @@ public struct NotchRootView: View {
         self.audioLevels = audioLevels
         self.hasPhysicalNotch = hasPhysicalNotch
         self.onSubmitPrompt = onSubmitPrompt
+        self.onReplyClarification = onReplyClarification
         self.onToggleMic = onToggleMic
         self.onStopMic = onStopMic
     }
@@ -217,7 +220,11 @@ public struct NotchRootView: View {
                                         HStack(spacing: 6) {
                                             ForEach(options, id: \.self) { opt in
                                                 Button(action: {
-                                                    onSubmitPrompt?(opt)
+                                                    if let onReply = onReplyClarification {
+                                                        onReply(opt)
+                                                    } else {
+                                                        onSubmitPrompt?(opt)
+                                                    }
                                                     stateController.clearClarification()
                                                 }) {
                                                     Text(opt)

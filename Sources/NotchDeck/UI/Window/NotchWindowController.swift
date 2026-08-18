@@ -12,6 +12,7 @@ public final class NotchWindowController: NSWindowController {
         stateController: NotchStateController,
         hoverMonitor: NotchHoverMonitor? = nil,
         onSubmitPrompt: (@MainActor (String) -> Void)? = nil,
+        onReplyClarification: (@MainActor (String) -> Void)? = nil,
         onToggleMic: (@MainActor () -> Void)? = nil,
         onStopMic: (@MainActor () -> Void)? = nil
     ) {
@@ -33,6 +34,7 @@ public final class NotchWindowController: NSWindowController {
             hoverMonitor: hoverMonitor,
             hasPhysicalNotch: hasNotch,
             onSubmitPrompt: onSubmitPrompt,
+            onReplyClarification: onReplyClarification,
             onToggleMic: onToggleMic,
             onStopMic: onStopMic
         )

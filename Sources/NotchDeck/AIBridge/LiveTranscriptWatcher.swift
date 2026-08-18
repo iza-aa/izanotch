@@ -19,10 +19,18 @@ public final class LiveTranscriptWatcher: @unchecked Sendable {
     private var currentWatchedURL: URL?
     private var onEventCallback: (@Sendable (TranscriptEvent) -> Void)?
 
+    public var isDirectoryWatchingActive: Bool {
+        dirSource != nil
+    }
+
+    public var isFileWatchingActive: Bool {
+        fileSource != nil
+    }
+
     public init() {}
 
     deinit {
-        stopWatching()
+        stopAllWatching()
     }
 
     public static func parseTranscriptLine(_ line: String) -> TranscriptEvent {
@@ -79,7 +87,7 @@ public final class LiveTranscriptWatcher: @unchecked Sendable {
     }
 
     public func startWatching(fileURL: URL, onEvent: @escaping @Sendable (TranscriptEvent) -> Void) {
-        stopWatching()
+        stopFileWatching()
         self.currentWatchedURL = fileURL
         self.onEventCallback = onEvent
         self.lineRemainderBuffer = ""
@@ -107,14 +115,12 @@ public final class LiveTranscriptWatcher: @unchecked Sendable {
                     let combined = self.lineRemainderBuffer + string
                     let lines = combined.components(separatedBy: "\n")
 
-                    // The last element is either empty (if ended in \n) or incomplete remainder
                     if let last = lines.last, !combined.hasSuffix("\n") {
                         self.lineRemainderBuffer = last
                     } else {
                         self.lineRemainderBuffer = ""
                     }
 
-                    // Process complete lines (all except the last incomplete chunk if not newline terminated)
                     let completeLines = combined.hasSuffix("\n") ? lines : Array(lines.dropLast())
                     for line in completeLines where !line.isEmpty {
                         let event = Self.parseTranscriptLine(line)
@@ -124,7 +130,7 @@ public final class LiveTranscriptWatcher: @unchecked Sendable {
                     }
                 }
             } catch {
-                // handle error
+                // handle read error
             }
         }
 
@@ -139,10 +145,8 @@ public final class LiveTranscriptWatcher: @unchecked Sendable {
     public func startWatchingBrainDirectory(brainDirectory: URL, onEvent: @escaping @Sendable (TranscriptEvent) -> Void) {
         self.onEventCallback = onEvent
 
-        // 1. Find and watch current latest session
         findAndWatchLatestSession(in: brainDirectory)
 
-        // 2. Watch directory for newly spawned sessions
         guard let dirHandle = try? FileHandle(forReadingFrom: brainDirectory) else { return }
         self.dirHandle = dirHandle
 
@@ -160,7 +164,7 @@ public final class LiveTranscriptWatcher: @unchecked Sendable {
         source.resume()
     }
 
-    private func findAndWatchLatestSession(in brainDirectory: URL) {
+    public func findAndWatchLatestSession(in brainDirectory: URL) {
         guard let onEvent = self.onEventCallback else { return }
         if let contents = try? FileManager.default.contentsOfDirectory(at: brainDirectory, includingPropertiesForKeys: [.contentModificationDateKey]),
            let latestSession = contents.filter({ $0.hasDirectoryPath && !$0.lastPathComponent.hasPrefix(".") }).sorted(by: {
@@ -175,18 +179,24 @@ public final class LiveTranscriptWatcher: @unchecked Sendable {
         }
     }
 
-    public func stopWatching() {
+    public func stopFileWatching() {
         fileSource?.cancel()
         fileSource = nil
         try? fileHandle?.close()
         fileHandle = nil
+        lineRemainderBuffer = ""
+        currentWatchedURL = nil
+    }
 
+    public func stopDirWatching() {
         dirSource?.cancel()
         dirSource = nil
         try? dirHandle?.close()
         dirHandle = nil
+    }
 
-        lineRemainderBuffer = ""
-        currentWatchedURL = nil
+    public func stopAllWatching() {
+        stopFileWatching()
+        stopDirWatching()
     }
 }

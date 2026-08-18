@@ -55,4 +55,34 @@ struct LiveTranscriptWatcherTests {
             #expect(Bool(false), "Event should be toolExecuted, got \(String(describing: event))")
         }
     }
+
+    @Test("Directory watching stays active across session changes")
+    func testDirectoryWatchingPersists() throws {
+        let tempBrainDir = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at: tempBrainDir, withIntermediateDirectories: true)
+
+        let watcher = LiveTranscriptWatcher()
+        watcher.startWatchingBrainDirectory(brainDirectory: tempBrainDir) { _ in }
+
+        #expect(watcher.isDirectoryWatchingActive == true)
+
+        // Simulate session rotation
+        let session1 = tempBrainDir.appendingPathComponent("session-1")
+        let logs1 = session1.appendingPathComponent(".system_generated/logs")
+        try FileManager.default.createDirectory(at: logs1, withIntermediateDirectories: true)
+        let logFile1 = logs1.appendingPathComponent("transcript.jsonl")
+        try "{\"status\":\"DONE\"}\n".write(to: logFile1, atomically: true, encoding: .utf8)
+
+        watcher.findAndWatchLatestSession(in: tempBrainDir)
+
+        // Assert directory watching did NOT get canceled
+        #expect(watcher.isDirectoryWatchingActive == true)
+        #expect(watcher.isFileWatchingActive == true)
+
+        watcher.stopAllWatching()
+        #expect(watcher.isDirectoryWatchingActive == false)
+        #expect(watcher.isFileWatchingActive == false)
+
+        try? FileManager.default.removeItem(at: tempBrainDir)
+    }
 }

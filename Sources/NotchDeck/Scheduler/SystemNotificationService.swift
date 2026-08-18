@@ -1,4 +1,5 @@
 import Foundation
+import AppKit
 import UserNotifications
 
 public final class SystemNotificationService: @unchecked Sendable {
@@ -47,15 +48,14 @@ public final class SystemNotificationService: @unchecked Sendable {
                 }
             }
         } else {
-            // CLI fallback (swift run): Schedule native macOS banner via osascript timer
-            Task {
-                let nano = UInt64(max(0, timeInterval) * 1_000_000_000)
-                try? await Task.sleep(nanoseconds: nano)
-
-                let p = Process()
-                p.executableURL = URL(fileURLWithPath: "/usr/bin/osascript")
-                p.arguments = ["-e", "display notification \"\(body)\" with title \"\(title)\" sound name \"default\""]
-                try? p.run()
+            // Native Cocoa NSUserNotification (ZERO shell injection, 100% pure API)
+            DispatchQueue.main.asyncAfter(deadline: .now() + max(0.1, timeInterval)) {
+                let notification = NSUserNotification()
+                notification.identifier = id
+                notification.title = title
+                notification.informativeText = body
+                notification.soundName = NSUserNotificationDefaultSoundName
+                NSUserNotificationCenter.default.deliver(notification)
             }
         }
     }

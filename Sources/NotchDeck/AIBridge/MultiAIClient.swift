@@ -18,11 +18,14 @@ public struct MultiAIResponse: Sendable {
 public final class MultiAIClient: @unchecked Sendable {
     public static let shared = MultiAIClient()
     private let urlSession: URLSession
-    private let subprocessBridge: AISubprocessBridge
+    private let sessionBridge: ActiveSessionBridge
 
-    public init(urlSession: URLSession = .shared, subprocessBridge: AISubprocessBridge = AISubprocessBridge()) {
+    public init(
+        urlSession: URLSession = .shared,
+        sessionBridge: ActiveSessionBridge = .shared
+    ) {
         self.urlSession = urlSession
-        self.subprocessBridge = subprocessBridge
+        self.sessionBridge = sessionBridge
     }
 
     // MARK: - Request Builders (Zero Shell Injection)
@@ -117,7 +120,8 @@ public final class MultiAIClient: @unchecked Sendable {
         provider: AIProvider,
         geminiApiKey: String? = nil,
         claudeApiKey: String? = nil,
-        openAiApiKey: String? = nil
+        openAiApiKey: String? = nil,
+        activeBrainSessionDir: URL? = nil
     ) async throws -> MultiAIResponse {
         let startTime = Date()
 
@@ -154,11 +158,11 @@ public final class MultiAIClient: @unchecked Sendable {
                 let duration = Int(Date().timeIntervalSince(startTime) * 1000)
                 return MultiAIResponse(text: responseText, provider: .claudeCode, executionTimeMs: duration)
             } else if let claudeBin = Self.findExecutable(named: "claude") {
-                // Safe Direct Binary Execution with Arguments (NO Shell Interpolation)
                 let acc = OutputAccumulator()
-                _ = try await subprocessBridge.execute(
+                _ = try await sessionBridge.dispatchPromptInteractive(
                     executable: claudeBin,
-                    arguments: ["-p", text]
+                    arguments: ["-p", text],
+                    initialPrompt: text
                 ) { chunk in
                     acc.append(chunk)
                 }
@@ -185,9 +189,10 @@ public final class MultiAIClient: @unchecked Sendable {
                 return MultiAIResponse(text: responseText, provider: .codex, executionTimeMs: duration)
             } else if let codexBin = Self.findExecutable(named: "codex") {
                 let acc = OutputAccumulator()
-                _ = try await subprocessBridge.execute(
+                _ = try await sessionBridge.dispatchPromptInteractive(
                     executable: codexBin,
-                    arguments: ["exec", text]
+                    arguments: ["exec"],
+                    initialPrompt: text
                 ) { chunk in
                     acc.append(chunk)
                 }
@@ -198,9 +203,14 @@ public final class MultiAIClient: @unchecked Sendable {
             }
 
         case .antigravity:
-            // Interacts with active Antigravity session directory
+            // Forward prompt directly into active Antigravity session transcript
+            try await sessionBridge.sendClarificationResponse(text, sessionDirectory: activeBrainSessionDir)
             let duration = Int(Date().timeIntervalSince(startTime) * 1000)
-            return MultiAIResponse(text: "Prompt '\(text)' successfully received by active Antigravity Agent.", provider: .antigravity, executionTimeMs: duration)
+            return MultiAIResponse(
+                text: "Prompt '\(text)' dispatched to active Antigravity session.",
+                provider: .antigravity,
+                executionTimeMs: duration
+            )
         }
     }
 }
