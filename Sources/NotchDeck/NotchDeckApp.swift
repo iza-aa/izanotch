@@ -76,8 +76,7 @@ struct NotchDeckApp: App {
 
     var body: some Scene {
         Settings {
-            Text("NotchDeck Settings & BYOK API Keys")
-                .frame(width: 380, height: 260)
+            SettingsView()
         }
     }
 }

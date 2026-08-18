@@ -2,10 +2,16 @@ import SwiftUI
 
 public struct NotchRootView: View {
     @ObservedObject public var stateController: NotchStateController
+    @ObservedObject public var cardStore: CardDataStore = .shared
     public var audioLevels: [CGFloat]
 
-    public init(stateController: NotchStateController, audioLevels: [CGFloat] = [0.2, 0.5, 0.8, 0.6, 0.3, 0.7]) {
+    public init(
+        stateController: NotchStateController,
+        cardStore: CardDataStore = .shared,
+        audioLevels: [CGFloat] = [0.2, 0.5, 0.8, 0.6, 0.3, 0.7]
+    ) {
         self.stateController = stateController
+        self.cardStore = cardStore
         self.audioLevels = audioLevels
     }
 
@@ -52,6 +58,7 @@ public struct NotchRootView: View {
 
             case .expanded:
                 VStack(spacing: 12) {
+                    // 1. Header Command Bar
                     HStack {
                         Menu {
                             Button("Antigravity") { stateController.activeAIModel = "Antigravity" }
@@ -77,6 +84,12 @@ public struct NotchRootView: View {
                     .background(Color.white.opacity(0.08))
                     .cornerRadius(12)
 
+                    // 2. Category Filter Bar (Image 1 Style)
+                    CategoryFilterBarView(store: cardStore)
+
+                    // 3. Horizontal Card Carousel
+                    CardCarouselView(store: cardStore)
+
                     Spacer()
                 }
                 .padding(16)
@@ -93,7 +106,7 @@ public struct NotchRootView: View {
         case .collapsed: return 180
         case .voiceActive: return 360
         case .liveActivity: return 320
-        case .expanded: return 540
+        case .expanded: return 560
         }
     }
 
@@ -102,7 +115,7 @@ public struct NotchRootView: View {
         case .collapsed: return 32
         case .voiceActive: return 60
         case .liveActivity: return 44
-        case .expanded: return 380
+        case .expanded: return 240
         }
     }
 }
