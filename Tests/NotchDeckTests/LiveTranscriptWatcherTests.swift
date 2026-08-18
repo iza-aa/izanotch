@@ -2,6 +2,23 @@ import Testing
 import Foundation
 @testable import NotchDeck
 
+final class SessionBox: @unchecked Sendable {
+    private var lock = NSLock()
+    private var url: URL?
+
+    func set(_ u: URL) {
+        lock.lock()
+        defer { lock.unlock() }
+        url = u
+    }
+
+    func get() -> URL? {
+        lock.lock()
+        defer { lock.unlock() }
+        return url
+    }
+}
+
 @Suite("Live Transcript Watcher Tests")
 struct LiveTranscriptWatcherTests {
     @Test("Parse transcript JSONL line for ask_question event with options")
@@ -23,7 +40,7 @@ struct LiveTranscriptWatcherTests {
         }
     }
 
-    @Test("Parse transcript JSONL line for DONE task completed event")
+    @Test("Parse transcript JSONL line for DONE task completed event from PLANNER_RESPONSE")
     func testParseTaskDoneEvent() throws {
         let jsonLine = """
         {"step_index":12,"type":"PLANNER_RESPONSE","status":"DONE","content":"Refactoring auth module selesai dengan 15 test passing."}
@@ -37,6 +54,16 @@ struct LiveTranscriptWatcherTests {
         default:
             #expect(Bool(false), "Event should be taskCompleted, got \(String(describing: event))")
         }
+    }
+
+    @Test("User input event with status DONE is ignored and does NOT trigger taskCompleted")
+    func testUserInputDoesNotTriggerTaskCompleted() throws {
+        let jsonLine = """
+        {"step_index":13,"source":"USER_EXPLICIT","type":"USER_INPUT","status":"DONE","content":"Postgres"}
+        """
+
+        let event = LiveTranscriptWatcher.parseTranscriptLine(jsonLine)
+        #expect(event == .none)
     }
 
     @Test("Parse tool execution event")
@@ -56,13 +83,20 @@ struct LiveTranscriptWatcherTests {
         }
     }
 
-    @Test("Directory watching stays active across session changes")
+    @Test("Directory watching stays active across session changes and calls onSessionChanged")
     func testDirectoryWatchingPersists() throws {
         let tempBrainDir = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         try FileManager.default.createDirectory(at: tempBrainDir, withIntermediateDirectories: true)
 
         let watcher = LiveTranscriptWatcher()
-        watcher.startWatchingBrainDirectory(brainDirectory: tempBrainDir) { _ in }
+        let sessionBox = SessionBox()
+        watcher.startWatchingBrainDirectory(
+            brainDirectory: tempBrainDir,
+            onSessionChanged: { session in
+                sessionBox.set(session)
+            },
+            onEvent: { _ in }
+        )
 
         #expect(watcher.isDirectoryWatchingActive == true)
 
@@ -71,13 +105,14 @@ struct LiveTranscriptWatcherTests {
         let logs1 = session1.appendingPathComponent(".system_generated/logs")
         try FileManager.default.createDirectory(at: logs1, withIntermediateDirectories: true)
         let logFile1 = logs1.appendingPathComponent("transcript.jsonl")
-        try "{\"status\":\"DONE\"}\n".write(to: logFile1, atomically: true, encoding: .utf8)
+        try "{\"type\":\"PLANNER_RESPONSE\",\"status\":\"DONE\",\"content\":\"OK\"}\n".write(to: logFile1, atomically: true, encoding: .utf8)
 
         watcher.findAndWatchLatestSession(in: tempBrainDir)
 
-        // Assert directory watching did NOT get canceled
+        // Assert directory watching did NOT get canceled and session was tracked
         #expect(watcher.isDirectoryWatchingActive == true)
         #expect(watcher.isFileWatchingActive == true)
+        #expect(sessionBox.get()?.lastPathComponent == "session-1")
 
         watcher.stopAllWatching()
         #expect(watcher.isDirectoryWatchingActive == false)

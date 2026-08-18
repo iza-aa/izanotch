@@ -1,16 +1,24 @@
 import Testing
 import Foundation
+import AppKit
 @testable import NotchDeck
 
 @Suite("System Notification Service Tests")
 struct SystemNotificationServiceTests {
-    @Test("Schedule notification with dangerous characters and injection payloads does not crash or execute shell")
-    func testDangerousPayloadNotification() async throws {
+    @Test("Schedule notification safely with quotes and script payloads")
+    func testDangerousPayloadNotificationSafety() async throws {
         let service = SystemNotificationService.shared
         let maliciousTitle = "Reminder \" with title \" & do shell script \"rm -rf /\""
         let maliciousBody = "Meeting'); DROP TABLE Students; -- \" \n \r"
 
-        // Pure Cocoa NSUserNotification execution does not throw or crash on special chars
+        // In CLI environment, it creates an NSUserNotification object with properties intact
+        let notification = NSUserNotification()
+        notification.title = maliciousTitle
+        notification.informativeText = maliciousBody
+
+        #expect(notification.title == maliciousTitle)
+        #expect(notification.informativeText == maliciousBody)
+
         service.scheduleNotification(
             id: UUID().uuidString,
             title: maliciousTitle,

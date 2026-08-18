@@ -13,20 +13,31 @@ public actor ActiveSessionBridge {
         sessionDirectory: URL? = nil
     ) async throws {
         // 1. If an interactive subprocess is running, write directly to standardInput
-        try activeSubprocess.sendInput(response + "\n")
+        if isSessionRunning {
+            try? activeSubprocess.sendInput(response + "\n")
+        }
 
-        // 2. If a session directory is provided, append the user input event directly
+        // 2. If a session directory is provided, write properly escaped JSONL entry
         if let sessionDir = sessionDirectory {
             let logFile = sessionDir.appendingPathComponent(".system_generated/logs/transcript.jsonl")
             if FileManager.default.fileExists(atPath: logFile.path),
                let handle = try? FileHandle(forWritingTo: logFile) {
-                let userEventJSON = """
-                {"step_index":\(Int(Date().timeIntervalSince1970)),"source":"USER_EXPLICIT","type":"USER_INPUT","status":"DONE","content":"\(response)"}\n
-                """
-                if let data = userEventJSON.data(using: .utf8) {
-                    _ = try? handle.seekToEnd()
-                    try? handle.write(contentsOf: data)
-                    try? handle.close()
+                let eventDict: [String: Any] = [
+                    "step_index": Int(Date().timeIntervalSince1970),
+                    "source": "USER_EXPLICIT",
+                    "type": "USER_INPUT",
+                    "status": "DONE",
+                    "content": response
+                ]
+
+                if let jsonData = try? JSONSerialization.data(withJSONObject: eventDict, options: []),
+                   var jsonString = String(data: jsonData, encoding: .utf8) {
+                    jsonString += "\n"
+                    if let lineData = jsonString.data(using: .utf8) {
+                        _ = try? handle.seekToEnd()
+                        try? handle.write(contentsOf: lineData)
+                        try? handle.close()
+                    }
                 }
             }
         }

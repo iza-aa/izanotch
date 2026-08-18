@@ -28,8 +28,8 @@ struct ActiveSessionBridgeTests {
         }
     }
 
-    @Test("Send clarification response to file handle")
-    func testSendClarificationResponse() async throws {
+    @Test("Send clarification response with complex quotes, newlines, and special characters produces valid JSONL")
+    func testSendClarificationResponseWithSpecialChars() async throws {
         let tempDir = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         let logDir = tempDir.appendingPathComponent(".system_generated/logs")
         try FileManager.default.createDirectory(at: logDir, withIntermediateDirectories: true)
@@ -37,11 +37,21 @@ struct ActiveSessionBridgeTests {
         try "{}".write(to: logFile, atomically: true, encoding: .utf8)
 
         let bridge = ActiveSessionBridge()
-        try await bridge.sendClarificationResponse("Option A Chosen", sessionDirectory: tempDir)
+        let complexResponse = "Option \"A\" with \n newline and backslash \\ and emojis 🚀 and payload: {\"hack\": true}"
+        try await bridge.sendClarificationResponse(complexResponse, sessionDirectory: tempDir)
 
         let updatedContent = try String(contentsOf: logFile)
-        #expect(updatedContent.contains("Option A Chosen"))
-        #expect(updatedContent.contains("USER_INPUT"))
+        let lines = updatedContent.components(separatedBy: "\n").filter { !$0.trimmingCharacters(in: .whitespaces).isEmpty }
+        
+        // Assert the appended line is strictly valid JSON
+        guard let lastLine = lines.last, let data = lastLine.data(using: .utf8) else {
+            #expect(Bool(false), "Expected last line in JSONL")
+            return
+        }
+
+        let parsed = try JSONSerialization.jsonObject(with: data) as? [String: Any]
+        #expect(parsed?["type"] as? String == "USER_INPUT")
+        #expect(parsed?["content"] as? String == complexResponse)
 
         try? FileManager.default.removeItem(at: tempDir)
     }

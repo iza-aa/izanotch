@@ -18,6 +18,7 @@ public final class LiveTranscriptWatcher: @unchecked Sendable {
     private let queue = DispatchQueue(label: "com.notchdeck.transcriptwatcher", qos: .utility)
     private var currentWatchedURL: URL?
     private var onEventCallback: (@Sendable (TranscriptEvent) -> Void)?
+    public var onActiveSessionChanged: (@Sendable (URL) -> Void)?
 
     public var isDirectoryWatchingActive: Bool {
         dirSource != nil
@@ -41,9 +42,15 @@ public final class LiveTranscriptWatcher: @unchecked Sendable {
             return .none
         }
 
+        let type = json["type"] as? String ?? ""
         let status = json["status"] as? String ?? ""
         let content = json["content"] as? String ?? ""
         let toolCalls = json["tool_calls"] as? [[String: Any]] ?? []
+
+        // If this is a user input event, do not treat it as agent planner completion
+        if type == "USER_INPUT" {
+            return .none
+        }
 
         // 1. Check for ask_question or user confirmation
         for call in toolCalls {
@@ -73,8 +80,8 @@ public final class LiveTranscriptWatcher: @unchecked Sendable {
             return .userClarificationNeeded(question: content.isEmpty ? "Agent menunggu konfirmasi" : content, options: nil)
         }
 
-        // 2. Check for task DONE
-        if status == "DONE" {
+        // 2. Check for task DONE (only from PLANNER_RESPONSE)
+        if status == "DONE" && (type == "PLANNER_RESPONSE" || type.isEmpty) {
             return .taskCompleted(summary: content.isEmpty ? "Task AI selesai." : content)
         }
 
@@ -142,8 +149,13 @@ public final class LiveTranscriptWatcher: @unchecked Sendable {
         source.resume()
     }
 
-    public func startWatchingBrainDirectory(brainDirectory: URL, onEvent: @escaping @Sendable (TranscriptEvent) -> Void) {
+    public func startWatchingBrainDirectory(
+        brainDirectory: URL,
+        onSessionChanged: (@Sendable (URL) -> Void)? = nil,
+        onEvent: @escaping @Sendable (TranscriptEvent) -> Void
+    ) {
         self.onEventCallback = onEvent
+        self.onActiveSessionChanged = onSessionChanged
 
         findAndWatchLatestSession(in: brainDirectory)
 
@@ -174,6 +186,7 @@ public final class LiveTranscriptWatcher: @unchecked Sendable {
            }).first {
             let logFile = latestSession.appendingPathComponent(".system_generated/logs/transcript.jsonl")
             if currentWatchedURL != logFile && FileManager.default.fileExists(atPath: logFile.path) {
+                onActiveSessionChanged?(latestSession)
                 startWatching(fileURL: logFile, onEvent: onEvent)
             }
         }

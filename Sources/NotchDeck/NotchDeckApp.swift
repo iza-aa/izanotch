@@ -65,11 +65,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func startLiveTranscriptWatcher() {
         let brainDir = URL(fileURLWithPath: NSHomeDirectory()).appendingPathComponent(".gemini/antigravity/brain")
-        transcriptWatcher.startWatchingBrainDirectory(brainDirectory: brainDir) { [weak self] event in
-            Task { @MainActor [weak self] in
-                self?.handleTranscriptEvent(event)
+        transcriptWatcher.startWatchingBrainDirectory(
+            brainDirectory: brainDir,
+            onSessionChanged: { [weak self] sessionDir in
+                Task { @MainActor [weak self] in
+                    self?.currentActiveSessionDir = sessionDir
+                }
+            },
+            onEvent: { [weak self] event in
+                Task { @MainActor [weak self] in
+                    self?.handleTranscriptEvent(event)
+                }
             }
-        }
+        )
     }
 
     private func handleTranscriptEvent(_ event: TranscriptEvent) {
@@ -158,9 +166,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     public func replyToActiveSession(_ response: String) {
-        let brainDir = URL(fileURLWithPath: NSHomeDirectory()).appendingPathComponent(".gemini/antigravity/brain")
+        let activeDir = currentActiveSessionDir
         Task { @MainActor in
-            try? await ActiveSessionBridge.shared.sendClarificationResponse(response, sessionDirectory: brainDir)
+            try? await ActiveSessionBridge.shared.sendClarificationResponse(response, sessionDirectory: activeDir)
             self.stateController.clearClarification()
             self.stateController.transition(to: .collapsed)
             CardDataStore.shared.items.insert(
@@ -181,7 +189,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let geminiKey = KeychainManager.load(key: "notchdeck.gemini.apikey")
         let claudeKey = KeychainManager.load(key: "notchdeck.claude.apikey")
         let openAiKey = KeychainManager.load(key: "notchdeck.openai.apikey")
-        let brainDir = URL(fileURLWithPath: NSHomeDirectory()).appendingPathComponent(".gemini/antigravity/brain")
+        let activeDir = currentActiveSessionDir
 
         Task { @MainActor in
             let lower = prompt.lowercased()
@@ -204,7 +212,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                     geminiApiKey: geminiKey,
                     claudeApiKey: claudeKey,
                     openAiApiKey: openAiKey,
-                    activeBrainSessionDir: brainDir
+                    activeBrainSessionDir: activeDir
                 ) {
                     CardDataStore.shared.items.insert(
                         CardItem(title: "✨ \(model) Response", subtitle: res.text, category: .prompts, badge: "\(res.executionTimeMs)ms", timestamp: "Just now"),
