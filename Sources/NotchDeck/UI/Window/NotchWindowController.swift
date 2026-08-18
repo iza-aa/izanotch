@@ -42,6 +42,11 @@ public final class NotchWindowController: NSWindowController {
             onAddSchedule: onAddSchedule
         )
         let hostingView = NSHostingView(rootView: rootView)
+        hostingView.translatesAutoresizingMaskIntoConstraints = true
+        hostingView.autoresizingMask = [.width, .height]
+        if #available(macOS 13.0, *) {
+            hostingView.sizingOptions = []
+        }
         panel.contentView = hostingView
 
         observeStateChanges()

@@ -16,6 +16,7 @@ public final class NotchPanel: NSPanel {
         self.isMovableByWindowBackground = false
         self.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .ignoresCycle]
         self.hidesOnDeactivate = false
+        self.isReleasedWhenClosed = false
     }
 
     public override var canBecomeKey: Bool { true }
