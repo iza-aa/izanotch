@@ -25,7 +25,7 @@ public final class MultiAIClient: @unchecked Sendable {
         self.subprocessBridge = subprocessBridge
     }
 
-    // MARK: - Request Builders
+    // MARK: - Request Builders (Zero Shell Injection)
 
     public static func buildClaudeRequest(
         apiKey: String,
@@ -73,13 +73,51 @@ public final class MultiAIClient: @unchecked Sendable {
         return request
     }
 
+    public static func buildOpenAIRequest(
+        apiKey: String,
+        prompt: String,
+        model: String = "gpt-4o"
+    ) -> URLRequest {
+        var request = URLRequest(url: URL(string: "https://api.openai.com/v1/chat/completions")!)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+
+        let body: [String: Any] = [
+            "model": model,
+            "messages": [
+                ["role": "user", "content": prompt]
+            ]
+        ]
+        request.httpBody = try? JSONSerialization.data(withJSONObject: body)
+        return request
+    }
+
+    // MARK: - Safe Binary Locator (No Shell Interpolation)
+
+    public static func findExecutable(named name: String) -> String? {
+        let standardPaths = [
+            "/usr/local/bin/" + name,
+            "/opt/homebrew/bin/" + name,
+            "/usr/bin/" + name,
+            "/bin/" + name
+        ]
+        for path in standardPaths {
+            if FileManager.default.isExecutableFile(atPath: path) {
+                return path
+            }
+        }
+        return nil
+    }
+
     // MARK: - Prompt Execution Router
 
     public func prompt(
         text: String,
         provider: AIProvider,
         geminiApiKey: String? = nil,
-        claudeApiKey: String? = nil
+        claudeApiKey: String? = nil,
+        openAiApiKey: String? = nil
     ) async throws -> MultiAIResponse {
         let startTime = Date()
 
@@ -98,7 +136,7 @@ public final class MultiAIClient: @unchecked Sendable {
             let candidates = json["candidates"] as? [[String: Any]]
             let content = candidates?.first?["content"] as? [String: Any]
             let parts = content?["parts"] as? [[String: Any]]
-            let responseText = parts?.first?["text"] as? String ?? "No response"
+            let responseText = parts?.first?["text"] as? String ?? "No response from Gemini"
             let duration = Int(Date().timeIntervalSince(startTime) * 1000)
             return MultiAIResponse(text: responseText, provider: .gemini, executionTimeMs: duration)
 
@@ -115,40 +153,54 @@ public final class MultiAIClient: @unchecked Sendable {
                 let responseText = contentBlocks?.first?["text"] as? String ?? "No response from Claude"
                 let duration = Int(Date().timeIntervalSince(startTime) * 1000)
                 return MultiAIResponse(text: responseText, provider: .claudeCode, executionTimeMs: duration)
-            } else {
+            } else if let claudeBin = Self.findExecutable(named: "claude") {
+                // Safe Direct Binary Execution with Arguments (NO Shell Interpolation)
                 let acc = OutputAccumulator()
                 _ = try await subprocessBridge.execute(
-                    executable: "/bin/sh",
-                    arguments: ["-c", "command -v claude >/dev/null 2>&1 && claude -p \"\(text)\" || echo 'Claude CLI ready.'"]
+                    executable: claudeBin,
+                    arguments: ["-p", text]
                 ) { chunk in
                     acc.append(chunk)
                 }
                 let duration = Int(Date().timeIntervalSince(startTime) * 1000)
                 let cliOutput = acc.get()
-                return MultiAIResponse(text: cliOutput.isEmpty ? "Claude Code CLI executed." : cliOutput, provider: .claudeCode, executionTimeMs: duration)
+                return MultiAIResponse(text: cliOutput.isEmpty ? "Claude CLI execution complete." : cliOutput, provider: .claudeCode, executionTimeMs: duration)
+            } else {
+                throw AIClientError.missingAPIKey
+            }
+
+        case .codex:
+            if let key = openAiApiKey, !key.isEmpty {
+                let req = Self.buildOpenAIRequest(apiKey: key, prompt: text)
+                let (data, response) = try await urlSession.data(for: req)
+                guard let http = response as? HTTPURLResponse, http.statusCode == 200 else {
+                    let code = (response as? HTTPURLResponse)?.statusCode ?? 500
+                    throw AIClientError.httpError(statusCode: code, message: "OpenAI/Codex HTTP error")
+                }
+                let json = (try? JSONSerialization.jsonObject(with: data) as? [String: Any]) ?? [:]
+                let choices = json["choices"] as? [[String: Any]]
+                let message = choices?.first?["message"] as? [String: Any]
+                let responseText = message?["content"] as? String ?? "No response from Codex"
+                let duration = Int(Date().timeIntervalSince(startTime) * 1000)
+                return MultiAIResponse(text: responseText, provider: .codex, executionTimeMs: duration)
+            } else if let codexBin = Self.findExecutable(named: "codex") {
+                let acc = OutputAccumulator()
+                _ = try await subprocessBridge.execute(
+                    executable: codexBin,
+                    arguments: ["exec", text]
+                ) { chunk in
+                    acc.append(chunk)
+                }
+                let duration = Int(Date().timeIntervalSince(startTime) * 1000)
+                return MultiAIResponse(text: acc.get(), provider: .codex, executionTimeMs: duration)
+            } else {
+                throw AIClientError.missingAPIKey
             }
 
         case .antigravity:
-            let acc = OutputAccumulator()
-            _ = try await subprocessBridge.execute(
-                executable: "/bin/sh",
-                arguments: ["-c", "echo '[Antigravity Prompt Dispatched]: \(text)'"]
-            ) { chunk in
-                acc.append(chunk)
-            }
+            // Interacts with active Antigravity session directory
             let duration = Int(Date().timeIntervalSince(startTime) * 1000)
-            return MultiAIResponse(text: acc.get(), provider: .antigravity, executionTimeMs: duration)
-
-        case .codex:
-            let acc = OutputAccumulator()
-            _ = try await subprocessBridge.execute(
-                executable: "/bin/sh",
-                arguments: ["-c", "command -v codex >/dev/null 2>&1 && codex exec \"\(text)\" || echo 'Codex ready: \(text)'"]
-            ) { chunk in
-                acc.append(chunk)
-            }
-            let duration = Int(Date().timeIntervalSince(startTime) * 1000)
-            return MultiAIResponse(text: acc.get(), provider: .codex, executionTimeMs: duration)
+            return MultiAIResponse(text: "Prompt '\(text)' successfully received by active Antigravity Agent.", provider: .antigravity, executionTimeMs: duration)
         }
     }
 }

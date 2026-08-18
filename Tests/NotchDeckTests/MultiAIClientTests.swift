@@ -29,4 +29,23 @@ struct MultiAIClientTests {
         #expect(request.url?.absoluteString.contains("generativelanguage.googleapis.com") == true)
         #expect(request.httpMethod == "POST")
     }
+
+    @Test("Build OpenAI / Codex API Request Payload")
+    func testOpenAIPayloadBuilding() throws {
+        let request = MultiAIClient.buildOpenAIRequest(
+            apiKey: "sk-proj-testkey123",
+            prompt: "Optimize database query",
+            model: "gpt-4o"
+        )
+
+        #expect(request.url?.absoluteString == "https://api.openai.com/v1/chat/completions")
+        #expect(request.value(forHTTPHeaderField: "Authorization") == "Bearer sk-proj-testkey123")
+        #expect(request.httpMethod == "POST")
+    }
+
+    @Test("Find standard executable path without shell injection")
+    func testFindExecutable() {
+        let shPath = MultiAIClient.findExecutable(named: "sh")
+        #expect(shPath != nil)
+    }
 }

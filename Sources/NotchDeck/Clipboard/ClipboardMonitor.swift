@@ -1,5 +1,6 @@
 import AppKit
 import Foundation
+import Combine
 
 @MainActor
 public final class ClipboardMonitor: ObservableObject {

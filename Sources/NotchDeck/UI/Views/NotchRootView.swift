@@ -6,7 +6,7 @@ public struct NotchRootView: View {
     public var hoverMonitor: NotchHoverMonitor?
     public var audioLevels: [CGFloat]
     public var hasPhysicalNotch: Bool
-    public var onSubmitPrompt: (@MainActor () -> Void)?
+    public var onSubmitPrompt: (@MainActor (String) -> Void)?
     public var onToggleMic: (@MainActor () -> Void)?
     public var onStopMic: (@MainActor () -> Void)?
 
@@ -16,7 +16,7 @@ public struct NotchRootView: View {
         hoverMonitor: NotchHoverMonitor? = nil,
         audioLevels: [CGFloat] = [0.2, 0.5, 0.8, 0.6, 0.3, 0.7],
         hasPhysicalNotch: Bool = true,
-        onSubmitPrompt: (@MainActor () -> Void)? = nil,
+        onSubmitPrompt: (@MainActor (String) -> Void)? = nil,
         onToggleMic: (@MainActor () -> Void)? = nil,
         onStopMic: (@MainActor () -> Void)? = nil
     ) {
@@ -160,12 +160,12 @@ public struct NotchRootView: View {
                                 .font(.system(size: 12.5, weight: .regular))
                                 .foregroundColor(.white)
                                 .onSubmit {
-                                    onSubmitPrompt?()
+                                    onSubmitPrompt?(stateController.commandPrompt)
                                 }
 
                             if !stateController.commandPrompt.isEmpty {
                                 Button(action: {
-                                    onSubmitPrompt?()
+                                    onSubmitPrompt?(stateController.commandPrompt)
                                 }) {
                                     Image(systemName: "arrow.up.circle.fill")
                                         .font(.system(size: 16))
@@ -192,10 +192,68 @@ public struct NotchRootView: View {
                                 .fill(Color.white.opacity(0.06))
                         )
 
-                        // 2. Category Filter Bar
+                        // 2. Interactive Clarification Banner (If agent asks a question / needs input)
+                        if let item = stateController.pendingClarification {
+                            VStack(alignment: .leading, spacing: 6) {
+                                HStack {
+                                    Image(systemName: "questionmark.circle.fill")
+                                        .font(.system(size: 12))
+                                        .foregroundColor(.white.opacity(0.9))
+                                    Text(item.question)
+                                        .font(.system(size: 11.5, weight: .semibold))
+                                        .foregroundColor(.white)
+                                        .lineLimit(2)
+                                    Spacer()
+                                    Button(action: { stateController.clearClarification() }) {
+                                        Image(systemName: "xmark")
+                                            .font(.system(size: 10))
+                                            .foregroundColor(.white.opacity(0.5))
+                                    }
+                                    .buttonStyle(.plain)
+                                }
+
+                                if let options = item.options, !options.isEmpty {
+                                    ScrollView(.horizontal, showsIndicators: false) {
+                                        HStack(spacing: 6) {
+                                            ForEach(options, id: \.self) { opt in
+                                                Button(action: {
+                                                    onSubmitPrompt?(opt)
+                                                    stateController.clearClarification()
+                                                }) {
+                                                    Text(opt)
+                                                        .font(.system(size: 10.5, weight: .medium))
+                                                        .padding(.horizontal, 10)
+                                                        .padding(.vertical, 4)
+                                                        .background(Capsule().fill(Color.white.opacity(0.16)))
+                                                        .foregroundColor(.white)
+                                                }
+                                                .buttonStyle(.plain)
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            .padding(10)
+                            .background(RoundedRectangle(cornerRadius: 12).fill(Color.white.opacity(0.08)))
+                        }
+
+                        // 3. System Status / Permission Warning (If any)
+                        if let statusMsg = stateController.systemStatusMessage {
+                            HStack {
+                                Image(systemName: "info.circle")
+                                    .font(.system(size: 10))
+                                Text(statusMsg)
+                                    .font(.system(size: 10.5))
+                                Spacer()
+                            }
+                            .padding(.horizontal, 8)
+                            .foregroundColor(.white.opacity(0.6))
+                        }
+
+                        // 4. Category Filter Bar
                         CategoryFilterBarView(store: cardStore)
 
-                        // 3. Horizontal Card Carousel
+                        // 5. Horizontal Card Carousel
                         CardCarouselView(store: cardStore)
 
                         Spacer(minLength: 0)
@@ -217,6 +275,10 @@ public struct NotchRootView: View {
     }
 
     private func heightForState(_ state: NotchState) -> CGFloat {
-        NotchGeometryCalculator.dimensions(for: state, hasPhysicalNotch: hasPhysicalNotch).height
+        let baseHeight = NotchGeometryCalculator.dimensions(for: state, hasPhysicalNotch: hasPhysicalNotch).height
+        if state == .expanded && stateController.pendingClarification != nil {
+            return baseHeight + 50
+        }
+        return baseHeight
     }
 }

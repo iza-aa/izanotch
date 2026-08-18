@@ -9,10 +9,15 @@ public enum TranscriptEvent: Equatable, Sendable {
 }
 
 public final class LiveTranscriptWatcher: @unchecked Sendable {
-    private var source: DispatchSourceFileSystemObject?
+    private var fileSource: DispatchSourceFileSystemObject?
+    private var dirSource: DispatchSourceFileSystemObject?
     private var fileHandle: FileHandle?
+    private var dirHandle: FileHandle?
     private var lastReadOffset: UInt64 = 0
+    private var lineRemainderBuffer: String = ""
     private let queue = DispatchQueue(label: "com.notchdeck.transcriptwatcher", qos: .utility)
+    private var currentWatchedURL: URL?
+    private var onEventCallback: (@Sendable (TranscriptEvent) -> Void)?
 
     public init() {}
 
@@ -75,6 +80,9 @@ public final class LiveTranscriptWatcher: @unchecked Sendable {
 
     public func startWatching(fileURL: URL, onEvent: @escaping @Sendable (TranscriptEvent) -> Void) {
         stopWatching()
+        self.currentWatchedURL = fileURL
+        self.onEventCallback = onEvent
+        self.lineRemainderBuffer = ""
 
         guard let handle = try? FileHandle(forReadingFrom: fileURL) else { return }
         self.fileHandle = handle
@@ -86,7 +94,6 @@ public final class LiveTranscriptWatcher: @unchecked Sendable {
             queue: queue
         )
 
-        // Read initial end of file
         self.lastReadOffset = (try? handle.seekToEnd()) ?? 0
 
         source.setEventHandler { [weak self] in
@@ -97,8 +104,19 @@ public final class LiveTranscriptWatcher: @unchecked Sendable {
                 self.lastReadOffset = try handle.offset()
 
                 if let string = String(data: newData, encoding: .utf8) {
-                    let lines = string.components(separatedBy: .newlines)
-                    for line in lines where !line.isEmpty {
+                    let combined = self.lineRemainderBuffer + string
+                    let lines = combined.components(separatedBy: "\n")
+
+                    // The last element is either empty (if ended in \n) or incomplete remainder
+                    if let last = lines.last, !combined.hasSuffix("\n") {
+                        self.lineRemainderBuffer = last
+                    } else {
+                        self.lineRemainderBuffer = ""
+                    }
+
+                    // Process complete lines (all except the last incomplete chunk if not newline terminated)
+                    let completeLines = combined.hasSuffix("\n") ? lines : Array(lines.dropLast())
+                    for line in completeLines where !line.isEmpty {
                         let event = Self.parseTranscriptLine(line)
                         if event != .none {
                             onEvent(event)
@@ -106,7 +124,7 @@ public final class LiveTranscriptWatcher: @unchecked Sendable {
                     }
                 }
             } catch {
-                // handle read error
+                // handle error
             }
         }
 
@@ -114,14 +132,61 @@ public final class LiveTranscriptWatcher: @unchecked Sendable {
             try? handle.close()
         }
 
-        self.source = source
+        self.fileSource = source
         source.resume()
     }
 
+    public func startWatchingBrainDirectory(brainDirectory: URL, onEvent: @escaping @Sendable (TranscriptEvent) -> Void) {
+        self.onEventCallback = onEvent
+
+        // 1. Find and watch current latest session
+        findAndWatchLatestSession(in: brainDirectory)
+
+        // 2. Watch directory for newly spawned sessions
+        guard let dirHandle = try? FileHandle(forReadingFrom: brainDirectory) else { return }
+        self.dirHandle = dirHandle
+
+        let source = DispatchSource.makeFileSystemObjectSource(
+            fileDescriptor: dirHandle.fileDescriptor,
+            eventMask: [.write, .extend],
+            queue: queue
+        )
+
+        source.setEventHandler { [weak self] in
+            self?.findAndWatchLatestSession(in: brainDirectory)
+        }
+
+        self.dirSource = source
+        source.resume()
+    }
+
+    private func findAndWatchLatestSession(in brainDirectory: URL) {
+        guard let onEvent = self.onEventCallback else { return }
+        if let contents = try? FileManager.default.contentsOfDirectory(at: brainDirectory, includingPropertiesForKeys: [.contentModificationDateKey]),
+           let latestSession = contents.filter({ $0.hasDirectoryPath && !$0.lastPathComponent.hasPrefix(".") }).sorted(by: {
+               let d1 = (try? $0.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate) ?? Date.distantPast
+               let d2 = (try? $1.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate) ?? Date.distantPast
+               return d1 > d2
+           }).first {
+            let logFile = latestSession.appendingPathComponent(".system_generated/logs/transcript.jsonl")
+            if currentWatchedURL != logFile && FileManager.default.fileExists(atPath: logFile.path) {
+                startWatching(fileURL: logFile, onEvent: onEvent)
+            }
+        }
+    }
+
     public func stopWatching() {
-        source?.cancel()
-        source = nil
+        fileSource?.cancel()
+        fileSource = nil
         try? fileHandle?.close()
         fileHandle = nil
+
+        dirSource?.cancel()
+        dirSource = nil
+        try? dirHandle?.close()
+        dirHandle = nil
+
+        lineRemainderBuffer = ""
+        currentWatchedURL = nil
     }
 }

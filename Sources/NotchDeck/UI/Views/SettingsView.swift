@@ -3,14 +3,15 @@ import SwiftUI
 public struct SettingsView: View {
     @State private var geminiKey: String = ""
     @State private var claudeKey: String = ""
+    @State private var openAiKey: String = ""
     @State private var statusMessage: String = ""
     @State private var isTesting: Bool = false
 
     public init() {}
 
     public var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text("⚙️ NotchDeck Settings")
+        VStack(alignment: .leading, spacing: 14) {
+            Text("⚙️ NotchDeck Settings & BYOK API Keys")
                 .font(.headline)
                 .foregroundColor(.primary)
 
@@ -27,6 +28,12 @@ public struct SettingsView: View {
                     .font(.caption)
                     .foregroundColor(.secondary)
                 SecureField("sk-ant-...", text: $claudeKey)
+                    .textFieldStyle(.roundedBorder)
+
+                Text("OpenAI / Codex API Key:")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                SecureField("sk-proj-...", text: $openAiKey)
                     .textFieldStyle(.roundedBorder)
             }
 
@@ -53,16 +60,18 @@ public struct SettingsView: View {
             Spacer()
         }
         .padding(20)
-        .frame(width: 400, height: 280)
+        .frame(width: 420, height: 340)
         .onAppear {
             geminiKey = KeychainManager.load(key: "notchdeck.gemini.apikey") ?? ""
             claudeKey = KeychainManager.load(key: "notchdeck.claude.apikey") ?? ""
+            openAiKey = KeychainManager.load(key: "notchdeck.openai.apikey") ?? ""
         }
     }
 
     private func saveKeys() {
         try? KeychainManager.save(key: "notchdeck.gemini.apikey", value: geminiKey)
         try? KeychainManager.save(key: "notchdeck.claude.apikey", value: claudeKey)
+        try? KeychainManager.save(key: "notchdeck.openai.apikey", value: openAiKey)
         statusMessage = "✅ Keys saved securely to Keychain."
     }
 

@@ -4,7 +4,7 @@ import Foundation
 
 @Suite("Live Transcript Watcher Tests")
 struct LiveTranscriptWatcherTests {
-    @Test("Parse transcript JSONL line for ask_question event")
+    @Test("Parse transcript JSONL line for ask_question event with options")
     func testParseClarificationQuestion() throws {
         let jsonLine = """
         {"step_index":5,"type":"PLANNER_RESPONSE","status":"WAITING_FOR_INPUT","content":"Pertanyaan untuk user","tool_calls":[{"tool_name":"ask_question","tool_arguments":{"questions":[{"question":"Pilih database?","options":["Postgres","SQLite"]}]}}]}
@@ -17,6 +17,7 @@ struct LiveTranscriptWatcherTests {
             #expect(question.contains("Pilih database?"))
             #expect(options?.count == 2)
             #expect(options?.first == "Postgres")
+            #expect(options?.last == "SQLite")
         default:
             #expect(Bool(false), "Event should be userClarificationNeeded, got \(String(describing: event))")
         }

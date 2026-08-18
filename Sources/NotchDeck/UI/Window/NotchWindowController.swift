@@ -11,7 +11,7 @@ public final class NotchWindowController: NSWindowController {
     public init(
         stateController: NotchStateController,
         hoverMonitor: NotchHoverMonitor? = nil,
-        onSubmitPrompt: (@MainActor () -> Void)? = nil,
+        onSubmitPrompt: (@MainActor (String) -> Void)? = nil,
         onToggleMic: (@MainActor () -> Void)? = nil,
         onStopMic: (@MainActor () -> Void)? = nil
     ) {

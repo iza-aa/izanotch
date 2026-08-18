@@ -22,8 +22,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let wc = NotchWindowController(
             stateController: stateController,
             hoverMonitor: hover,
-            onSubmitPrompt: { [weak self] in
-                self?.submitCurrentPrompt()
+            onSubmitPrompt: { [weak self] promptText in
+                self?.submitPrompt(promptText)
             },
             onToggleMic: { [weak self] in
                 self?.toggleMicrophone()
@@ -42,8 +42,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func requestSystemPermissions() {
-        Task {
-            _ = try? await EventKitService.shared.requestAccess()
+        Task { @MainActor in
+            do {
+                let permissions = try await EventKitService.shared.requestAccess()
+                if !permissions.calendarGranted || !permissions.reminderGranted {
+                    self.stateController.systemStatusMessage = "ℹ️ Calendar/Reminder access limited in System Settings."
+                }
+            } catch {
+                self.stateController.systemStatusMessage = "⚠️ EventKit error: \(error.localizedDescription)"
+            }
             _ = await SystemNotificationService.shared.requestAuthorization()
         }
     }
@@ -54,18 +61,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func startLiveTranscriptWatcher() {
         let brainDir = URL(fileURLWithPath: NSHomeDirectory()).appendingPathComponent(".gemini/antigravity/brain")
-        // Check for latest session transcript
-        if let contents = try? FileManager.default.contentsOfDirectory(at: brainDir, includingPropertiesForKeys: [.contentModificationDateKey]),
-           let latestSession = contents.filter({ $0.hasDirectoryPath }).sorted(by: {
-               let d1 = (try? $0.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate) ?? Date.distantPast
-               let d2 = (try? $1.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate) ?? Date.distantPast
-               return d1 > d2
-           }).first {
-            let logFile = latestSession.appendingPathComponent(".system_generated/logs/transcript.jsonl")
-            transcriptWatcher.startWatching(fileURL: logFile) { [weak self] event in
-                Task { @MainActor [weak self] in
-                    self?.handleTranscriptEvent(event)
-                }
+        transcriptWatcher.startWatchingBrainDirectory(brainDirectory: brainDir) { [weak self] event in
+            Task { @MainActor [weak self] in
+                self?.handleTranscriptEvent(event)
             }
         }
     }
@@ -74,17 +72,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         switch event {
         case .taskCompleted(let summary):
             VoiceOverSpeaker.shared.speak(text: "Antigravity: Task selesai.", language: "id-ID")
-            stateController.transition(to: .liveActivity(title: "✨ Antigravity: Done", countdown: "Complete"))
+            stateController.transition(to: .liveActivity(title: "✨ Task Done", countdown: "Complete"))
             CardDataStore.shared.items.insert(
                 CardItem(title: "Antigravity Task Done", subtitle: summary, category: .prompts, badge: "AI Done", timestamp: "Just now"),
                 at: 0
             )
 
-        case .userClarificationNeeded(let question, _):
+        case .userClarificationNeeded(let question, let options):
             VoiceOverSpeaker.shared.speak(text: "Antigravity membutuhkan respon Anda.", language: "id-ID")
-            stateController.transition(to: .liveActivity(title: "⚠️ Need Approval", countdown: "Action Req"))
+            stateController.setClarification(question: question, options: options)
+            stateController.transition(to: .expanded)
             CardDataStore.shared.items.insert(
-                CardItem(title: "Needs Approval", subtitle: question, category: .prompts, badge: "Action", timestamp: "Just now"),
+                CardItem(title: "Needs Clarification", subtitle: question, category: .prompts, badge: "Action", timestamp: "Just now"),
                 at: 0
             )
 
@@ -140,7 +139,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     public func toggleMicrophone() {
         if stateController.currentState == .voiceActive {
             speechManager?.stopRecording()
-            submitCurrentPrompt()
+            submitPrompt(stateController.commandPrompt)
         } else {
             stateController.transition(to: .voiceActive)
             try? speechManager?.startRecording()
@@ -154,8 +153,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
-    public func submitCurrentPrompt() {
-        let prompt = stateController.commandPrompt.trimmingCharacters(in: .whitespacesAndNewlines)
+    public func submitPrompt(_ rawText: String) {
+        let prompt = rawText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !prompt.isEmpty else {
             stateController.transition(to: .collapsed)
             return
@@ -164,16 +163,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let model = stateController.activeAIModel
         let geminiKey = KeychainManager.load(key: "notchdeck.gemini.apikey")
         let claudeKey = KeychainManager.load(key: "notchdeck.claude.apikey")
+        let openAiKey = KeychainManager.load(key: "notchdeck.openai.apikey")
 
         Task { @MainActor in
-            // Check if prompt is a schedule request
             let lower = prompt.lowercased()
             if lower.contains("meeting") || lower.contains("ingatkan") || lower.contains("jadwal") || lower.contains("jam ") {
                 if let detail = await ScheduleCoordinator.shared.processUtterance(prompt, apiKey: geminiKey) {
                     self.alarmMonitor?.scheduleAlarm(for: detail)
                 }
             } else {
-                // Route to MultiAIClient
                 let provider: AIProvider
                 switch model {
                 case "Claude Code": provider = .claudeCode
@@ -182,7 +180,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 default: provider = .antigravity
                 }
 
-                if let res = try? await MultiAIClient.shared.prompt(text: prompt, provider: provider, geminiApiKey: geminiKey, claudeApiKey: claudeKey) {
+                if let res = try? await MultiAIClient.shared.prompt(
+                    text: prompt,
+                    provider: provider,
+                    geminiApiKey: geminiKey,
+                    claudeApiKey: claudeKey,
+                    openAiApiKey: openAiKey
+                ) {
                     CardDataStore.shared.items.insert(
                         CardItem(title: "✨ \(model) Response", subtitle: res.text, category: .prompts, badge: "\(res.executionTimeMs)ms", timestamp: "Just now"),
                         at: 0
@@ -191,6 +195,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             }
 
             self.stateController.commandPrompt = ""
+            self.stateController.clearClarification()
             self.stateController.transition(to: .collapsed)
         }
     }
