@@ -43,6 +43,16 @@ struct MultiAIClientTests {
         #expect(request.httpMethod == "POST")
     }
 
+    @Test("Build Claude and Codex CLI Arguments without duplication")
+    func testCLIArguments() {
+        let prompt = "Explain SwiftUI State"
+        let claudeArgs = MultiAIClient.buildClaudeCLIArguments(prompt: prompt)
+        let codexArgs = MultiAIClient.buildCodexCLIArguments(prompt: prompt)
+
+        #expect(claudeArgs == ["-p", prompt])
+        #expect(codexArgs == ["exec", prompt])
+    }
+
     @Test("Find standard executable path without shell injection")
     func testFindExecutable() {
         let shPath = MultiAIClient.findExecutable(named: "sh")

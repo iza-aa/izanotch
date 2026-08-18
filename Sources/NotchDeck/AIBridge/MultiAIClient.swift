@@ -96,6 +96,14 @@ public final class MultiAIClient: @unchecked Sendable {
         return request
     }
 
+    public static func buildClaudeCLIArguments(prompt: String) -> [String] {
+        return ["-p", prompt]
+    }
+
+    public static func buildCodexCLIArguments(prompt: String) -> [String] {
+        return ["exec", prompt]
+    }
+
     // MARK: - Safe Binary Locator (No Shell Interpolation)
 
     public static func findExecutable(named name: String) -> String? {
@@ -161,7 +169,7 @@ public final class MultiAIClient: @unchecked Sendable {
                 let acc = OutputAccumulator()
                 try await sessionBridge.startInteractiveSession(
                     executable: claudeBin,
-                    arguments: ["-p", text],
+                    arguments: Self.buildClaudeCLIArguments(prompt: text),
                     initialPrompt: nil
                 ) { chunk in
                     acc.append(chunk)
@@ -196,7 +204,7 @@ public final class MultiAIClient: @unchecked Sendable {
                 let acc = OutputAccumulator()
                 try await sessionBridge.startInteractiveSession(
                     executable: codexBin,
-                    arguments: ["exec", text],
+                    arguments: Self.buildCodexCLIArguments(prompt: text),
                     initialPrompt: nil
                 ) { chunk in
                     acc.append(chunk)

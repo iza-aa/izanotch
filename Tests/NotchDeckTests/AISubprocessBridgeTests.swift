@@ -40,4 +40,22 @@ struct AISubprocessBridgeTests {
         #expect(exitCode == 0)
         #expect(acc.get().contains("Hello from NotchDeck"))
     }
+
+    @Test("Send input throws error when stdin is not available")
+    func testSendInputThrowsWhenNotRunning() {
+        let bridge = AISubprocessBridge()
+        do {
+            try bridge.sendInput("test")
+            #expect(Bool(false), "Should have thrown stdinNotAvailable")
+        } catch let err as AISubprocessError {
+            switch err {
+            case .stdinNotAvailable:
+                #expect(Bool(true))
+            default:
+                #expect(Bool(false), "Expected stdinNotAvailable error")
+            }
+        } catch {
+            #expect(Bool(false), "Unexpected error type")
+        }
+    }
 }

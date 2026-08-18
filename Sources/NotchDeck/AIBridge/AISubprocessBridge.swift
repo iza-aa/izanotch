@@ -1,10 +1,31 @@
 import Foundation
 
+public enum AISubprocessError: Error, LocalizedError, Sendable {
+    case stdinNotAvailable
+    case processNotRunning
+    case dataEncodingFailed
+
+    public var errorDescription: String? {
+        switch self {
+        case .stdinNotAvailable:
+            return "Standard input pipe is not available or has been closed."
+        case .processNotRunning:
+            return "Subprocess is not currently running."
+        case .dataEncodingFailed:
+            return "Failed to encode input string to UTF-8."
+        }
+    }
+}
+
 public final class AISubprocessBridge: @unchecked Sendable {
     private var process: Process?
     private var stdinPipe: Pipe?
     private var stdoutPipe: Pipe?
     private var stderrPipe: Pipe?
+
+    public var isRunning: Bool {
+        process?.isRunning == true
+    }
 
     public init() {}
 
@@ -83,12 +104,18 @@ public final class AISubprocessBridge: @unchecked Sendable {
     }
 
     public func sendInput(_ text: String) throws {
-        guard let inPipe = stdinPipe, let data = text.data(using: .utf8) else { return }
+        guard let inPipe = stdinPipe else {
+            throw AISubprocessError.stdinNotAvailable
+        }
+        guard let data = text.data(using: .utf8) else {
+            throw AISubprocessError.dataEncodingFailed
+        }
         try inPipe.fileHandleForWriting.write(contentsOf: data)
     }
 
     public func closeInput() {
         try? stdinPipe?.fileHandleForWriting.close()
+        stdinPipe = nil
     }
 
     public func waitForExit() async throws -> Int32 {

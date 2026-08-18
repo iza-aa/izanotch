@@ -64,6 +64,23 @@ public actor ActiveSessionBridge {
         _ response: String,
         sessionDirectory: URL? = nil
     ) async throws {
+        // Pre-flight check: validate session directory upfront if provided
+        var targetLogFile: URL? = nil
+        if let sessionDir = sessionDirectory {
+            guard FileManager.default.fileExists(atPath: sessionDir.path) else {
+                throw ActiveSessionError.sessionDirectoryNotFound
+            }
+            let logFile = sessionDir.appendingPathComponent(".system_generated/logs/transcript.jsonl")
+            guard FileManager.default.fileExists(atPath: logFile.path) else {
+                throw ActiveSessionError.sessionDirectoryNotFound
+            }
+            targetLogFile = logFile
+        }
+
+        guard isSessionRunning || targetLogFile != nil else {
+            throw ActiveSessionError.sessionNotRunning
+        }
+
         var dispatched = false
 
         // 1. Write to interactive subprocess stdin
@@ -76,17 +93,8 @@ public actor ActiveSessionBridge {
             }
         }
 
-        // 2. Write to session transcript log (if session directory is provided)
-        if let sessionDir = sessionDirectory {
-            guard FileManager.default.fileExists(atPath: sessionDir.path) else {
-                throw ActiveSessionError.sessionDirectoryNotFound
-            }
-
-            let logFile = sessionDir.appendingPathComponent(".system_generated/logs/transcript.jsonl")
-            guard FileManager.default.fileExists(atPath: logFile.path) else {
-                throw ActiveSessionError.sessionDirectoryNotFound
-            }
-
+        // 2. Write to session transcript log (if session directory was validated)
+        if let logFile = targetLogFile {
             guard let handle = try? FileHandle(forWritingTo: logFile) else {
                 throw ActiveSessionError.writeFailed("Cannot open transcript file for writing.")
             }

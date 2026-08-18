@@ -61,6 +61,7 @@ public struct NotchRootView: View {
                                 .foregroundColor(.white.opacity(0.9))
                         }
                         .padding(.horizontal, 16)
+                        .padding(.top, hasPhysicalNotch ? 14 : 0)
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                         .contentShape(Rectangle())
                     }
