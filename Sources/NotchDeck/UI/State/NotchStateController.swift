@@ -69,9 +69,7 @@ public final class NotchStateController: ObservableObject {
     @Published public var commandPrompt: String = ""
     @Published public var pendingClarification: ClarificationItem?
     @Published public var systemStatusMessage: String?
-    @Published public var chatMessages: [ChatMessageItem] = [
-        ChatMessageItem(sender: "Antigravity", text: "Ready to assist. Listening for tasks and questions.", isUser: false, timestamp: "Connected")
-    ]
+    @Published public var chatMessages: [ChatMessageItem] = []
 
     public init() {}
 

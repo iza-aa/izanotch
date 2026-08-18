@@ -35,6 +35,7 @@ public struct FeatureNavigationDock: View {
             }
         }
         .padding(3)
+        .padding(.horizontal, 12)   // ensure dock tabs clear the window edge
         .background(
             Capsule()
                 .fill(Color.white.opacity(0.06))

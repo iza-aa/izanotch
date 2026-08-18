@@ -160,7 +160,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             submitPrompt(stateController.commandPrompt)
         } else {
             stateController.transition(to: .voiceActive)
-            try? speechManager?.startRecording()
+            do {
+                try speechManager?.startRecording()
+            } catch {
+                stateController.systemStatusMessage = "❌ Mic error: \(error.localizedDescription)"
+                stateController.transition(to: .collapsed)
+            }
         }
     }
 
@@ -228,19 +233,22 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 default: provider = .antigravity
                 }
 
-                if let res = try? await MultiAIClient.shared.prompt(
-                    text: prompt,
-                    provider: provider,
-                    geminiApiKey: geminiKey,
-                    claudeApiKey: claudeKey,
-                    openAiApiKey: openAiKey,
-                    activeBrainSessionDir: activeDir
-                ) {
+                do {
+                    let res = try await MultiAIClient.shared.prompt(
+                        text: prompt,
+                        provider: provider,
+                        geminiApiKey: geminiKey,
+                        claudeApiKey: claudeKey,
+                        openAiApiKey: openAiKey,
+                        activeBrainSessionDir: activeDir
+                    )
                     self.stateController.appendChatMessage(sender: model, text: res.text, isUser: false)
                     CardDataStore.shared.items.insert(
                         CardItem(title: "✨ \(model) Response", subtitle: res.text, category: .prompts, badge: "\(res.executionTimeMs)ms", timestamp: "Just now"),
                         at: 0
                     )
+                } catch {
+                    self.stateController.systemStatusMessage = "❌ \(model) error: \(error.localizedDescription)"
                 }
             }
 

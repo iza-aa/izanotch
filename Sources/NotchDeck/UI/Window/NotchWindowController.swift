@@ -71,12 +71,8 @@ public final class NotchWindowController: NSWindowController {
             }
         }
 
-        let hasNotch = NotchGeometryCalculator.hasPhysicalNotch(screen: screen)
-        let targetFrame = NotchGeometryCalculator.calculateFrame(
-            for: state,
-            screenFrame: screen.frame,
-            hasPhysicalNotch: hasNotch
-        )
+        // Use hardware-accurate overload that reads auxiliaryTopLeftArea/safeAreaInsets
+        let targetFrame = NotchGeometryCalculator.calculateFrame(for: state, screen: screen)
 
         NSAnimationContext.runAnimationGroup { context in
             context.duration = 0.35

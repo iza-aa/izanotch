@@ -27,7 +27,7 @@ public struct NotesPanelView: View {
                     .font(.system(size: 10))
                     .foregroundColor(.white.opacity(0.4))
             }
-            .padding(.horizontal, 4)
+            .padding(.horizontal, 12)
 
             // 2. Notes List
             if noteItems.isEmpty {
@@ -113,7 +113,7 @@ public struct NotesPanelView: View {
                     .buttonStyle(.plain)
                 }
             }
-            .padding(.horizontal, 10)
+            .padding(.horizontal, 12)
             .padding(.vertical, 7)
             .background(
                 RoundedRectangle(cornerRadius: 12, style: .continuous)

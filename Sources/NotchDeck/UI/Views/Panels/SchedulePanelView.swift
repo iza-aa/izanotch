@@ -31,7 +31,7 @@ public struct SchedulePanelView: View {
                     .font(.system(size: 10))
                     .foregroundColor(.white.opacity(0.4))
             }
-            .padding(.horizontal, 4)
+            .padding(.horizontal, 12)
 
             // 2. Schedule List
             if scheduleItems.isEmpty {
@@ -115,7 +115,7 @@ public struct SchedulePanelView: View {
                     .buttonStyle(.plain)
                 }
             }
-            .padding(.horizontal, 10)
+            .padding(.horizontal, 12)
             .padding(.vertical, 7)
             .background(
                 RoundedRectangle(cornerRadius: 12, style: .continuous)

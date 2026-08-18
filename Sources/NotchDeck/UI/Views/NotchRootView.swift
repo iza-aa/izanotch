@@ -166,7 +166,6 @@ public struct NotchRootView: View {
                                 Spacer(minLength: 0)
                             }
                             .padding(.top, contentTopPadding)
-                            .padding(.horizontal, 16)
                             .padding(.bottom, 10)
                         }
                     }
