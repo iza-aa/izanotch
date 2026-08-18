@@ -44,9 +44,9 @@ public struct NotchRootView: View {
         NotchGeometryCalculator.contentTopInset(hasPhysicalNotch: hasPhysicalNotch)
     }
 
-    /// Camera gap width per NotchKit spec: notchWidth - 30 (for camera lens clearance)
+    /// Camera gap width ensures that the hardware notch area is completely clear of text.
     private var cameraGapWidth: CGFloat {
-        max(hardwareNotchWidth - 30, 60)
+        hasPhysicalNotch ? max(hardwareNotchWidth + 16, 160) : 12
     }
 
     public var body: some View {
@@ -86,10 +86,13 @@ public struct NotchRootView: View {
                         }
                     }
                 }
-                .frame(
-                    width: widthForState(stateController.currentState),
-                    height: heightForState(stateController.currentState)
-                )
+                // Do NOT set an explicit frame here.
+                // The NSWindow frame is already set correctly by NotchWindowController
+                // via NotchGeometryCalculator.calculateFrame(for:screen:) which reads
+                // real hardware notch dimensions. NSHostingView fills the window frame
+                // automatically — setting a second frame here causes a size mismatch
+                // that makes content overflow or get clipped incorrectly.
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .clipped()
                 .onHover { isHovered in
                     if isHovered {
@@ -107,30 +110,33 @@ public struct NotchRootView: View {
     private var collapsedContent: some View {
         Button(action: { stateController.transition(to: .expanded) }) {
             HStack(spacing: 0) {
-                // LEFT WING — status dot + app name (~90px)
+                // LEFT WING — status dot + app name (placed to the left of notch)
                 HStack(spacing: 4) {
                     Circle()
                         .fill(Color.white.opacity(0.8))
                         .frame(width: 5, height: 5)
                     Text("NotchDeck")
-                        .font(.system(size: 9, weight: .medium, design: .rounded))
+                        .font(.system(size: 9.5, weight: .medium, design: .rounded))
                         .foregroundColor(.white.opacity(0.85))
                 }
                 .frame(maxWidth: .infinity, alignment: .center)
+                .padding(.leading, 6)
 
-                // CAMERA GAP — never render content here
+                // CAMERA GAP — covers hardware camera area entirely
                 Color.clear.frame(width: cameraGapWidth)
 
-                // RIGHT WING — active model indicator (~90px)
+                // RIGHT WING — active model indicator with status dot (placed to the right of notch)
                 HStack(spacing: 4) {
                     Circle()
-                        .fill(Color.green.opacity(0.9))
+                        .fill(Color.green.opacity(0.95))
                         .frame(width: 5, height: 5)
-                    Text(stateController.activeAIModel.prefix(4))
-                        .font(.system(size: 8, weight: .semibold, design: .monospaced))
-                        .foregroundColor(.white.opacity(0.7))
+                    Text(stateController.activeAIModel)
+                        .font(.system(size: 9.5, weight: .semibold, design: .rounded))
+                        .foregroundColor(.white.opacity(0.8))
+                        .lineLimit(1)
                 }
                 .frame(maxWidth: .infinity, alignment: .center)
+                .padding(.trailing, 6)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .contentShape(Rectangle())

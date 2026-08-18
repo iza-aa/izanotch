@@ -11,8 +11,8 @@ public final class NotchHoverMonitor: ObservableObject {
 
     public init(
         stateController: NotchStateController,
-        enterDebounceDuration: TimeInterval = 0.2,
-        exitDebounceDuration: TimeInterval = 0.35
+        enterDebounceDuration: TimeInterval = 0.15,
+        exitDebounceDuration: TimeInterval = 0.6
     ) {
         self.stateController = stateController
         self.enterDebounceDuration = enterDebounceDuration

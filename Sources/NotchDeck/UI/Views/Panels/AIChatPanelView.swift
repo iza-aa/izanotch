@@ -44,6 +44,7 @@ public struct AIChatPanelView: View {
                     RoundedRectangle(cornerRadius: 8, style: .continuous)
                         .fill(statusMsg.hasPrefix("❌") ? Color.red.opacity(0.15) : Color.yellow.opacity(0.1))
                 )
+                .padding(.horizontal, 20)
             }
 
             // 1. Model Header Bar
@@ -207,15 +208,16 @@ public struct AIChatPanelView: View {
                             withAnimation { proxy.scrollTo(last.id, anchor: .bottom) }
                         }
                     }
+                    .padding(.horizontal, 20)
                 }
-                .frame(maxHeight: 120)
+                .frame(maxHeight: 140)
             }
 
             // 4. Dedicated Bottom Reply Input Bar
             HStack(spacing: 8) {
                 TextField("Reply to \(stateController.activeAIModel)...", text: $stateController.commandPrompt)
                     .textFieldStyle(.plain)
-                    .font(.system(size: 12))
+                    .font(.system(size: 12, design: .rounded))
                     .foregroundColor(.white)
                     .onSubmit {
                         submitReply()
@@ -245,7 +247,7 @@ public struct AIChatPanelView: View {
                 RoundedRectangle(cornerRadius: 16, style: .continuous)
                     .fill(Color.white.opacity(0.08))
             )
-            .padding(.horizontal, 8)    // outer margin
+            .padding(.horizontal, 20)    // outer margin aligning with panels
         }
     }
 

@@ -12,7 +12,7 @@ public struct NotchGeometryCalculator: Sendable {
     // MARK: - Hardware Notch Metrics
 
     /// Returns the physical notch width (camera region only) by reading auxiliary screen areas.
-    /// Falls back to 150pt if auxiliary areas are unavailable (older API or non-notch display).
+    /// Falls back to 160pt if auxiliary areas are unavailable (older API or non-notch display).
     @MainActor
     public static func notchWidth(for screen: NSScreen) -> CGFloat {
         if #available(macOS 12.0, *) {
@@ -24,7 +24,7 @@ public struct NotchGeometryCalculator: Sendable {
                 return notch
             }
         }
-        return 150  // documented fallback per NotchKit spec
+        return 160  // documented fallback per NotchKit spec
     }
 
     /// Returns the physical notch height from safeAreaInsets.top.
@@ -52,25 +52,23 @@ public struct NotchGeometryCalculator: Sendable {
         hasPhysicalNotch: Bool = false
     ) -> (width: CGFloat, height: CGFloat) {
         let notchH: CGFloat = hasPhysicalNotch ? defaultNotchHeight : 0
-        // Fallback notch width used when no NSScreen is available
-        let fallbackNotchW: CGFloat = hasPhysicalNotch ? 150 : 0
+        let fallbackNotchW: CGFloat = hasPhysicalNotch ? 160 : 0
 
         switch state {
         case .hidden:
             return (0, 0)
         case .collapsed:
-            // Collapsed pill aligns to hardware notch area + small wings
-            let w: CGFloat = hasPhysicalNotch ? fallbackNotchW + 180 : 160
+            // Collapsed pill aligns to hardware notch area + wings (100pt each side)
+            let w: CGFloat = hasPhysicalNotch ? fallbackNotchW + 200 : 160
             let h: CGFloat = hasPhysicalNotch ? defaultNotchHeight : 32
             return (w, h)
         case .voiceActive:
-            return (360, 60 + notchH)
+            return (380, 64 + notchH)
         case .liveActivity:
-            return (320, 44 + notchH)
+            return (340, 48 + notchH)
         case .expanded:
-            // Expanded = notchWidth + 2 * wingExtension per NotchKit spec
-            let expandedW = fallbackNotchW + (2 * wingExtension)
-            return (expandedW, 250 + notchH)
+            let expandedW = hasPhysicalNotch ? max(540, fallbackNotchW + (2 * wingExtension)) : 520
+            return (expandedW, 330 + notchH)
         }
     }
 
@@ -96,9 +94,8 @@ public struct NotchGeometryCalculator: Sendable {
             return NSRect(x: screenFrame.midX, y: screenFrame.maxY, width: 0, height: 0)
 
         case .collapsed:
-            // Collapsed: window spans notchWidth + wings on both sides
-            // This makes the collapsed pill align exactly with the physical notch
-            let wingW: CGFloat = hasNotch ? 90 : 0   // small wing per side
+            // Collapsed: window spans notchWidth + wings on both sides (100pt wing each side)
+            let wingW: CGFloat = hasNotch ? 100 : 0
             let w = hasNotch ? notchW + (2 * wingW) : 160
             let h = hasNotch ? notchH : 32
             let x = screenFrame.midX - (w / 2.0)
@@ -106,26 +103,25 @@ public struct NotchGeometryCalculator: Sendable {
             return NSRect(x: x, y: y, width: w, height: h)
 
         case .voiceActive:
-            let w: CGFloat = 360
-            let h: CGFloat = 60 + notchH
+            let w: CGFloat = 380
+            let h: CGFloat = 64 + notchH
             return NSRect(x: screenFrame.midX - (w / 2.0), y: screenFrame.maxY - h, width: w, height: h)
 
         case .liveActivity:
-            let w: CGFloat = 320
-            let h: CGFloat = 44 + notchH
+            let w: CGFloat = 340
+            let h: CGFloat = 48 + notchH
             return NSRect(x: screenFrame.midX - (w / 2.0), y: screenFrame.maxY - h, width: w, height: h)
 
         case .expanded:
-            // Expanded = notchWidth + 2 * wingExtension, capped to screen width - 48
-            let rawW = hasNotch ? notchW + (2 * wingExtension) : 480
+            // Expanded: width has enough room for all components comfortably
+            let rawW = hasNotch ? max(540, notchW + (2 * wingExtension)) : 520
             let w = min(rawW, screenFrame.width - 48)
-            let h: CGFloat = 250 + notchH
+            let h: CGFloat = 330 + notchH
             return NSRect(x: screenFrame.midX - (w / 2.0), y: screenFrame.maxY - h, width: w, height: h)
         }
     }
 
     /// Compatibility overload for call-sites that only have screenFrame + hasPhysicalNotch.
-    /// Used by unit tests and legacy code paths.
     public static func calculateFrame(
         for state: NotchState,
         screenFrame: NSRect,
