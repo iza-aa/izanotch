@@ -23,7 +23,7 @@ NotchDeck berfungsi sebagai **HUD Interaktif & Notification Hub Aktual**:
         │  macOS FSEvents & Brain Directory Watcher    │      ▼
         │ (Line Buffer + Active Session Directory URL) │ ┌───────────────────┐
         │        (LiveTranscriptWatcher.swift)         │ │ActiveSessionBridge│
-        └──────────────────────▲───────────────────────┘ │ (Persistent Stdin │
+        └──────────────────────▲───────────────────────┘ │ (Strict Error     │
                                │                         │ + JSON Escaping)  │
  ┌─────────────────────────────┴────────────────────────┐└─────────┬─────────┘
  │                  SISTEM AGENT AKTIF                  │          │
@@ -40,16 +40,17 @@ NotchDeck berfungsi sebagai **HUD Interaktif & Notification Hub Aktual**:
 
 | # | Temuan Audit | Solusi Teknis | Status |
 |---|---|---|:---:|
-| 1 | **Stdin tertutup prematur saat session interaktif** | [`ActiveSessionBridge.swift`](file:///Users/heizaaa/Desktop/cdev/iza-3/Sources/NotchDeck/AIBridge/ActiveSessionBridge.swift): Menjaga pipe `standardInput` tetap terbuka selama sesi berjalan, memungkinkan pengiriman respon multi-turn tanpa terputus. | ✅ **Fixed** |
-| 2 | **Error pipe/session ditelan (`try?`)** | [`ActiveSessionBridge.swift`](file:///Users/heizaaa/Desktop/cdev/iza-3/Sources/NotchDeck/AIBridge/ActiveSessionBridge.swift) & [`NotchDeckApp.swift`](file:///Users/heizaaa/Desktop/cdev/iza-3/Sources/NotchDeck/NotchDeckApp.swift): Melempar error spesifik (`ActiveSessionError`) dan menampilkan status error visual jika pengiriman gagal. | ✅ **Fixed** |
-| 3 | **Pengujian End-to-End Multi-Turn Session** | [`ActiveSessionBridgeTests.swift`](file:///Users/heizaaa/Desktop/cdev/iza-3/Tests/NotchDeckTests/ActiveSessionBridgeTests.swift): Menguji alur interaktif multi-turn (Turn 1 prompt $\rightarrow$ Turn 2 clarification reply $\rightarrow$ clean exit code 0). | ✅ **Fixed** |
-| 4 | **Akurasi Laporan Test Suite** | Tervalidasi **28 `@Suite`** dan **49 `@Test`** secara aktual di repositori. | ✅ **Verified** |
+| 1 | **Reply ke session directory invalid dianggap sukses** | [`ActiveSessionBridge.swift`](file:///Users/heizaaa/Desktop/cdev/iza-3/Sources/NotchDeck/AIBridge/ActiveSessionBridge.swift): Memvalidasi eksistensi folder & file log transcript sebelum menulis. Melempar `ActiveSessionError.sessionDirectoryNotFound` jika invalid. | ✅ **Fixed** |
+| 2 | **Prompt terduplikasi pada Claude & Codex CLI** | [`MultiAIClient.swift`](file:///Users/heizaaa/Desktop/cdev/iza-3/Sources/NotchDeck/AIBridge/MultiAIClient.swift): Menyetel `initialPrompt: nil` saat prompt dikirim sebagai parameter argumen biner (`["-p", text]` / `["exec", text]`). | ✅ **Fixed** |
+| 3 | **Pengujian Protokol Interaktif Agent (ask_question & reply)** | [`ActiveSessionBridgeTests.swift`](file:///Users/heizaaa/Desktop/cdev/iza-3/Tests/NotchDeckTests/ActiveSessionBridgeTests.swift) (`testRealisticAgentInteractiveProtocol`): Menjalankan script agent yang mengajukan pertanyaan, menerima jawaban user via NotchDeck bridge, dan menyelesaikan task dengan `exit code 0`. | ✅ **Fixed** |
+| 4 | **Pembersihan State saat Write Gagal** | [`ActiveSessionBridge.swift`](file:///Users/heizaaa/Desktop/cdev/iza-3/Sources/NotchDeck/AIBridge/ActiveSessionBridge.swift): Menangani kegagalan `sendInput` dengan mereset `isSessionRunning = false` dan mematikan subproses secara bersih. | ✅ **Fixed** |
+| 5 | **Metrik Repositori Terverifikasi** | Aktual terverifikasi **28 `@Suite`** dan **51 `@Test`** di repositori. | ✅ **Verified** |
 
 ---
 
 ## 3. Hasil Validasi & Pengujian
 
 * **`swift build`** $\rightarrow$ **Succeed (0 error, 0 warning)**
-* **`swift test`** $\rightarrow$ **100% PASS** (28 Test Suites, 49 Unit Tests).
-* **Git Status:** Merged cleanly into `main` (commit `140b3e7`).
+* **`swift test`** $\rightarrow$ **100% PASS** (28 Test Suites, 51 Unit Tests).
+* **Git Status:** Merged cleanly into `main` (commit `d26f2c9`).
 * **App Process:** Berjalan aktif di background (`swift run NotchDeck`).
