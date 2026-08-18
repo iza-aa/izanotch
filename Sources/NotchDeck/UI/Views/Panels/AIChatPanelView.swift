@@ -263,12 +263,56 @@ public struct AIChatPanelView: View {
     }
 
     private func renderMarkdown(_ text: String) -> AttributedString {
+        let cleaned = preprocessMarkdownText(text)
         let options = AttributedString.MarkdownParsingOptions(
             interpretedSyntax: .inlineOnlyPreservingWhitespace
         )
-        if let attr = try? AttributedString(markdown: text, options: options) {
+        if let attr = try? AttributedString(markdown: cleaned, options: options) {
             return attr
         }
-        return AttributedString(text)
+        return AttributedString(cleaned)
+    }
+
+    private func preprocessMarkdownText(_ raw: String) -> String {
+        let lines = raw.components(separatedBy: "\n")
+        var processedLines: [String] = []
+
+        for line in lines {
+            let trimmed = line.trimmingCharacters(in: .whitespaces)
+
+            // Convert Markdown Headings (e.g. # Header, ## Subheader, ### Section) to bold text
+            if trimmed.hasPrefix("###### ") {
+                let content = String(trimmed.dropFirst(7)).trimmingCharacters(in: .whitespaces)
+                processedLines.append("**\(content)**")
+            } else if trimmed.hasPrefix("##### ") {
+                let content = String(trimmed.dropFirst(6)).trimmingCharacters(in: .whitespaces)
+                processedLines.append("**\(content)**")
+            } else if trimmed.hasPrefix("#### ") {
+                let content = String(trimmed.dropFirst(5)).trimmingCharacters(in: .whitespaces)
+                processedLines.append("**\(content)**")
+            } else if trimmed.hasPrefix("### ") {
+                let content = String(trimmed.dropFirst(4)).trimmingCharacters(in: .whitespaces)
+                processedLines.append("**\(content)**")
+            } else if trimmed.hasPrefix("## ") {
+                let content = String(trimmed.dropFirst(3)).trimmingCharacters(in: .whitespaces)
+                processedLines.append("**\(content)**")
+            } else if trimmed.hasPrefix("# ") {
+                let content = String(trimmed.dropFirst(2)).trimmingCharacters(in: .whitespaces)
+                processedLines.append("**\(content)**")
+            } else if trimmed == "---" || trimmed == "***" || trimmed == "___" {
+                // Divider line
+                processedLines.append("")
+            } else if trimmed.hasPrefix("- ") {
+                let content = String(trimmed.dropFirst(2)).trimmingCharacters(in: .whitespaces)
+                processedLines.append("• \(content)")
+            } else if trimmed.hasPrefix("* ") && !trimmed.hasPrefix("**") {
+                let content = String(trimmed.dropFirst(2)).trimmingCharacters(in: .whitespaces)
+                processedLines.append("• \(content)")
+            } else {
+                processedLines.append(line)
+            }
+        }
+
+        return processedLines.joined(separator: "\n").trimmingCharacters(in: .whitespacesAndNewlines)
     }
 }
