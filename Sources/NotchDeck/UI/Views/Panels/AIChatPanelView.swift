@@ -176,9 +176,8 @@ public struct AIChatPanelView: View {
                                                         if let onReply = onReplyClarification {
                                                              onReply(opt)
                                                         } else {
-                                                            onSubmitPrompt?(opt)
+                                                             onSubmitPrompt?(opt)
                                                         }
-                                                        stateController.appendChatMessage(sender: "You", text: opt, isUser: true)
                                                         stateController.clearClarification()
                                                     }) {
                                                         Text(opt)
@@ -256,7 +255,8 @@ public struct AIChatPanelView: View {
     private func submitReply() {
         let text = stateController.commandPrompt.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty else { return }
-        stateController.appendChatMessage(sender: "You", text: text, isUser: true)
+        // NOTE: Do NOT appendChatMessage here — AppDelegate.submitPrompt is the
+        // single source of truth and will append the user bubble itself.
         onSubmitPrompt?(text)
         stateController.commandPrompt = ""
     }

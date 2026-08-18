@@ -218,6 +218,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let openAiKey = KeychainManager.load(key: "notchdeck.openai.apikey")
         let activeDir = currentActiveSessionDir
 
+        // Append user bubble exactly once — the UI layer must NOT do this.
         stateController.appendChatMessage(sender: "You", text: prompt, isUser: true)
 
         Task { @MainActor in
@@ -246,6 +247,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                     CardDataStore.shared.items.insert(
                         CardItem(title: "✨ \(model) Response", subtitle: res.text, category: .prompts, badge: "\(res.executionTimeMs)ms", timestamp: "Just now"),
                         at: 0
+                    )
+                } catch AIClientError.sessionUnavailable {
+                    // Antigravity session is not running — explain the architecture clearly.
+                    // NotchDeck observes an Antigravity session; it does not start one.
+                    self.stateController.appendChatMessage(
+                        sender: "Antigravity",
+                        text: "⚠️ Tidak ada sesi Antigravity yang aktif. Buka Antigravity terlebih dahulu, lalu notch akan otomatis memantau percakapannya di sini.",
+                        isUser: false
                     )
                 } catch {
                     self.stateController.systemStatusMessage = "❌ \(model) error: \(error.localizedDescription)"
