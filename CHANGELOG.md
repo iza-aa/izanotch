@@ -9,6 +9,15 @@ Semua perubahan, milestone arsitektur, verifikasi fisik, dan perbaikan bug dicat
 ### 🎯 Objective
 Mengadopsi kedaulatan paten `ClickyModelInstructions.md` secara penuh, menghubungkan direct embedded Cua-Driver MCP (56 tools native) dengan RAM + Disk caching dan server-side prompt caching, serta menghapus seluruh kode tambalan spekulatif (regex tebakan koin, naskah dialog teater kaku, dan pemaksaan Turn 1 SOP).
 
+### 🏛️ Milestone 259: Eksekusi Langkah 5 — Penataan Nama File & Kamus Sufiks Baku (2026-10-05)
+- **Standarisasi Penamaan Komponen & Kamus Sufiks Baku**:
+  - Seluruh komponen di `Packages/ClickyKit` mematuhi kamus sufiks baku arsitektural (`*Service`, `*Controller`, `*View`, `*Client`, `*Engine`, `*Coordinator`, `*Gateway`/`*Policy`) dengan locked legacy whitelist terverifikasi.
+- **Audit Dependensi Acyclic Downward & File Mapping**:
+  - `python3 scripts/check_layering.py`: Memvalidasi indeks 325 deklarasi tipe Swift di 138 file Clicky, membuktikan isolasi L1 Platform bersih 100% dari referensi ke arah L5 CompanionManager.
+  - `python3 scripts/check_file_map.py`: Memvalidasi pemetaan deterministik 138 file ke 11 modul SPM secara 1-ke-1 tanpa file yatim (unmapped = 0).
+- **Hasil Verifikasi Gerbang (Unified Verification Gate Step 5)**:
+  - `./scripts/verify_gate.sh 5`: **LULUS 100%** (Codesign baseline match, PID 29064 stabil >15s, line limits 9 allowlist files strictly respected, package build exit code 0, 28 formal package tests 100% PASS, layering and file map invariants 100% verified).
+
 ### 🏛️ Milestone 258: Eksekusi Langkah 4 — Konversi & Pemisahan Test Suite Formal di Packages/ClickyKit/Tests/ (2026-10-05)
 - **Konfigurasi Formal Test Targets SPM**:
   - Menambahkan test target `ClickyReasoningTests` dan `ClickyCUATests` di `Packages/ClickyKit/Package.swift`.

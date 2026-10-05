@@ -132,6 +132,14 @@ if [ "$STEP" -ge 4 ] && [ -d "Packages/ClickyKit" ]; then
     echo "✅ Formal package unit tests passed."
 fi
 
+# 8. Step 5+: Layering and File Map Invariant Verification
+if [ "$STEP" -ge 5 ]; then
+    echo "Verifying Layering and File Map Invariants..."
+    python3 scripts/check_layering.py
+    python3 scripts/check_file_map.py
+    echo "✅ Layering and File Map 100% verified."
+fi
+
 # 8. Negative Test Self-Check
 if [ "$IS_NEGATIVE" = true ]; then
     echo "Running self-test against injected fake oversized file..."
