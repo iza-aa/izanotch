@@ -831,5 +831,19 @@
   1. **Symmetric Corner Geometry:** Setiap kurva sudut kanan atas wajib berakhir di `x: rect.width`, simetris dengan sudut kiri atas yang berawal di `x: 0`. Tepi kanan kartu WAJIB berupa garis vertikal tegak lurus sempurna 90°.
   2. **Zero Leaky Window-Edge Shadows:** Pada panel yang mengisi seluruh bingkai `NSPanel` tanpa padding luar, DILARANG menggunakan `.shadow(...)` yang merembes ke luar frame karena akan terpotong kaku oleh batas canvas window. Gunakan `.overlay(shape.stroke(...))` dengan hairline border halus (`Color.white.opacity(0.10)`) untuk pembatas yang tajam dan bersih.
 
+---
+
+### ERR-059: Siklus Ketergantungan Sirkular Modular (Agent ↔ UI) & God Objects Bebas-Kontrak
+- **Fitur:** `ClickyKit SPM Architecture / Modular Downward Layering / CompanionUIHost Protocol Inversion`
+- **Gejala:** Kode logika agent dan platform terkunci dalam siklus circular dependency dengan komponen UI macOS (`CompanionManager` memanggil langsung `CompanionResponseOverlayManager.shared`, `NotchComputerUseConsentWindow.shared`, `HomeSpaceWindowManager.shared`), mencegah ekstraksi ke package modular murni dan memicu penumpukan kode hingga menjadi God Object (>4.000 baris).
+- **Kesalahan (Root Cause Faktual):**
+  1. Ketiadaan lapisan kontrak abstraksi Dependency Inversion: Layer L5 (`ClickyAgent`) mengakses singleton view L6 (`ClickyUI`) secara langsung.
+  2. Ketiadaan struktur package multi-target bertingkat dengan arah ketergantungan tegas (L0 $\leftarrow$ L1 $\leftarrow$ L2 $\leftarrow$ L3 $\leftarrow$ L4 $\leftarrow$ L5 $\leftarrow$ L6).
+- **Aturan Pencegahan (Invariant):**
+  1. **Strict Downward Layering:** Target lapisan bawah (L0..L5) DILARANG mengimpor atau mengakses simbol, window, atau view dari L6 (`ClickyUI`). Seluruh interaksi UI dari agent WAJIB melalui protokol kontrak abstraksi (`CompanionUIHostRegistry.shared`).
+  2. **Strict Maximum File Ceiling (≤ 800 baris):** Seluruh file baru atau file hasil dekomposisi WAJIB $\le 800$ baris (target $\le 400$ baris), dengan hanya 9 file legacy non-god-object yang diizinkan dalam locked allowlist.
+  3. **Formal Unit Test Requirement:** Setiap modul logika penalaran dan CUA WAJIB dilindungi oleh unit test formal package (`swift test`) dengan minimal 28 test cases.
+
+
 
 
