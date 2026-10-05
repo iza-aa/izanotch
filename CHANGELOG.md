@@ -9,6 +9,25 @@ Semua perubahan, milestone arsitektur, verifikasi fisik, dan perbaikan bug dicat
 ### 🎯 Objective
 Mengadopsi kedaulatan paten `ClickyModelInstructions.md` secara penuh, menghubungkan direct embedded Cua-Driver MCP (56 tools native) dengan RAM + Disk caching dan server-side prompt caching, serta menghapus seluruh kode tambalan spekulatif (regex tebakan koin, naskah dialog teater kaku, dan pemaksaan Turn 1 SOP).
 
+### 🏛️ Milestone 254: Eksekusi Langkah 0 — Baseline Snapshot, Git Hygiene & Tooling Verifikasi Modular (2026-10-05)
+- **Eksekusi Langkah 0 (Refactor Modular Aman & Terverifikasi)**:
+  - Membersihkan direktori git: `artwork_cache/` di-untrack dan pola `artwork_cache/`, `*.sqlite`, `*.db` ditambahkan ke [`.gitignore`](file:///Users/heizaaa/Desktop/cdev/iza-3/.gitignore).
+  - Melakukan pindaian secret pada seluruh staged diff: terkonfirmasi 0 secret, token, atau kredensial API.
+  - Melakukan commit kondisi bersih pada branch `main`, lalu membuat dan beralih ke branch kerja baru `refactor/modular`.
+- **Kompilasi Bersih & Re-Launch Aplikasi**:
+  - `xcodebuild -scheme boringNotch -configuration Debug build`: **BUILD SUCCEEDED** (exit code 0).
+  - Me-restart proses aplikasi: biner baru berjalan stabil di bawah PID `76001` (SiriAIEngine AFM daemon `76006`).
+- **Pengambilan Bukti Baseline Empiris**:
+  - Menyimpan designated signing requirement di [`docs/baseline/baseline_codesign.txt`](file:///Users/heizaaa/Desktop/cdev/iza-3/docs/baseline/baseline_codesign.txt) (`identifier "com.heizaaa.izanotch" and certificate leaf = H"0486079929ba5d54118f2d6baa1dac26fe2019d3"`).
+  - Memverifikasi baris startup TCC persis di `clicky.log`: `[START] Clicky start — AX: true, Screen: true, Mic: true, Enabled: true`.
+  - Menjalankan 6 legacy test runners (Task R, Q, P, O, M, L) dengan 28/28 assertions lulus dan menyimpannya di [`docs/baseline/test_results.txt`](file:///Users/heizaaa/Desktop/cdev/iza-3/docs/baseline/test_results.txt).
+  - Menyimpan log smoke test baseline di [`docs/baseline/smoke_test_baseline.txt`](file:///Users/heizaaa/Desktop/cdev/iza-3/docs/baseline/smoke_test_baseline.txt).
+  - Merekam info toolchain di [`docs/baseline/toolchain_info.txt`](file:///Users/heizaaa/Desktop/cdev/iza-3/docs/baseline/toolchain_info.txt) (Apple Swift 6.4, Xcode 27.0).
+- **Git Tagging & Master Gate Verification**:
+  - Melakukan commit seluruh artefak baseline ke branch `refactor/modular` sebelum tagging (menjamin rollback `git clean -fd` aman dari kehilangan file).
+  - Membuat git tag `v0.9.0-clicky-baseline` dan `step-0-start`.
+  - Menjalankan [`scripts/verify_gate.sh 0`](file:///Users/heizaaa/Desktop/cdev/iza-3/scripts/verify_gate.sh): **LULUS 100% (EXIT CODE 0)**.
+
 ### 🏛️ Milestone 253: Koreksi Geometri NotchUnifiedHuggingShape & Eliminasi Artefak Shadow Tepi Window (2026-10-05)
 - **Root Cause & Perbaikan Geometri**:
   - Ditemukan bug koordinat pada [`NotchUnifiedHuggingShape.swift`](file:///Users/heizaaa/Desktop/cdev/iza-3/boringNotch/Clicky/UI/HomeSpace/Components/NotchUnifiedHuggingShape.swift#L70-L73) di mana titik akhir kurva sudut kanan atas menggunakan `x: rect.width - cornerRadius` (880), alih-alih `x: rect.width` (900). Hal ini menyebabkan seluruh sisi kanan kartu ditarik secara diagonal membentuk kemiringan miring 20 piksel sepanjang 540 piksel.
