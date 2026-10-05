@@ -9,6 +9,22 @@ Semua perubahan, milestone arsitektur, verifikasi fisik, dan perbaikan bug dicat
 ### 🎯 Objective
 Mengadopsi kedaulatan paten `ClickyModelInstructions.md` secara penuh, menghubungkan direct embedded Cua-Driver MCP (56 tools native) dengan RAM + Disk caching dan server-side prompt caching, serta menghapus seluruh kode tambalan spekulatif (regex tebakan koin, naskah dialog teater kaku, dan pemaksaan Turn 1 SOP).
 
+### 🏛️ Milestone 258: Eksekusi Langkah 4 — Konversi & Pemisahan Test Suite Formal di Packages/ClickyKit/Tests/ (2026-10-05)
+- **Konfigurasi Formal Test Targets SPM**:
+  - Menambahkan test target `ClickyReasoningTests` dan `ClickyCUATests` di `Packages/ClickyKit/Package.swift`.
+- **Pemisahan Test Suite Berdasarkan Karakteristik**:
+  - `ClickyReasoningTests` (Headless Pure Logic Tests, 8 test cases):
+    - [`TaskR_ModularPromptPoliciesTests.swift`](file:///Users/heizaaa/Desktop/cdev/iza-3/Packages/ClickyKit/Tests/ClickyReasoningTests/TaskR_ModularPromptPoliciesTests.swift) (5 test cases): Validasi keberadaan 6 modul policy, arsitektur orkestrator ramping TaskStepPlanner & TaskEgressValidator, registrasi pbxproj, dan spesifikasi dokumentasi.
+    - [`TaskM_ContractIndexFidelityTests.swift`](file:///Users/heizaaa/Desktop/cdev/iza-3/Packages/ClickyKit/Tests/ClickyReasoningTests/TaskM_ContractIndexFidelityTests.swift) (3 test cases): Validasi Contract Index Fidelity murni tanpa bias email/tanggal dan aturan inspeksi list abstrak.
+  - `ClickyCUATests` (CUA Logic & Kinematic Tests, 20 test cases):
+    - [`TaskQ_CleanAnchorAndNoSpuriousScrollTests.swift`](file:///Users/heizaaa/Desktop/cdev/iza-3/Packages/ClickyKit/Tests/ClickyCUATests/TaskQ_CleanAnchorAndNoSpuriousScrollTests.swift) (6 test cases): Default targetIndex 1, pencegahan kebocoran angka few-shot, anti-spurious scroll guard, dan implementasi resetScrollToTop.
+    - [`TaskP_AdaptiveScrollTests.swift`](file:///Users/heizaaa/Desktop/cdev/iza-3/Packages/ClickyKit/Tests/ClickyCUATests/TaskP_AdaptiveScrollTests.swift) (4 test cases): Scroll kinematik adaptif baris-proporsional, pembagian delta halus ke PID target, skala invariansi matematika (20.897 vs 50 baris), dan pencegahan loncatan 4.000 email.
+    - [`TaskO_ScrollSynchronousAndTargetIndexTests.swift`](file:///Users/heizaaa/Desktop/cdev/iza-3/Packages/ClickyKit/Tests/ClickyCUATests/TaskO_ScrollSynchronousAndTargetIndexTests.swift) (7 test cases): Dual-layer scroll AXScrollArea & AXScrollBar, pixel-based event tap posting, penulisan snapshot PNG sinkron atomik, dan guard targetIndexNotReached.
+    - [`TaskL_MasterDetailClickEnforcementTests.swift`](file:///Users/heizaaa/Desktop/cdev/iza-3/Packages/ClickyKit/Tests/ClickyCUATests/TaskL_MasterDetailClickEnforcementTests.swift) (3 test cases): Penegakan klik fisik wajib sebelum membaca list dan validasi non-prematur preview pane.
+- **Hasil Verifikasi Eksekusi (Unified Verification Gate Step 4)**:
+  - `swift test --package-path Packages/ClickyKit`: **28 tests dieksekusi, 0 failures (100% PASS)** dalam total ~0.22 detik.
+  - `./scripts/verify_gate.sh 4`: **LULUS 100%** (Codesign baseline match, PID 29064 stabil >15s, 6 legacy runners pass, line limits allowlist pass, formal package tests pass).
+
 ### 🏛️ Milestone 257: Eksekusi Langkah 3 — Ekstraksi Modul ke SPM Packages/ClickyKit (2026-10-05)
 - **Ekstraksi Paket Modular Swift (SPM)**:
   - Pembentukan package `Packages/ClickyKit` dengan 11 target bertingkat (L0 s.d. L5) + 1 Umbrella product `ClickyKit`:

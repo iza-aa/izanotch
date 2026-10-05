@@ -212,6 +212,28 @@ let package = Package(
                 "ClickyUI"
             ],
             path: "Sources/ClickyKit"
+        ),
+        // Tests
+        .testTarget(
+            name: "ClickyReasoningTests",
+            dependencies: [
+                "ClickyFoundation",
+                "ClickyPlatform",
+                "ClickyReasoning",
+                "ClickyAgent"
+            ],
+            path: "Tests/ClickyReasoningTests"
+        ),
+        .testTarget(
+            name: "ClickyCUATests",
+            dependencies: [
+                "ClickyFoundation",
+                "ClickyPlatform",
+                "ClickyCUA",
+                "ClickyReasoning",
+                "ClickyAgent"
+            ],
+            path: "Tests/ClickyCUATests"
         )
     ]
 )
