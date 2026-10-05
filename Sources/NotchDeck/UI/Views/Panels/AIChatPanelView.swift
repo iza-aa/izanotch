@@ -1,4 +1,5 @@
 import SwiftUI
+import AppKit
 
 public struct AIChatPanelView: View {
     @ObservedObject public var stateController: NotchStateController
@@ -62,30 +63,6 @@ public struct AIChatPanelView: View {
                 .padding(.horizontal, 28)
             }
 
-            // 1. Model Header Bar (Clean status header — Switcher is floating outside on the left)
-            HStack(spacing: 8) {
-                HStack(spacing: 6) {
-                    Circle()
-                        .fill(modelAccentColor(stateController.activeAIModel))
-                        .frame(width: 7, height: 7)
-
-                    Text(displayModelName(stateController.activeAIModel))
-                        .font(.system(size: 12, weight: .semibold, design: .rounded))
-                        .foregroundColor(.white.opacity(0.92))
-                }
-
-                Spacer()
-
-                HStack(spacing: 5) {
-                    Circle()
-                        .fill(Color.green)
-                        .frame(width: 6, height: 6)
-                    Text("Agent Active")
-                        .font(.system(size: 10, weight: .medium, design: .rounded))
-                        .foregroundColor(.white.opacity(0.7))
-                }
-            }
-            .padding(.horizontal, 28)
 
             // 2. Chat Stream or Empty State (Fills available vertical space)
             if stateController.chatMessages.isEmpty && stateController.pendingClarification == nil {
@@ -203,7 +180,18 @@ public struct AIChatPanelView: View {
                                 )
                             }
                         }
-                        .padding(.vertical, 4)
+                        // Keep the last lines above the composer even when a
+                        // connected session contains a very long user prompt
+                        // with attached-file metadata.
+                        .padding(.top, 4)
+                        .padding(.bottom, 20)
+                    }
+                    .layoutPriority(1)
+                    .onAppear {
+                        guard let last = stateController.chatMessages.last else { return }
+                        DispatchQueue.main.async {
+                            proxy.scrollTo(last.id, anchor: .bottom)
+                        }
                     }
                     .onChange(of: stateController.chatMessages.count) { _, _ in
                         if let last = stateController.chatMessages.last {
@@ -318,12 +306,21 @@ public struct AIChatPanelView: View {
         return processedLines.joined(separator: "\n").trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
-    private func displayModelName(_ modelId: String) -> String {
-        switch modelId {
-        case "Antigravity": return "Antigravity 2.0"
-        case "Codex": return "Codex ChatGPT"
-        case "Claude Code": return "Claude Code"
-        default: return modelId
+    @ViewBuilder
+    private func providerHeaderIcon(_ modelID: String) -> some View {
+        let provider = ProviderStatus(id: modelID, status: "Ready", isActive: false)
+        if let resourceName = provider.iconResourceName,
+           let iconURL = Bundle.module.url(forResource: resourceName, withExtension: "png"),
+           let iconImage = NSImage(contentsOf: iconURL) {
+            Image(nsImage: iconImage)
+                .resizable()
+                .scaledToFit()
+                .frame(width: 18, height: 18)
+        } else {
+            Image(systemName: provider.iconName)
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundColor(modelAccentColor(modelID))
+                .frame(width: 18, height: 18)
         }
     }
 

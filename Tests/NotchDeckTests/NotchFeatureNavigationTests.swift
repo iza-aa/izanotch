@@ -40,6 +40,25 @@ struct NotchFeatureNavigationTests {
         #expect(controller.chatMessages.last?.isUser == true)
     }
 
+    @Test("Provider chat histories stay isolated when switching AI models")
+    @MainActor
+    func testProviderChatIsolation() {
+        let controller = NotchStateController()
+        controller.appendChatMessage(sender: "Antigravity", text: "AG response", isUser: false)
+
+        controller.selectAIModel("Codex")
+        #expect(controller.chatMessages.isEmpty)
+        controller.appendChatMessage(sender: "Codex ChatGPT", text: "Codex response", isUser: false)
+
+        controller.selectAIModel("Antigravity")
+        #expect(controller.chatMessages.count == 1)
+        #expect(controller.chatMessages.first?.text == "AG response")
+
+        controller.selectAIModel("Codex")
+        #expect(controller.chatMessages.count == 1)
+        #expect(controller.chatMessages.first?.text == "Codex response")
+    }
+
     @Test("Hidden state dimensions return zero frame")
     func testHiddenStateGeometry() {
         let dimensions = NotchGeometryCalculator.dimensions(for: .hidden, hasPhysicalNotch: true)

@@ -1,0 +1,44 @@
+{
+  "pixelHits" : 2,
+  "recordedAt" : "2026-09-22T01:36:35Z",
+  "rows" : [
+    {
+      "id" : "som-sidebar-5btn",
+      "pixelErr" : 56,
+      "pixelHit" : false,
+      "somHit" : true
+    },
+    {
+      "id" : "som-red-circle",
+      "pixelErr" : 178,
+      "pixelHit" : false,
+      "somHit" : true
+    },
+    {
+      "id" : "som-orange-circle",
+      "pixelErr" : 80,
+      "pixelHit" : false,
+      "somHit" : true
+    },
+    {
+      "id" : "som-dock-wa",
+      "pixelErr" : 0,
+      "pixelHit" : true,
+      "somHit" : true
+    },
+    {
+      "id" : "som-close-btn",
+      "pixelErr" : 0,
+      "pixelHit" : true,
+      "somHit" : true
+    },
+    {
+      "id" : "som-blue-triangle",
+      "pixelErr" : 82,
+      "pixelHit" : false,
+      "somHit" : true
+    }
+  ],
+  "somHits" : 6,
+  "total" : 6
+}

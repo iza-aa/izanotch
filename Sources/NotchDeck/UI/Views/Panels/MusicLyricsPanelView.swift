@@ -76,14 +76,23 @@ public struct MusicLyricsPanelView: View {
         VStack(spacing: 10) {
             // 1. Now Playing Header & Playback Controls
             HStack(spacing: 12) {
-                // Album Art
+                // Album Art — real artwork or fallback placeholder
                 ZStack {
                     RoundedRectangle(cornerRadius: 10, style: .continuous)
-                        .fill(Color.white.opacity(0.12))
-                        .frame(width: 44, height: 44)
-                    Image(systemName: "music.note")
-                        .font(.system(size: 18))
-                        .foregroundColor(.white.opacity(0.75))
+                        .fill(Color.white.opacity(0.10))
+                        .frame(width: 56, height: 56)
+
+                    if let img = track.albumArtImage {
+                        Image(nsImage: img)
+                            .resizable()
+                            .aspectRatio(1, contentMode: .fill)
+                            .frame(width: 56, height: 56)
+                            .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                    } else {
+                        Image(systemName: "music.note")
+                            .font(.system(size: 20))
+                            .foregroundColor(.white.opacity(0.4))
+                    }
                 }
 
                 VStack(alignment: .leading, spacing: 3) {

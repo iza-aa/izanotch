@@ -1,0 +1,48 @@
+{
+  "hits" : 6,
+  "iconHits" : 3,
+  "iconTotal" : 3,
+  "model" : "UI-Venus-1.5-2B-mlx-6bit",
+  "recordedAt" : "2026-09-22T08:02:14Z",
+  "rows" : [
+    {
+      "detail" : "[190, 962] -> (243, 799) vs box (213,769,60x60)",
+      "hit" : true,
+      "id" : "wa-dock",
+      "latency" : 13.038624048233032
+    },
+    {
+      "detail" : "[25, 79] -> (32, 65) vs box (17,51,30x30)",
+      "hit" : true,
+      "id" : "traffic-close",
+      "latency" : 4.9244610071182251
+    },
+    {
+      "detail" : "[925, 53] -> (1184, 44) vs box (1129,29,110x30)",
+      "hit" : true,
+      "id" : "open-ide",
+      "latency" : 4.7114909887313843
+    },
+    {
+      "detail" : "[850, 962] -> (1088, 799) vs box (1058,769,60x60)",
+      "hit" : true,
+      "id" : "trash-dock",
+      "latency" : 3.8159530162811279
+    },
+    {
+      "detail" : "[733, 150] -> (938, 124) vs box (893,110,90x30)",
+      "hit" : true,
+      "id" : "create-btn",
+      "latency" : 4.374472975730896
+    },
+    {
+      "detail" : "[888, 152] -> (1136, 126) vs box (1082,111,110x30)",
+      "hit" : true,
+      "id" : "ask-rovo",
+      "latency" : 4.7477020025253296
+    }
+  ],
+  "textHits" : 3,
+  "textTotal" : 3,
+  "total" : 6
+}

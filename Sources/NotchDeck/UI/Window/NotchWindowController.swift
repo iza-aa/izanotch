@@ -11,6 +11,7 @@ public final class NotchWindowController: NSWindowController {
     public init(
         stateController: NotchStateController,
         hoverMonitor: NotchHoverMonitor? = nil,
+        onAIModelSelected: (@MainActor (String) -> Void)? = nil,
         onSubmitPrompt: (@MainActor (String) -> Void)? = nil,
         onReplyClarification: (@MainActor (String) -> Void)? = nil,
         onToggleMic: (@MainActor () -> Void)? = nil,
@@ -21,7 +22,8 @@ public final class NotchWindowController: NSWindowController {
         self.hoverMonitor = hoverMonitor
         let screen = NSScreen.main ?? NSScreen.screens.first!
         let hasNotch = NotchGeometryCalculator.hasPhysicalNotch(screen: screen)
-        let notchW   = NotchGeometryCalculator.notchWidth(for: screen)
+        let hardwareNotchWidth = hasNotch ? NotchGeometryCalculator.notchWidth(for: screen) : 0
+        let hardwareNotchHeight = hasNotch ? NotchGeometryCalculator.notchHeight(for: screen) : 0
         let initialFrame = NotchGeometryCalculator.calculateFrame(
             for: stateController.currentState,
             screen: screen
@@ -34,7 +36,9 @@ public final class NotchWindowController: NSWindowController {
             stateController: stateController,
             hoverMonitor: hoverMonitor,
             hasPhysicalNotch: hasNotch,
-            hardwareNotchWidth: notchW,
+            hardwareNotchWidth: hardwareNotchWidth,
+            hardwareNotchHeight: hardwareNotchHeight,
+            onAIModelSelected: onAIModelSelected,
             onSubmitPrompt: onSubmitPrompt,
             onReplyClarification: onReplyClarification,
             onToggleMic: onToggleMic,

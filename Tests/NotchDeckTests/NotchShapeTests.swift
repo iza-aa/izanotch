@@ -44,4 +44,5 @@ struct NotchShapeTests {
         let path = shape.path(in: rect)
         #expect(path.isEmpty || !path.isEmpty)  // just validates no crash
     }
+
 }

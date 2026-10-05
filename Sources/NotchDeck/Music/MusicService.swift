@@ -23,6 +23,8 @@ public struct MusicTrack: Equatable, Sendable {
     public var isPlaying: Bool
     public var playbackPosition: Double
     public var trackDuration: Double
+    /// Raw PNG/JPEG bytes downloaded from Spotify's CDN artwork URL.
+    public var artworkData: Data?
     public var lyrics: [LyricLine]
 
     public init(
@@ -32,6 +34,7 @@ public struct MusicTrack: Equatable, Sendable {
         isPlaying: Bool = false,
         playbackPosition: Double = 0,
         trackDuration: Double = 0,
+        artworkData: Data? = nil,
         lyrics: [LyricLine] = []
     ) {
         self.title = title
@@ -40,7 +43,14 @@ public struct MusicTrack: Equatable, Sendable {
         self.isPlaying = isPlaying
         self.playbackPosition = playbackPosition
         self.trackDuration = trackDuration
+        self.artworkData = artworkData
         self.lyrics = lyrics
+    }
+
+    /// Convenience: resolve NSImage from raw data.
+    public var albumArtImage: NSImage? {
+        guard let data = artworkData else { return nil }
+        return NSImage(data: data)
     }
 }
 
@@ -56,10 +66,40 @@ public final class MusicService: ObservableObject {
     /// Non-nil when a Spotify / AppleScript operation failed.
     @Published public var musicError: String? = nil
 
-    /// True when we are actively polling (Spotify is running but track fetch in-flight).
+    /// True when metadata is being fetched.
     @Published public var isLoading: Bool = false
 
-    public init() {}
+    /// True while lrclib lyrics fetch is in-flight.
+    @Published public var isFetchingLyrics: Bool = false
+
+    // URL-based caches so artwork/lyrics are not re-fetched on minor state changes
+    private var cachedArtworkURL: String?
+    private var cachedArtworkData: Data?
+    private var cachedLyricsKey: String?   // "\(title)|\(artist)"
+    private var cachedLyrics: [LyricLine] = []
+
+    private var notificationTask: Task<Void, Never>?
+    private var artworkTask: Task<Void, Never>?
+    private var lyricsTask: Task<Void, Never>?
+
+    public init() {
+        // Auto-refresh when Spotify signals a playback state change.
+        notificationTask = Task { [weak self] in
+            let notifications = DistributedNotificationCenter.default().notifications(
+                named: NSNotification.Name("com.spotify.client.PlaybackStateChanged")
+            )
+            for await _ in notifications {
+                guard let self else { return }
+                await self.fetchCurrentTrack()
+            }
+        }
+    }
+
+    deinit {
+        notificationTask?.cancel()
+        artworkTask?.cancel()
+        lyricsTask?.cancel()
+    }
 
     // MARK: - Playback Controls
 
@@ -70,7 +110,6 @@ public final class MusicService: ObservableObject {
 
     public func nextTrack() {
         runScript("tell application \"Spotify\" to next track")
-        // Re-fetch after a short delay to pick up the new track
         Task {
             try? await Task.sleep(nanoseconds: 600_000_000)
             await fetchCurrentTrack()
@@ -87,19 +126,16 @@ public final class MusicService: ObservableObject {
 
     // MARK: - Track Fetching
 
-    /// Fetches the currently playing track from Spotify via AppleScript.
-    /// Sets `musicError` if Spotify is not running or the call fails.
     public func fetchCurrentTrack() async {
         isLoading = true
         defer { isLoading = false }
 
-        // First check if Spotify is running
+        // Check if Spotify is running
         let isRunning = await Task.detached(priority: .userInitiated) {
             let script = "tell application \"System Events\" to (name of processes) contains \"Spotify\""
             guard let appleScript = NSAppleScript(source: script) else { return false }
             var errDict: NSDictionary?
-            let result = appleScript.executeAndReturnError(&errDict)
-            return result.booleanValue
+            return appleScript.executeAndReturnError(&errDict).booleanValue
         }.value
 
         guard isRunning else {
@@ -108,57 +144,63 @@ public final class MusicService: ObservableObject {
             return
         }
 
-        // Fetch track metadata
+        // Fetch metadata + artwork URL in one AppleScript round-trip
         let fetchScript = """
         tell application "Spotify"
-            set t to name of current track
-            set ar to artist of current track
-            set al to album of current track
-            set dur to duration of current track
-            set pos to player position
-            set ps to (player state as string)
-            return t & "|||" & ar & "|||" & al & "|||" & dur & "|||" & pos & "|||" & ps
+            set t      to name of current track
+            set ar     to artist of current track
+            set al     to album of current track
+            set dur    to duration of current track
+            set pos    to player position
+            set ps     to (player state as string)
+            set artURL to artwork url of current track
+            return t & "|||" & ar & "|||" & al & "|||" & dur & "|||" & pos & "|||" & ps & "|||" & artURL
         end tell
         """
 
-        let result = await Task.detached(priority: .userInitiated) { () -> (String?, String?) in
-            guard let appleScript = NSAppleScript(source: fetchScript) else {
-                return (nil, "AppleScript init failed")
-            }
+        let (raw, errMsg) = await Task.detached(priority: .userInitiated) { () -> (String?, String?) in
+            guard let script = NSAppleScript(source: fetchScript) else { return (nil, "AppleScript init failed") }
             var errDict: NSDictionary?
-            let desc = appleScript.executeAndReturnError(&errDict)
+            let desc = script.executeAndReturnError(&errDict)
             if let err = errDict {
-                let msg = err[NSAppleScript.errorMessage] as? String ?? "Unknown AppleScript error"
-                return (nil, msg)
+                return (nil, err[NSAppleScript.errorMessage] as? String ?? "Unknown error")
             }
             return (desc.stringValue, nil)
         }.value
 
-        if let errMsg = result.1 {
+        if let errMsg {
             self.musicError = errMsg
             self.currentTrack = nil
             return
         }
 
-        guard let raw = result.0 else {
+        guard let raw else {
             self.musicError = "Tidak ada respons dari Spotify"
             self.currentTrack = nil
             return
         }
 
         let parts = raw.components(separatedBy: "|||")
-        guard parts.count >= 6 else {
-            self.musicError = "Format respons Spotify tidak valid"
+        guard parts.count >= 7 else {
+            self.musicError = "Format respons tidak valid"
             self.currentTrack = nil
             return
         }
 
-        let title     = parts[0]
-        let artist    = parts[1]
-        let album     = parts[2]
-        let duration  = Double(parts[3].trimmingCharacters(in: .whitespaces)) ?? 0
-        let position  = Double(parts[4].trimmingCharacters(in: .whitespaces)) ?? 0
-        let isPlaying = parts[5].trimmingCharacters(in: .whitespaces).lowercased().contains("playing")
+        let title      = parts[0]
+        let artist     = parts[1]
+        let album      = parts[2]
+        let duration   = Double(parts[3].trimmingCharacters(in: .whitespaces)) ?? 0
+        let position   = Double(parts[4].trimmingCharacters(in: .whitespaces)) ?? 0
+        let isPlaying  = parts[5].trimmingCharacters(in: .whitespaces).lowercased().contains("playing")
+        let artworkURL = parts[6].trimmingCharacters(in: .whitespaces)
+
+        // Resolve artwork from cache (avoid flicker)
+        let artwork: Data? = (artworkURL == cachedArtworkURL) ? cachedArtworkData : cachedArtworkData
+
+        // Resolve lyrics from cache
+        let lyricsKey = "\(title)|\(artist)"
+        let resolvedLyrics = (lyricsKey == cachedLyricsKey) ? cachedLyrics : []
 
         self.currentTrack = MusicTrack(
             title: title,
@@ -166,13 +208,110 @@ public final class MusicService: ObservableObject {
             album: album,
             isPlaying: isPlaying,
             playbackPosition: position,
-            trackDuration: duration / 1000,  // Spotify returns ms
-            lyrics: []  // Lyrics API integration can be added later
+            trackDuration: duration / 1000,
+            artworkData: artwork,
+            lyrics: resolvedLyrics
         )
         self.musicError = nil
+
+        // Async: download artwork if URL changed
+        if !artworkURL.isEmpty, artworkURL != cachedArtworkURL {
+            let urlToFetch = artworkURL
+            artworkTask?.cancel()
+            artworkTask = Task { [weak self] in
+                guard let data = await Self.downloadData(from: urlToFetch) else { return }
+                guard let self, !Task.isCancelled else { return }
+                self.cachedArtworkURL = urlToFetch
+                self.cachedArtworkData = data
+                self.currentTrack?.artworkData = data
+            }
+        }
+
+        // Async: fetch lyrics if track identity changed
+        if lyricsKey != cachedLyricsKey {
+            cachedLyricsKey = lyricsKey
+            cachedLyrics = []
+            lyricsTask?.cancel()
+            lyricsTask = Task { [weak self] in
+                guard let self else { return }
+                await MainActor.run { self.isFetchingLyrics = true }
+                let lines = await Self.fetchLyricsFromLrclib(
+                    title: title, artist: artist, album: album, duration: duration / 1000
+                )
+                guard !Task.isCancelled else { return }
+                await MainActor.run {
+                    self.isFetchingLyrics = false
+                    self.cachedLyrics = lines
+                    self.currentTrack?.lyrics = lines
+                }
+            }
+        }
     }
 
-    // MARK: - Private
+    // MARK: - Album Art download
+
+    private static func downloadData(from urlString: String) async -> Data? {
+        guard let url = URL(string: urlString) else { return nil }
+        return try? await URLSession.shared.data(from: url).0
+    }
+
+    // MARK: - Lyrics via lrclib.net (free, no API key)
+
+    private static func fetchLyricsFromLrclib(
+        title: String,
+        artist: String,
+        album: String,
+        duration: Double
+    ) async -> [LyricLine] {
+        var comps = URLComponents(string: "https://lrclib.net/api/get")!
+        comps.queryItems = [
+            URLQueryItem(name: "track_name",  value: title),
+            URLQueryItem(name: "artist_name", value: artist),
+            URLQueryItem(name: "album_name",  value: album),
+            URLQueryItem(name: "duration",    value: String(Int(duration)))
+        ]
+        guard let url = comps.url else { return [] }
+
+        guard
+            let (data, resp) = try? await URLSession.shared.data(from: url),
+            (resp as? HTTPURLResponse)?.statusCode == 200,
+            let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any]
+        else { return [] }
+
+        // Prefer synced LRC lyrics
+        if let synced = json["syncedLyrics"] as? String, !synced.isEmpty {
+            return parseLRC(synced)
+        }
+
+        // Fallback: plain lyrics, assign fake timestamps (3s per line)
+        if let plain = json["plainLyrics"] as? String, !plain.isEmpty {
+            return plain
+                .components(separatedBy: "\n")
+                .filter { !$0.trimmingCharacters(in: .whitespaces).isEmpty }
+                .enumerated()
+                .map { LyricLine(id: $0.offset, timeSeconds: Double($0.offset) * 3.0, text: $0.element) }
+        }
+
+        return []
+    }
+
+    /// Parse LRC format lines: `[mm:ss.xx] text`
+    private static func parseLRC(_ raw: String) -> [LyricLine] {
+        guard let regex = try? NSRegularExpression(pattern: #"\[(\d+):(\d+\.\d+)\]\s*(.*)"#) else { return [] }
+        var lines: [LyricLine] = []
+        raw.components(separatedBy: "\n").enumerated().forEach { idx, line in
+            let ns = line as NSString
+            guard let m = regex.firstMatch(in: line, range: NSRange(location: 0, length: ns.length)) else { return }
+            let minutes = Double(ns.substring(with: m.range(at: 1))) ?? 0
+            let seconds = Double(ns.substring(with: m.range(at: 2))) ?? 0
+            let text    = m.range(at: 3).location != NSNotFound ? ns.substring(with: m.range(at: 3)) : ""
+            guard !text.trimmingCharacters(in: .whitespaces).isEmpty else { return }
+            lines.append(LyricLine(id: idx, timeSeconds: minutes * 60 + seconds, text: text))
+        }
+        return lines.sorted { $0.timeSeconds < $1.timeSeconds }
+    }
+
+    // MARK: - AppleScript helper
 
     @discardableResult
     private func runScript(_ scriptSource: String) -> Bool {

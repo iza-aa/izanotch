@@ -7,18 +7,31 @@ struct NotchGeometryCalculatorTests {
 
     // MARK: - Static `dimensions()` — unit-test safe (no NSScreen needed)
 
-    @Test("Collapsed pill on physical notch display uses 200x36 fallback dimensions")
+    @Test("Collapsed physical notch uses one compact status surface")
     func testCollapsedDimensionsPhysicalNotch() {
         let (w, h) = NotchGeometryCalculator.dimensions(for: .collapsed, hasPhysicalNotch: true)
-        #expect(w == 200)
-        #expect(h == 36)
+        #expect(w == 160 + (2 * NotchGeometryCalculator.collapsedStatusWidth))
+        #expect(h == NotchGeometryCalculator.defaultNotchHeight)
     }
 
-    @Test("Collapsed pill on external display uses 160x32 floating pill dimensions")
+    @Test("Collapsed pill on external display uses 180x32 floating pill dimensions")
     func testCollapsedDimensionsExternal() {
         let (w, h) = NotchGeometryCalculator.dimensions(for: .collapsed, hasPhysicalNotch: false)
-        #expect(w == 160)
+        #expect(w == 180)
         #expect(h == 32)
+    }
+
+    @Test("Live activity reuses standby notch dimensions")
+    func testLiveActivityUsesStandbyDimensions() {
+        let standbyNotch = NotchGeometryCalculator.dimensions(for: .collapsed, hasPhysicalNotch: true)
+        let liveActivityNotch = NotchGeometryCalculator.dimensions(for: .liveActivity(title: "Build", countdown: "Running"), hasPhysicalNotch: true)
+        #expect(liveActivityNotch.width == standbyNotch.width)
+        #expect(liveActivityNotch.height == standbyNotch.height)
+
+        let standbyExternal = NotchGeometryCalculator.dimensions(for: .collapsed, hasPhysicalNotch: false)
+        let liveActivityExternal = NotchGeometryCalculator.dimensions(for: .liveActivity(title: "Build", countdown: "Running"), hasPhysicalNotch: false)
+        #expect(liveActivityExternal.width == standbyExternal.width)
+        #expect(liveActivityExternal.height == standbyExternal.height)
     }
 
     @Test("Expanded state is wider than collapsed and at least 200pt tall")
@@ -37,7 +50,7 @@ struct NotchGeometryCalculatorTests {
 
     // MARK: - Legacy `calculateFrame(for:screenFrame:hasPhysicalNotch:)` overload
 
-    @Test("Legacy overload: collapsed frame is centered at screen top on physical notch display")
+    @Test("Legacy overload: collapsed pill sits to the left of the physical camera notch")
     func testLegacyCollapsedFramePhysicalNotch() {
         let mockScreenFrame = NSRect(x: 0, y: 0, width: 1728, height: 1117)
         let frame = NotchGeometryCalculator.calculateFrame(
@@ -46,8 +59,8 @@ struct NotchGeometryCalculatorTests {
             hasPhysicalNotch: true
         )
 
-        #expect(frame.width == 200)
-        #expect(frame.height == 36)
+        #expect(frame.width == 160 + (2 * NotchGeometryCalculator.collapsedStatusWidth))
+        #expect(frame.height == NotchGeometryCalculator.defaultNotchHeight)
         #expect(frame.midX == mockScreenFrame.midX)
         #expect(frame.maxY == mockScreenFrame.maxY)
     }
@@ -83,7 +96,7 @@ struct NotchGeometryCalculatorTests {
             hasPhysicalNotch: false
         )
 
-        #expect(frame.width == 160)
+        #expect(frame.width == 180)
         #expect(frame.height == 32)
         #expect(frame.maxY == mockScreenFrame.maxY - 10)
     }
@@ -103,7 +116,7 @@ struct NotchGeometryCalculatorTests {
 
     // MARK: - Content Insets
 
-    @Test("Content top inset is larger on physical notch than external display")
+    @Test("Content top inset is internal after physical notch window is repositioned")
     func testNotchHeightAndInset() {
         let notchHeight = NotchGeometryCalculator.defaultNotchHeight
         #expect(notchHeight >= 32.0 && notchHeight <= 40.0)

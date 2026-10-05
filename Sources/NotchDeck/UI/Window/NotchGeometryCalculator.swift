@@ -9,6 +9,21 @@ public struct NotchGeometryCalculator: Sendable {
     /// Per NotchKit reference: expandedWidth = notchWidth + 2 * wingExtension
     public static let wingExtension: CGFloat = 180
 
+    /// Width of each side wing in the connected standby notch surface.
+    /// The physical camera notch occupies the center; status content uses the
+    /// native menu-bar space on both sides of it.
+    public static let collapsedStatusWidth: CGFloat = 120
+
+    /// Extra reserved space on each side of the camera notch so text never
+    /// touches the physical camera/safe-area boundary.
+    public static let statusCameraClearance: CGFloat = 18
+
+    /// Height of the compact standby/status pill.
+    public static let collapsedStatusHeight: CGFloat = 30
+
+    /// Height of the connected voice activity surface.
+    public static let voiceActiveHeight: CGFloat = 76
+
     // MARK: - Hardware Notch Metrics
 
     /// Returns the physical notch width (camera region only) by reading auxiliary screen areas.
@@ -39,8 +54,13 @@ public struct NotchGeometryCalculator: Sendable {
 
     // MARK: - Content Insets
 
-    public static func contentTopInset(hasPhysicalNotch: Bool) -> CGFloat {
-        return hasPhysicalNotch ? defaultNotchHeight + 22.0 : 18.0
+    public static func contentTopInset(
+        hasPhysicalNotch: Bool,
+        physicalNotchHeight: CGFloat = defaultNotchHeight
+    ) -> CGFloat {
+        // Expanded content starts below the camera cutout while the tray
+        // itself remains flush with the top edge of the screen.
+        return hasPhysicalNotch ? physicalNotchHeight + 12.0 : 18.0
     }
 
     // MARK: - Dimensions (static fallback — no NSScreen required)
@@ -51,24 +71,32 @@ public struct NotchGeometryCalculator: Sendable {
         for state: NotchState,
         hasPhysicalNotch: Bool = false
     ) -> (width: CGFloat, height: CGFloat) {
-        let notchH: CGFloat = hasPhysicalNotch ? defaultNotchHeight : 0
         let fallbackNotchW: CGFloat = hasPhysicalNotch ? 160 : 0
 
         switch state {
         case .hidden:
             return (0, 0)
         case .collapsed:
-            // Collapsed pill aligns to hardware notch area + wings (115pt each side)
-            let w: CGFloat = hasPhysicalNotch ? fallbackNotchW + 230 : 160
-            let h: CGFloat = hasPhysicalNotch ? defaultNotchHeight : 32
+            // One connected surface: left wing + camera notch + right wing.
+            let w: CGFloat = hasPhysicalNotch
+                ? fallbackNotchW + (2 * collapsedStatusWidth)
+                : 180
+            let h: CGFloat = hasPhysicalNotch
+                ? max(defaultNotchHeight, collapsedStatusHeight)
+                : 32
             return (w, h)
         case .voiceActive:
-            return (400, 64 + notchH)
+            let w: CGFloat = hasPhysicalNotch
+                ? fallbackNotchW + (2 * collapsedStatusWidth)
+                : 400
+            return (w, hasPhysicalNotch ? voiceActiveHeight : 64)
         case .liveActivity:
-            return (360, 48 + notchH)
+            // Live activities occupy the existing standby notch instead of
+            // growing into a Dynamic-Island-style HUD.
+            return dimensions(for: .collapsed, hasPhysicalNotch: hasPhysicalNotch)
         case .expanded:
             let expandedW = hasPhysicalNotch ? max(740, fallbackNotchW + 540) : 700
-            return (expandedW, 400 + notchH)
+            return (expandedW, 400)
         }
     }
 
@@ -94,29 +122,36 @@ public struct NotchGeometryCalculator: Sendable {
             return NSRect(x: screenFrame.midX, y: screenFrame.maxY, width: 0, height: 0)
 
         case .collapsed:
-            // Collapsed: window spans notchWidth + wings on both sides (115pt wing each side)
-            let wingW: CGFloat = hasNotch ? 115 : 0
-            let w = hasNotch ? notchW + (2 * wingW) : 160
-            let h = hasNotch ? notchH : 32
+            // One connected black surface wraps the camera notch and uses
+            // the menu-bar space on both sides. There is no floating card.
+            let w = hasNotch
+                ? notchW + (2 * collapsedStatusWidth)
+                : 180
+            let h = hasNotch
+                ? max(notchH, collapsedStatusHeight)
+                : 32
             let x = screenFrame.midX - (w / 2.0)
             let y = hasNotch ? screenFrame.maxY - h : screenFrame.maxY - h - 10
             return NSRect(x: x, y: y, width: w, height: h)
 
         case .voiceActive:
-            let w: CGFloat = 400
-            let h: CGFloat = 64 + notchH
+            let w: CGFloat = hasNotch
+                ? notchW + (2 * collapsedStatusWidth)
+                : 400
+            let h: CGFloat = hasNotch ? voiceActiveHeight : 64
             return NSRect(x: screenFrame.midX - (w / 2.0), y: screenFrame.maxY - h, width: w, height: h)
 
         case .liveActivity:
-            let w: CGFloat = 360
-            let h: CGFloat = 48 + notchH
-            return NSRect(x: screenFrame.midX - (w / 2.0), y: screenFrame.maxY - h, width: w, height: h)
+            // Live activities stay inside the same frame as the standby notch.
+            return calculateFrame(for: .collapsed, screen: screen)
 
         case .expanded:
             // Expanded: width accommodates main tray plus floating side docks on left and right
             let rawW = hasNotch ? max(740, notchW + 540) : 700
             let w = min(rawW, screenFrame.width - 24)
-            let h: CGFloat = 400 + notchH
+            let h: CGFloat = 400
+            // The expanded tray is flush with the menu bar. Its SwiftUI
+            // surface remains connected to the camera region.
             return NSRect(x: screenFrame.midX - (w / 2.0), y: screenFrame.maxY - h, width: w, height: h)
         }
     }
@@ -131,9 +166,22 @@ public struct NotchGeometryCalculator: Sendable {
             return NSRect(x: screenFrame.midX, y: screenFrame.maxY, width: 0, height: 0)
         }
         let (width, height) = dimensions(for: state, hasPhysicalNotch: hasPhysicalNotch)
-        let originX = screenFrame.midX - (width / 2.0)
-        let topOffset: CGFloat = hasPhysicalNotch ? 0 : 10.0
-        let originY = screenFrame.maxY - height - topOffset
+        let originX: CGFloat
+        let originY: CGFloat
+
+        if hasPhysicalNotch {
+            switch state {
+            case .collapsed, .voiceActive, .liveActivity:
+                originX = screenFrame.midX - (width / 2.0)
+                originY = screenFrame.maxY - height
+            case .expanded, .hidden:
+                originX = screenFrame.midX - (width / 2.0)
+                originY = screenFrame.maxY - height
+            }
+        } else {
+            originX = screenFrame.midX - (width / 2.0)
+            originY = screenFrame.maxY - height - 10.0
+        }
         return NSRect(x: originX, y: originY, width: width, height: height)
     }
 

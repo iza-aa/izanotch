@@ -14,7 +14,10 @@ let package = Package(
         .executableTarget(
             name: "NotchDeck",
             dependencies: [],
-            path: "Sources/NotchDeck"
+            path: "Sources/NotchDeck",
+            resources: [
+                .process("Icon")
+            ]
         ),
         .testTarget(
             name: "NotchDeckTests",

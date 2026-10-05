@@ -1,0 +1,18 @@
+{
+  "branchCounts" : {
+    "candidate-id" : 2,
+    "dock-bypass" : 2,
+    "needs-hsv-check" : 1,
+    "needs-roi-zoom" : 1,
+    "no-flight" : 2,
+    "normalized-box" : 1,
+    "raw-pixel" : 1,
+    "raw-pixel-screen2" : 1,
+    "traffic-snap" : 3
+  },
+  "mismatches" : [
+
+  ],
+  "recordedAt" : "2026-09-26T10:56:35Z",
+  "total" : 14
+}

@@ -1,0 +1,86 @@
+{
+  "version": 1,
+  "tolerancePx": 24,
+  "cases": [
+    {
+      "id": "som-sidebar-5btn",
+      "category": "sidebar",
+      "transcript": "button text yang mana?",
+      "candidates": [
+        {"id": "ax-autodraw", "label": "autodraw button", "x": 60, "y": 300},
+        {"id": "ax-draw", "label": "draw button", "x": 60, "y": 350},
+        {"id": "ax-type", "label": "type text button", "x": 60, "y": 400},
+        {"id": "ax-fill", "label": "fill button", "x": 60, "y": 450},
+        {"id": "ax-shape", "label": "shape button", "x": 60, "y": 500}
+      ],
+      "correctId": "ax-type",
+      "guessedX": 24, "guessedY": 443,
+      "finalX": 28, "finalY": 543
+    },
+    {
+      "id": "som-red-circle",
+      "category": "color",
+      "transcript": "tunjuk lingkaran merah",
+      "candidates": [
+        {"id": "region-orange", "label": "orange circle region", "x": 373, "y": 301},
+        {"id": "region-red", "label": "red circle region", "x": 304, "y": 470},
+        {"id": "region-blue", "label": "blue triangle region", "x": 519, "y": 560}
+      ],
+      "correctId": "region-red",
+      "guessedX": 236, "guessedY": 635,
+      "finalX": 278, "finalY": 779
+    },
+    {
+      "id": "som-orange-circle",
+      "category": "color",
+      "transcript": "tunjuk lingkaran oranye",
+      "candidates": [
+        {"id": "region-orange", "label": "orange circle region", "x": 373, "y": 301},
+        {"id": "region-red", "label": "red circle region", "x": 304, "y": 470},
+        {"id": "region-blue", "label": "blue triangle region", "x": 519, "y": 560}
+      ],
+      "correctId": "region-orange",
+      "guessedX": 304, "guessedY": 260,
+      "finalX": 359, "finalY": 319
+    },
+    {
+      "id": "som-dock-wa",
+      "category": "dock",
+      "transcript": "di mana ikon whatsapp?",
+      "candidates": [
+        {"id": "dock-finder", "label": "Finder icon", "x": 200, "y": 944},
+        {"id": "dock-whatsapp", "label": "WhatsApp icon", "x": 372, "y": 944},
+        {"id": "dock-safari", "label": "Safari icon", "x": 450, "y": 944}
+      ],
+      "correctId": "dock-whatsapp",
+      "guessedX": 372, "guessedY": 944,
+      "finalX": 372, "finalY": 944
+    },
+    {
+      "id": "som-close-btn",
+      "category": "traffic-light",
+      "transcript": "tutup jendela ini",
+      "candidates": [
+        {"id": "traffic-close", "label": "close button", "x": 74, "y": 50},
+        {"id": "traffic-minimize", "label": "minimize button", "x": 94, "y": 50},
+        {"id": "traffic-zoom", "label": "zoom button", "x": 114, "y": 50}
+      ],
+      "correctId": "traffic-close",
+      "guessedX": 74, "guessedY": 50,
+      "finalX": 74, "finalY": 50
+    },
+    {
+      "id": "som-blue-triangle",
+      "category": "native",
+      "transcript": "tunjuk segitiga biru",
+      "candidates": [
+        {"id": "region-red", "label": "red circle region", "x": 304, "y": 470},
+        {"id": "region-blue", "label": "blue triangle region", "x": 519, "y": 560},
+        {"id": "region-orange", "label": "orange circle region", "x": 373, "y": 301}
+      ],
+      "correctId": "region-blue",
+      "guessedX": 440, "guessedY": 535,
+      "finalX": 519, "finalY": 656
+    }
+  ]
+}

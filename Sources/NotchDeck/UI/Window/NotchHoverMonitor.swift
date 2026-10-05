@@ -53,12 +53,11 @@ public final class NotchHoverMonitor: ObservableObject {
 
         guard stateController.currentState == .expanded else { return }
 
-        // Prevent false exit events caused by SwiftUI re-layout / window animation:
-        // If the mouse pointer is physically still inside the window frame, ignore the exit event.
-        if isMouseInsideNotchWindow() {
-            return
-        }
-
+        // Do not inspect the frame synchronously here. During the collapsed ↔
+        // expanded animation the frame is temporarily between both sizes,
+        // which can make an outside pointer look inside and leave the tray
+        // stuck open. The debounced check below runs after the animation has
+        // settled.
         exitTask?.cancel()
         exitTask = Task { @MainActor in
             let nano = UInt64(exitDebounceDuration * 1_000_000_000)
