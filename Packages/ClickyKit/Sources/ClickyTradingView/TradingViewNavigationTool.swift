@@ -4,7 +4,7 @@ import ClickyCUA
 import ClickyFoundation
 //
 //  TradingViewNavigationTool.swift
-//  boringNotch
+//  izaNotch
 //
 //  Modular TradingView Symbol & Timeframe Navigation Tool
 //  Guarantees proper perpetual swap ticker formatting (BINGX:<COIN>USDT.P) and direct interval switching.

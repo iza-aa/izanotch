@@ -2,7 +2,7 @@ import ClickyPlatform
 import ClickyFoundation
 //
 //  CUAReadActionTool.swift
-//  boringNotch (Izanotchy)
+//  izaNotch (Izanotchy)
 //
 //  Perceptual Observation Tool: Reads structured UI hierarchy and visual content from the target application window.
 //

@@ -2,7 +2,7 @@ import ClickyPlatform
 import ClickyFoundation
 //
 //  CuaDriverClient.swift
-//  boringNotch (Izanotchy)
+//  izaNotch (Izanotchy)
 //
 //  Universal macOS Desktop Automation Client (Pillar 2)
 //  Backed by Cua Driver (https://github.com/trycua/cua)

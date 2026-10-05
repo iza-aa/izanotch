@@ -2,7 +2,7 @@ import ClickyPlatform
 import ClickyFoundation
 //
 //  CUATypeActionTool.swift
-//  boringNotch (Izanotchy)
+//  izaNotch (Izanotchy)
 //
 //  Physical Keyboard Type Tool: Focuses target field via physical left click and executes virtual keystrokes.
 //

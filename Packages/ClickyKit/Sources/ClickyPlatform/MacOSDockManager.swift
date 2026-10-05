@@ -1,6 +1,6 @@
 //
 //  MacOSDockManager.swift
-//  boringNotch (Izanotchy)
+//  izaNotch (Izanotchy)
 //
 //  Dock location discovery and accessibility positioning.
 //

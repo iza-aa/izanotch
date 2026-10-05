@@ -1,6 +1,6 @@
 //
 //  BingXMarketDataEngine.swift
-//  boringNotch
+//  izaNotch
 //
 //  Institutional-Grade BingX Market Data & Mathematical Technical Analysis Engine
 //  Directly fetches OHLCV candlestick data from BingX Public Perpetual Swap API

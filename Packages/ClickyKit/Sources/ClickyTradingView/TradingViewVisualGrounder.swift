@@ -4,7 +4,7 @@ import ClickyCUA
 import ClickyFoundation
 //
 //  TradingViewVisualGrounder.swift
-//  boringNotch
+//  izaNotch
 //
 //  Specialized Visual Perceptual Engine for TradingView macOS Desktop Application.
 //  Encapsulates domain-specific element detection:

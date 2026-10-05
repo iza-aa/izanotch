@@ -1,6 +1,6 @@
 //
 //  CompanionWorkspaceManager.swift
-//  boringNotch
+//  izaNotch
 //
 //  Created for Izanotchy - Multi-Agent Desktop System
 //  Refactored for Fitur F-05: Per-Companion Workspace & Storage Isolation

@@ -2,7 +2,7 @@ import ClickyPlatform
 import ClickyFoundation
 //
 //  CuaActionCursorManager.swift
-//  boringNotch
+//  izaNotch
 //
 //  Dedicated Coordinator for the Ephemeral CuaDrive Action Cursor (Phase 2 Canon)
 //  Completely decoupled from CursorAssist Clicky:

@@ -1,64 +1,137 @@
-# Xcode
+# ==============================================================================
+# .gitignore — izaNotch
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# 🔒 0. Private AI Directives, Internal Engineering Docs & Local Tooling
+# ------------------------------------------------------------------------------
+AGENTS.md
+CONTEXT.md
+ERRORS.md
+GEMINI.md
+CHANGELOG.md
+docs/
+data/
+heyclicky-reference/
+bin/
+scripts/
+
+# ------------------------------------------------------------------------------
+# 🛡️ 1. Security, Credentials & Secrets (AgentShield)
+# ------------------------------------------------------------------------------
+.env
+.env.*
+*.env
+*.key
+*.pem
+*.p12
+*.cer
+*.mobileprovision
+*.provisionprofile
+credentials.json
+token.json
+tokens.json
+secrets/
+auth.json
+
+# ------------------------------------------------------------------------------
+# 🍎 2. macOS System Artifacts & AppleDouble
+# ------------------------------------------------------------------------------
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+._*
+.Spotlight-V100
+.Trashes
+
+# ------------------------------------------------------------------------------
+# 🛠️ 3. Xcode, Swift & Apple Ecosystem
+# ------------------------------------------------------------------------------
 *.xcuserstate
 *.xcuserdata
-*.xcscheme
 *.xcuserdatad
 *.pbxuser
 *.xccheckout
-*.xcscheme
 *.xcplayground
-*.xcuserdatad
 *.xctest
-*.xcuserdata
+*.xcscheme
+
+# Xcode Workspaces & User Settings
+*.xcodeproj/xcuserdata/
+*.xcodeproj/project.xcuserdata/
 *.xcodeproj/xcshareddata/WorkspaceSettings.xcsettings
+*.xcworkspace/xcuserdata/
+*.xcworkspace/xcshareddata/WorkspaceSettings.xcsettings
 
-# CocoaPods
-Pods/
-podfile.lock
+# Instruments & Profiling
+ProfileData/
+*.mode1v3
+*.mode2v3
+*.perspectivev3
 
-# Carthage
-Carthage/Build/
-
-# Swift Package Manager
-.swiftpm/
-.build/
-
-# Derived data
+# Derived Data & Build Artifacts
 DerivedData/
-
-# Build output
 build/
 *.app
 *.dSYM
-
-# Temporary files
-*.swp
-*.swo
-*.tmp
-*.log
-
-# Other
-*.DS_Store
-*.vscode/
-*.idea/
-
-# User-specific files
-*.xcuserdatad/
-*.xcscheme
-*.xcodeproj/xcuserdata
-*.xcodeproj/project.xcuserdata
-
-# Build artifacts
 *.ipa
 *.xcarchive
-*.dSYM
 
-# Local Cache & Databases
+# Swift Package Manager & CocoaPods / Carthage
+.swiftpm/
+.build/
+Packages/*/.build/
+Packages/*/.swiftpm/
+Pods/
+podfile.lock
+Carthage/Build/
+
+# ------------------------------------------------------------------------------
+# ⚡ 4. Runtime Sockets, IPC, PID & Crash Reports
+# ------------------------------------------------------------------------------
+*.sock
+*.pid
+*.crash
+*.diag
+*.trace
+*.log
+nohup.out
+/tmp/cua-izanotchy-*
+
+# ------------------------------------------------------------------------------
+# 💾 5. Local Databases & File Caches
+# ------------------------------------------------------------------------------
 artwork_cache/
 *.sqlite
 *.sqlite3
 *.db
+*.tmp
+*.swp
+*.swo
 
-# Python
+# ------------------------------------------------------------------------------
+# 📸 6. CUA & Screen Captures / Recordings
+# ------------------------------------------------------------------------------
+captures/
+screenshots/
+recordings/
+current_screen.png
+heyclicky_live_screen.png
+
+# ------------------------------------------------------------------------------
+# 🐍 7. Python & Local Scripts
+# ------------------------------------------------------------------------------
 __pycache__/
 *.pyc
+.scripts
+.scripts/
+
+# ------------------------------------------------------------------------------
+# 💻 8. IDEs & Editors
+# ------------------------------------------------------------------------------
+.vscode/
+.idea/
+.cursor/
+.zed/
+*.sublime-workspace

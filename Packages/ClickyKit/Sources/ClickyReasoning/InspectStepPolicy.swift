@@ -2,7 +2,7 @@ import ClickyAIProviders
 import ClickyFoundation
 //
 //  InspectStepPolicy.swift
-//  boringNotch (Izanotchy)
+//  izaNotch (Izanotchy)
 //
 //  Modular Step Policy: Master-detail navigation & item inspection across any macOS list/table collection.
 //  Zero Linguistic Prompt Injections — App-Agnostic Single Responsibility.

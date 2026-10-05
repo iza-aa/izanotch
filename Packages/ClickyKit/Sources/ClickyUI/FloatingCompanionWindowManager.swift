@@ -1,6 +1,6 @@
 //
 //  FloatingCompanionWindowManager.swift
-//  boringNotch (Izanotchy)
+//  izaNotch (Izanotchy)
 //
 //  Manages the lifecycle and positioning of the floating Aqua Glass Sphere
 //  companion panel anchored to the right edge of the screen.

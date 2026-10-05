@@ -2,7 +2,7 @@ import ClickyPlatform
 import ClickyFoundation
 //
 //  CUAPhysicalActionDispatcher.swift
-//  boringNotch (Izanotchy)
+//  izaNotch (Izanotchy)
 //
 //  Modular CUA Physical Action Dispatcher: Routes atomic sub-goal decisions from the Planner
 //  to specialized physical cursor tools (Click, Scroll, Type, Read) without monolothic inline if-else chains.

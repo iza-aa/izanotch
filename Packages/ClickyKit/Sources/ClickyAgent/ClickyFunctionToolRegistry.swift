@@ -1,6 +1,6 @@
 //
 //  ClickyFunctionToolRegistry.swift
-//  boringNotch
+//  izaNotch
 //
 //  Central Registry for xAI-compatible Function Calling Tools
 //  Thread-safe catalog for exporting JSON Schemas to LLMs and resolving tool executors.

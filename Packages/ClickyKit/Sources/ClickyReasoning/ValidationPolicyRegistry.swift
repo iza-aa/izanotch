@@ -2,7 +2,7 @@ import ClickyAIProviders
 import ClickyFoundation
 //
 //  ValidationPolicyRegistry.swift
-//  boringNotch (Izanotchy)
+//  izaNotch (Izanotchy)
 //
 //  Validation Policy Protocol & Registry: Routes state evaluation to intent-specific modular policies.
 //  Zero Linguistic Prompt Injections — Single Responsibility Architecture.

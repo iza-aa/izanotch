@@ -4,7 +4,7 @@ import ClickyCUA
 import ClickyFoundation
 //
 //  TradingViewActionDispatcher.swift
-//  boringNotch
+//  izaNotch
 //
 //  Modular TradingView Action Router & Facade
 //  Coordinates specialized tool modules (LayoutTool, NavigationTool, DrawingTool)

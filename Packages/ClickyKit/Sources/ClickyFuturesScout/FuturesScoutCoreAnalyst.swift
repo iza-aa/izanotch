@@ -1,6 +1,6 @@
 //
 //  FuturesScoutCoreAnalyst.swift
-//  boringNotch
+//  izaNotch
 //
 //  Pure Deterministic Mathematical Core for On-Demand Chart Analyst (Option B Canon)
 //  Architecture Decoupling (Agent 1 & 2 Specification):

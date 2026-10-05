@@ -5,7 +5,7 @@ final class TaskR_ModularPromptPoliciesTests: XCTestCase {
     private var repoRoot: String {
         var url = URL(fileURLWithPath: #filePath)
         while url.path != "/" {
-            let candidate = url.appendingPathComponent("boringNotch.xcodeproj")
+            let candidate = url.appendingPathComponent("izaNotch.xcodeproj")
             if FileManager.default.fileExists(atPath: candidate.path) {
                 return url.path
             }
@@ -106,7 +106,7 @@ final class TaskR_ModularPromptPoliciesTests: XCTestCase {
 
     // Assertion 4: All 6 policy files are registered in project.pbxproj
     func testPolicyFilesRegisteredInPbxproj() {
-        let pbxContent = findFileContent(["boringNotch.xcodeproj/project.pbxproj"])
+        let pbxContent = findFileContent(["izaNotch.xcodeproj/project.pbxproj"])
         XCTAssertNotNil(pbxContent, "Cannot read project.pbxproj")
         guard let pbxContent = pbxContent else { return }
 

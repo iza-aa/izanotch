@@ -1,6 +1,6 @@
 //
 //  ComputerUseConsentCardView.swift
-//  boringNotch (Izanotchy)
+//  izaNotch (Izanotchy)
 //
 //  Authentic HeyClicky "Want me to do it?" Computer Use Consent Card.
 //  Matches ref_clickys_suggestions.png with peeking mascot holding the card edge,

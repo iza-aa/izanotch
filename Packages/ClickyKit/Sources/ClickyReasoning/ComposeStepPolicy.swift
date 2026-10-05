@@ -2,7 +2,7 @@ import ClickyAIProviders
 import ClickyFoundation
 //
 //  ComposeStepPolicy.swift
-//  boringNotch (Izanotchy)
+//  izaNotch (Izanotchy)
 //
 //  Modular Step Policy: Form creation, draft typing, and action execution across any macOS application.
 //  Zero Linguistic Prompt Injections — App-Agnostic Single Responsibility.

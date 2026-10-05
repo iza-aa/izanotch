@@ -1,6 +1,6 @@
 //
 //  CompanionGazeTracker.swift
-//  boringNotch (Izanotchy • Fitur F-03 Dynamic Gaze Tracking)
+//  izaNotch (Izanotchy • Fitur F-03 Dynamic Gaze Tracking)
 //
 //  Real-time mouse gaze tracking engine for Strobi 3D procedural avatars.
 //  Captures global/local cursor coordinates, calculates normalized distance

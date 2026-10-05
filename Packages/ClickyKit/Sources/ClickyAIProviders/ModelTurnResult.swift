@@ -1,7 +1,7 @@
 import ClickyFoundation
 //
 //  ModelTurnResult.swift
-//  boringNotch
+//  izaNotch
 //
 //  Universal AI Model Turn Result & Tool Calling Data Contract.
 //  Decoupled from third-party vendor naming (Claude/Anthropic).

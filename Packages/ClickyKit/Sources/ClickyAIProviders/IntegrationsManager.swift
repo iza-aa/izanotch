@@ -1,7 +1,7 @@
 import ClickyFoundation
 //
 //  IntegrationsManager.swift
-//  boringNotch (Izanotchy)
+//  izaNotch (Izanotchy)
 //
 //  Structured SaaS / Cloud Integrations Manager (Pillar 1)
 //  Matching HeyClicky 1.0.50 Foto 2:

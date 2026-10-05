@@ -1,7 +1,7 @@
 import ClickyFoundation
 //
 //  GeminiBridgeClient.swift
-//  boringNotch
+//  izaNotch
 //
 //  Google Gemini Bridge Client communicating with local Antigravity Bridge / Gemini API.
 //  Replaces legacy ClaudeAPI without third-party vendor baggage.

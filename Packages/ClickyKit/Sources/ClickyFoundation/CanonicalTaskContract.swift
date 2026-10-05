@@ -1,6 +1,6 @@
 //
 //  CanonicalTaskContract.swift
-//  boringNotch (Izanotchy)
+//  izaNotch (Izanotchy)
 //
 //  Single Source of Truth for Autonomous CUA Inter-Model Contracts.
 //  Zero Linguistic Prompt Injections — Canonical English JSON Protocol.

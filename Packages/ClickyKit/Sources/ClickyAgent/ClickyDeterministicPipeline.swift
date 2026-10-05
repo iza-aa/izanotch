@@ -1,6 +1,6 @@
 //
 //  ClickyDeterministicPipeline.swift
-//  boringNotch (Izanotchy)
+//  izaNotch (Izanotchy)
 //
 //  3-Layer Deterministic Execution Architecture:
 //  Lapis 1: Router (Derivasi Kategori: TUNJUK, AKSI, TANYA)

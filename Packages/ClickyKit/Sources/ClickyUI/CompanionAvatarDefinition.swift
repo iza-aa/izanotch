@@ -1,6 +1,6 @@
 //
 //  CompanionAvatarDefinition.swift
-//  boringNotch
+//  izaNotch
 //
 //  Autentik 1:1 Porting dari Bible Strong Avatar Lab (smontlouis/bible-strong-avatar-lab)
 //  Spesifikasi Schema: "bible-strong/avatar-definition" v1 (Strobi Model)

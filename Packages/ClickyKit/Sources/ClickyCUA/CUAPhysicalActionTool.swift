@@ -2,7 +2,7 @@ import ClickyPlatform
 import ClickyFoundation
 //
 //  CUAPhysicalActionTool.swift
-//  boringNotch (Izanotchy)
+//  izaNotch (Izanotchy)
 //
 //  Modular CUA Physical Action Tool Protocol & Context.
 //  Encapsulates individual physical cursor hands (Click, Scroll, Type, Read) into isolated, testable tools.

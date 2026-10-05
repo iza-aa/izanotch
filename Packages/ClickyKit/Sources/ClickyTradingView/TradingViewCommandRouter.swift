@@ -4,7 +4,7 @@ import ClickyCUA
 import ClickyFoundation
 //
 //  TradingViewCommandRouter.swift
-//  boringNotch
+//  izaNotch
 //
 //  Command and Intent Parser for TradingView-specific workflows:
 //  - /analisa, /chart, and chart analysis phrases

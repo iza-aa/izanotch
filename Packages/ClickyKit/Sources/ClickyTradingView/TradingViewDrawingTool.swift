@@ -4,7 +4,7 @@ import ClickyCUA
 import ClickyFoundation
 //
 //  TradingViewDrawingTool.swift
-//  boringNotch
+//  izaNotch
 //
 //  Modular TradingView Technical Drawing & Position Calibration Tool
 //  Handles Risk/Reward Long/Short Position tools, WebGL handle dragging, native hotkeys, and palette search.

@@ -2,7 +2,7 @@ import ClickyPlatform
 import ClickyFoundation
 //
 //  ComputerUsePhysicalExecutor.swift
-//  boringNotch (Izanotchy)
+//  izaNotch (Izanotchy)
 //
 //  Universal Physical macOS Execution Engine:
 //  Combines Cua Driver background automation (element-token AX inspection,

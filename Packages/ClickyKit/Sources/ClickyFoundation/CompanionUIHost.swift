@@ -1,6 +1,6 @@
 //
 //  CompanionUIHost.swift
-//  boringNotch
+//  izaNotch
 //
 //  Capability protocol decoupling core agent logic from concrete UI Window Managers.
 //  Enforces clean downward dependency from ClickyUI (L6) to Foundation (L0).

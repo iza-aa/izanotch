@@ -2,7 +2,7 @@ import ClickyAIProviders
 import ClickyFoundation
 //
 //  TaskStepPlanner.swift
-//  boringNotch (Izanotchy)
+//  izaNotch (Izanotchy)
 //
 //  Task Step Planner: Plans the next atomic CUA action based on the Canonical Task Contract.
 //  Zero Linguistic Prompt Injections — Dynamic Ordinal Targeting & Abstract Schemas.

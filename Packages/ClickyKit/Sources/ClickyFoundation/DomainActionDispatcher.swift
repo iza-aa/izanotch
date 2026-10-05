@@ -1,6 +1,6 @@
 //
 //  DomainActionDispatcher.swift
-//  boringNotch
+//  izaNotch
 //
 //  Capability protocol decoupling CUA physical executor from concrete domain dispatchers
 //  such as TradingViewActionDispatcher.

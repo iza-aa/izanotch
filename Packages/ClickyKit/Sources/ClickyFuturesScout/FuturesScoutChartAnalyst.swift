@@ -1,6 +1,6 @@
 //
 //  FuturesScoutChartAnalyst.swift
-//  boringNotch
+//  izaNotch
 //
 //  On-Demand Chart Analyst (Option B Canon)
 //  Desktop CUA & Reporting Coordinator (@MainActor)

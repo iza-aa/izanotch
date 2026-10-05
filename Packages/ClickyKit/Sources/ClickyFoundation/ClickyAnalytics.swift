@@ -1,6 +1,6 @@
 //
 //  ClickyAnalytics.swift
-//  boringNotch
+//  izaNotch
 //
 //  Clean analytics & diagnostic logging interface for Izanotchy.
 //

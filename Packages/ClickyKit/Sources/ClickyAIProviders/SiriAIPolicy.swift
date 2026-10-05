@@ -1,7 +1,7 @@
 import ClickyFoundation
 //
 //  SiriAIPolicy.swift
-//  boringNotch (Izanotchy)
+//  izaNotch (Izanotchy)
 //
 //  Policy definition for on-device Apple Foundation Models semantic parsing.
 //  Separates system prompts for typing intent and chained instruction decomposition.

@@ -1,6 +1,6 @@
 //
 //  CompanionVMBackgroundWatcher.swift
-//  boringNotch
+//  izaNotch
 //
 //  Continuous Background Watcher for Companion VMs (1:1 Grok Bot).
 //  Periodically monitors the companion's virtual workspace and proactively

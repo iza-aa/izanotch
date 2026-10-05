@@ -1,6 +1,6 @@
 //
 //  AstronacciPlanetaryAspectEngine.swift
-//  boringNotch
+//  izaNotch
 //
 //  Created for Izanotchy - Advanced Astronacci Foundations (Pillar: Planetary Aspects & Ingress)
 //  Pure Swift implementation of Jean Meeus Astronomical Algorithms for 7 Celestial Bodies:

@@ -2,7 +2,7 @@ import ClickyAIProviders
 import ClickyFoundation
 //
 //  TaskEgressValidator.swift
-//  boringNotch (Izanotchy)
+//  izaNotch (Izanotchy)
 //
 //  Egress Gateway: Validates task completion from visual/AX observations and synthesizes responses.
 //  Zero Linguistic Prompt Injections — Abstract Reasoning & Strict Factual Extraction.

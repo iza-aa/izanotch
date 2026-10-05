@@ -2,7 +2,7 @@ import ClickyPlatform
 import ClickyFoundation
 //
 //  CuaVisualGrounder.swift
-//  boringNotch
+//  izaNotch
 //
 //  Visual Perceptual Engine for CuaDrive ("Mata CuaDrive")
 //  Replaces hardcoded (x, y) coordinates with dynamic element detection:

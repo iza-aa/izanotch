@@ -1,6 +1,6 @@
 //
 //  ClickyDeterministicPipeline+ExecutionChains.swift
-//  boringNotch (Izanotchy)
+//  izaNotch (Izanotchy)
 //
 //  Lapis 3: Execution Chains for ClickyDeterministicPipeline.
 //

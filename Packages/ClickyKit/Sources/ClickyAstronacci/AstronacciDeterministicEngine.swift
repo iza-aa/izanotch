@@ -1,6 +1,6 @@
 //
 //  AstronacciDeterministicEngine.swift
-//  boringNotch (Izanotchy Futures Scout)
+//  izaNotch (Izanotchy Futures Scout)
 //
 //  Mathematical & Deterministic Technical Analysis Engine
 //  Implements the canonical Astronacci Scalping Specification:

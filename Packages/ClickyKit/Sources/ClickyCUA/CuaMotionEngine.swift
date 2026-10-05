@@ -2,7 +2,7 @@ import ClickyPlatform
 import ClickyFoundation
 //
 //  CuaMotionEngine.swift
-//  boringNotch
+//  izaNotch
 //
 //  1:1 Direct Mathematical & Physical Port of CuaDriver's motion engine:
 //  - CubicBezier & Dubins Path Planner (from libs/cua-driver/rust/crates/cursor-overlay/src/bezier.rs & path_planner.rs)

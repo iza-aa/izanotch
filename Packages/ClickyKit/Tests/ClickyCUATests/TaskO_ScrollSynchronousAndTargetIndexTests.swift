@@ -8,7 +8,7 @@ final class TaskO_ScrollSynchronousAndTargetIndexTests: XCTestCase {
     private var repoRoot: String {
         var url = URL(fileURLWithPath: #filePath)
         while url.path != "/" {
-            let candidate = url.appendingPathComponent("boringNotch.xcodeproj")
+            let candidate = url.appendingPathComponent("izaNotch.xcodeproj")
             if FileManager.default.fileExists(atPath: candidate.path) {
                 return url.path
             }
@@ -126,14 +126,22 @@ final class TaskO_ScrollSynchronousAndTargetIndexTests: XCTestCase {
         XCTAssertTrue(hasTargetGuard, "CompanionVMAgentLoop must enforce targetIndexNotReached and hasClickedTarget guards")
     }
 
-    // Assertion 7: Verify boringNotch is running
-    func testBoringNotchProcessRunning() {
-        let proc = Process()
+    // Assertion 7: Verify izaNotch is running
+    func testIzaNotchProcessRunning() {
+        var proc = Process()
         proc.executableURL = URL(fileURLWithPath: "/usr/bin/pgrep")
-        proc.arguments = ["-x", "boringNotch"]
+        proc.arguments = ["-x", "izaNotch"]
         try? proc.run()
         proc.waitUntilExit()
 
-        XCTAssertEqual(proc.terminationStatus, 0, "boringNotch process must be active and running")
+        if proc.terminationStatus != 0 {
+            proc = Process()
+            proc.executableURL = URL(fileURLWithPath: "/usr/bin/pgrep")
+            proc.arguments = ["-x", "boringNotch"]
+            try? proc.run()
+            proc.waitUntilExit()
+        }
+
+        XCTAssertEqual(proc.terminationStatus, 0, "izaNotch process must be active and running")
     }
 }

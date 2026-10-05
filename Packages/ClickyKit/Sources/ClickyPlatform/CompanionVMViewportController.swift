@@ -1,6 +1,6 @@
 //
 //  CompanionVMViewportController.swift
-//  boringNotch
+//  izaNotch
 //
 //  Grok-Bot Style Persistent Application VM Viewport Controller.
 //  Hosts real applications (Mail, Safari/Web) inside an isolated WebKit container

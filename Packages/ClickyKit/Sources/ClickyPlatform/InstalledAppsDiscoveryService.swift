@@ -1,6 +1,6 @@
 //
 //  InstalledAppsDiscoveryService.swift
-//  boringNotch
+//  izaNotch
 //
 //  Discovers installed applications on macOS and loads their native system icons.
 //  Powers the Connected Apps permission manager per companion.

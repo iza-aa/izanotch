@@ -1,6 +1,6 @@
 //
 //  FuturesScoutMarketDataService.swift
-//  boringNotch
+//  izaNotch
 //
 //  Lightweight, keyless real-time market data service for On-Demand Chart Analysis.
 //  Fetches public perpetual futures klines with native macOS TLS.

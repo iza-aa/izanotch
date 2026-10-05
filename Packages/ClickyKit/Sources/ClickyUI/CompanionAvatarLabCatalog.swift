@@ -1,6 +1,6 @@
 //
 //  CompanionAvatarLabCatalog.swift
-//  boringNotch
+//  izaNotch
 //
 //  Autentik Ground Truth dari Bible Strong Avatar Lab (smontlouis/bible-strong-avatar-lab)
 //  Memuat 11 Character Templates, 27 Calibrated Presets (00-26), dan 23 Animation Sequences.

@@ -1,6 +1,6 @@
 //
 //  FloatingCompanionRailView.swift
-//  boringNotch
+//  izaNotch
 //
 //  Created for Izanotchy - Multi-Agent Desktop System
 //  Refactored for Fitur F-04: Event-Driven Reactive Companion Bubble (Hover-Activated)

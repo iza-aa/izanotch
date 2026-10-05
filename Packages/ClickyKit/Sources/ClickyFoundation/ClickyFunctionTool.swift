@@ -1,6 +1,6 @@
 //
 //  ClickyFunctionTool.swift
-//  boringNotch
+//  izaNotch
 //
 //  Standard xAI-compatible Function Calling Tool Protocol & Core Implementations
 //  Based on xAI Official JSON Schema standard with parallel dispatch capability.

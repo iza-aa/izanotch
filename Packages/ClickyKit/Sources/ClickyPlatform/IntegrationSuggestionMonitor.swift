@@ -1,6 +1,6 @@
 //
 //  IntegrationSuggestionMonitor.swift
-//  boringNotch (Izanotchy)
+//  izaNotch (Izanotchy)
 //
 //  [KEPT & MARKED FOR ARCHITECTURE REVIEW]
 //  Passive, ultra-lightweight context detector for the Notch.

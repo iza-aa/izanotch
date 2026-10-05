@@ -1,7 +1,7 @@
 import ClickyFoundation
 //
 //  ChatGPTAccountPoolManager.swift
-//  boringNotch
+//  izaNotch
 //
 //  Multi-Account Session Pool & Hot Failover Manager for ChatGPT Codex
 //  Enables instant account switching (<50ms) on rate-limits via isolated CODEX_HOME

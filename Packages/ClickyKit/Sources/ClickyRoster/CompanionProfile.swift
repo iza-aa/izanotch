@@ -1,6 +1,6 @@
 //
 //  CompanionProfile.swift
-//  boringNotch
+//  izaNotch
 //
 //  Created for Izanotchy - Multi-Agent Desktop System
 //

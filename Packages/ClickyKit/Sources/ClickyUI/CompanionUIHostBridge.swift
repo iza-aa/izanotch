@@ -1,6 +1,6 @@
 //
 //  CompanionUIHostBridge.swift
-//  boringNotch
+//  izaNotch
 //
 //  Concrete implementation of CompanionUIHost decoupling UI Layer (L6)
 //  from Agent Layer (L5) and Foundation (L0).

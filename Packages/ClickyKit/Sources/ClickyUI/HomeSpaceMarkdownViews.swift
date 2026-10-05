@@ -1,6 +1,6 @@
 //
 //  HomeSpaceMarkdownViews.swift
-//  boringNotch (Izanotchy)
+//  izaNotch (Izanotchy)
 //
 //  Rich Markdown message renderer and interactive data table component for HomeSpace.
 //  Parses markdown headings, paragraphs, and tables with responsive column formatting.

@@ -1,7 +1,7 @@
 import ClickyFoundation
 //
 //  PCCGroundingEscalation.swift
-//  boringNotch (Izanotchy)
+//  izaNotch (Izanotchy)
 //
 //  PCC (Private Cloud Compute) escalation path for heavy grounding turns.
 //  Status (verified 2026-09-21 on this Mac): on-device ctx 8192, PCC ctx

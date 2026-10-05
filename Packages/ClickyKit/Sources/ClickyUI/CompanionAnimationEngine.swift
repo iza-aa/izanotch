@@ -1,6 +1,6 @@
 //
 //  CompanionAnimationEngine.swift
-//  boringNotch
+//  izaNotch
 //
 //  Engine Sequencer Animasi Autentik dari Bible Strong Avatar Lab (smontlouis/bible-strong-avatar-lab)
 //  Memainkan 23 Urutan Animasi (7 Life Cycle + 16 Reactions) dengan Loop Transisi Smooth Hermite & Timer holdMs

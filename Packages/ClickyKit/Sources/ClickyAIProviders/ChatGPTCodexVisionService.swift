@@ -1,7 +1,7 @@
 import ClickyFoundation
 //
 //  ChatGPTCodexVisionService.swift
-//  boringNotch
+//  izaNotch
 //
 //  Headless Vision Service powered by OpenAI Codex CLI & 6 Luna Medium (gpt-6-luna)
 //  Executes vision coordinate extraction in background with zero GUI popups.

@@ -1,6 +1,6 @@
 //
 //  FuturesScoutBackgroundWatcher.swift
-//  boringNotch
+//  izaNotch
 //
 //  P4 Canon: Decoupled Passive Background Market Watcher Service
 //  Actor-isolated monitoring service using BingX API quote klines only.

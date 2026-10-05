@@ -1,7 +1,7 @@
 import ClickyFoundation
 //
 //  ClickySoundEngine.swift
-//  boringNotch / Clicky
+//  izaNotch / Clicky
 //
 //  Dedicated low-latency sound effects engine for HeyClicky audio UI chimes.
 //

@@ -1,6 +1,6 @@
 //
 //  ActiveWorkSurfaceManager.swift
-//  boringNotch (Izanotchy)
+//  izaNotch (Izanotchy)
 //
 //  Active work surface tracking and frontmost window detection.
 //

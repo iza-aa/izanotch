@@ -2,7 +2,7 @@ import ClickyPlatform
 import ClickyFoundation
 //
 //  CUAClickActionTool.swift
-//  boringNotch (Izanotchy)
+//  izaNotch (Izanotchy)
 //
 //  Physical Mouse Click Tool: Handles left click, right click (2-finger tap on macOS), press and hold, and drag.
 //

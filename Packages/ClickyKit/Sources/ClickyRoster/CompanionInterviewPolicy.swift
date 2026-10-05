@@ -1,6 +1,6 @@
 //
 //  CompanionInterviewPolicy.swift
-//  boringNotch
+//  izaNotch
 //
 //  Policy definition for the New Clicky Interviewer Agent.
 //  Separates conversational guidelines and synthesis formatting from engine runtime.

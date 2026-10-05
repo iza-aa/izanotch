@@ -1,6 +1,6 @@
 //
 //  AstronacciDivergenceEngine.swift
-//  boringNotch
+//  izaNotch
 //
 //  Created for Izanotchy - Advanced Astronacci Foundations (Pillar 10: Divergensi Struktural Matematis)
 //  Detects Regular & Hidden Divergences between Price Swing Pivots and Stochastic Oscillator (14,3,3 / 5,3,3)

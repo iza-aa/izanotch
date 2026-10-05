@@ -1,6 +1,6 @@
 //
 //  ClickyToolDispatcher.swift
-//  boringNotch
+//  izaNotch
 //
 //  Parallel Execution Dispatcher for xAI Function Calling
 //  Uses Swift structured concurrency (withTaskGroup) and provides reactive UI execution states.

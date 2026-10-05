@@ -1,6 +1,6 @@
 //
 //  AquaGlassSphereView.swift
-//  boringNotch (Izanotchy)
+//  izaNotch (Izanotchy)
 //
 //  Floating Aqua-Glass companion sphere that lives on the right side of the screen.
 //  Features an expressive animated Clicky character with interactive eye-tracking pupils,

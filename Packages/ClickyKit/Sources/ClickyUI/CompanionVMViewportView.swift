@@ -1,6 +1,6 @@
 //
 //  CompanionVMViewportView.swift
-//  boringNotch
+//  izaNotch
 //
 //  Grok-Bot Style Application VM Viewport View.
 //  Hosts the real WebKit application runtime with persistent sessions,

@@ -1,6 +1,6 @@
 //
 //  ClickyLogger.swift
-//  boringNotch
+//  izaNotch
 //
 //  Unified diagnostic and telemetry logger for Clicky Cursor Assistant.
 //  Writes live logs to ~/Library/Logs/Izanotchy/clicky.log and publishes

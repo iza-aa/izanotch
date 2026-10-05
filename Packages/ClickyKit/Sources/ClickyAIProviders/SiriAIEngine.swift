@@ -1,7 +1,7 @@
 import ClickyFoundation
 //
 //  SiriAIEngine.swift
-//  boringNotch (Izanotchy)
+//  izaNotch (Izanotchy)
 //
 //  Native Apple Foundation Models (AFM) On-Device Engine (Pillar 1)
 //  Communicates with macOS 27 native /usr/bin/fm serve on http://127.0.0.1:1976

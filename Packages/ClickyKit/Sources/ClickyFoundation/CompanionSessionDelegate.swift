@@ -1,6 +1,6 @@
 //
 //  CompanionSessionDelegate.swift
-//  boringNotch
+//  izaNotch
 //
 //  Capability protocol decoupling Roster (L4) from concrete CompanionManager (L5).
 //  Eliminates upward dependencies from ClickyRoster to ClickyAgent.

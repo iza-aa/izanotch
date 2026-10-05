@@ -1,6 +1,6 @@
 //
 //  AstronacciEconomicCalendarEngine.swift
-//  boringNotch
+//  izaNotch
 //
 //  Created for Izanotchy - Advanced Astronacci Foundations (Pillar: High-Impact Economic News Buffer)
 //  Enforces Chapter 7 Astronacci Scalping SOP: Jarak rilis berita High-Impact <= 45 menit -> STAND ASIDE.
@@ -95,7 +95,7 @@ public struct AstronacciEconomicCalendarEngine: Sendable {
     /// Single Source of Truth loader: loads from Bundle.main resource or repo file paths.
     /// Strictly eliminates duplicate hardcoded constants and manual sync drift.
     public static func loadSingleSourceCalendar() -> EconomicCalendarData {
-        // 1. Production AppKit runtime inside boringNotch.app
+        // 1. Production AppKit runtime inside izaNotch.app
         if let bundleURL = Bundle.main.url(forResource: "economic_calendar_2025_2026", withExtension: "json"),
            let data = try? Data(contentsOf: bundleURL),
            let decoded = try? JSONDecoder().decode(EconomicCalendarData.self, from: data) {

@@ -1,6 +1,6 @@
 //
 //  CompanionResponseOverlay.swift
-//  boringNotch
+//  izaNotch
 //
 //  Cursor-following overlay that displays streaming AI response text.
 //  Uses a non-activating NSPanel so it floats above all apps without

@@ -1,6 +1,6 @@
 //
 //  AstronacciEphemerisEngine.swift
-//  boringNotch
+//  izaNotch
 //
 //  Created for Izanotchy - Advanced Astronacci Foundations (Pillar 7: Financial Astrology / Ephemeris)
 //  Pure Swift deterministic calculation of Jean Meeus Astronomical Algorithms:

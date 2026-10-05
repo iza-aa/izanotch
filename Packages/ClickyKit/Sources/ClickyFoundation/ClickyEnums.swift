@@ -1,6 +1,6 @@
 //
 //  ClickyEnums.swift
-//  boringNotch
+//  izaNotch
 //
 //  Common enums and notification definitions for Clicky companion.
 //

@@ -2,7 +2,7 @@ import ClickyAIProviders
 import ClickyFoundation
 //
 //  IngressPolicy.swift
-//  boringNotch (Izanotchy)
+//  izaNotch (Izanotchy)
 //
 //  Policy definition for Ingress Intent Classification, Task Decomposition, and Language Normalization.
 //  Separates prompt reasoning policies from execution logic.

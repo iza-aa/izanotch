@@ -2,7 +2,7 @@ import ClickyPlatform
 import ClickyFoundation
 //
 //  ClickyHybridGroundingEngine.swift
-//  boringNotch
+//  izaNotch
 //
 //  Hybrid Grounding Engine:
 //  - Tier 1: AXUIElement (macOS Accessibility API) -> Zero-token, deterministic, high-speed resolution

@@ -6,7 +6,7 @@ final class TaskP_AdaptiveScrollTests: XCTestCase {
     private var repoRoot: String {
         var url = URL(fileURLWithPath: #filePath)
         while url.path != "/" {
-            let candidate = url.appendingPathComponent("boringNotch.xcodeproj")
+            let candidate = url.appendingPathComponent("izaNotch.xcodeproj")
             if FileManager.default.fileExists(atPath: candidate.path) {
                 return url.path
             }

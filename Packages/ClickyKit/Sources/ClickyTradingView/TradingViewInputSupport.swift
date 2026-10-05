@@ -4,7 +4,7 @@ import ClickyCUA
 import ClickyFoundation
 //
 //  TradingViewInputSupport.swift
-//  boringNotch
+//  izaNotch
 //
 //  Low-Level Hardware Keystroke, Mouse Movement & Window Management Engine
 //  Reusable across multiple companions and application controllers

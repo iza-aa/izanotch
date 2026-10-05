@@ -1,6 +1,6 @@
 //
 //  NotchComputerUseConsentWindow.swift
-//  boringNotch (Izanotchy)
+//  izaNotch (Izanotchy)
 //
 //  Floating drop-down panel anchored directly beside the MacBook Notch
 //  displaying the authentic "Wants to use your Mac" Computer Use Consent Card.

@@ -1,6 +1,6 @@
 //
 //  AstronacciQuasimodoEngine.swift
-//  boringNotch
+//  izaNotch
 //
 //  Created for Izanotchy - Advanced Astronacci Foundations (Pillar 9: Pola Quasimodo / Over-Under)
 //  Detects Left Shoulder, Head (Liquidity Sweep), Break of Structure (BOS), and Left Shoulder Retest zone.

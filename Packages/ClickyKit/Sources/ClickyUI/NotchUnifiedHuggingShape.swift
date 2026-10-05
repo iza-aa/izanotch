@@ -1,6 +1,6 @@
 //
 //  NotchUnifiedHuggingShape.swift
-//  boringNotch (Izanotchy)
+//  izaNotch (Izanotchy)
 //
 //  Physical Notch Hugging Shape (Seamless Concave ) ( Ears & Card Body)
 //  Flairs the MacBook Notch outward into the HomeSpace card top edge with smooth fillets.

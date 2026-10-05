@@ -1,6 +1,6 @@
 //
 //  HomeSpaceWindowManager.swift
-//  boringNotch (Izanotchy)
+//  izaNotch (Izanotchy)
 //
 //  Manages the NSPanel lifecycle for Home Space (Chat & Action Studio).
 //

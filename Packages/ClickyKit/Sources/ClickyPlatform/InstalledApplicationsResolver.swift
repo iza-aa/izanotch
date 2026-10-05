@@ -1,6 +1,6 @@
 //
 //  InstalledApplicationsResolver.swift
-//  boringNotch (Izanotchy)
+//  izaNotch (Izanotchy)
 //
 //  Dynamic application discovery and fuzzy name matching.
 //

@@ -1,6 +1,6 @@
 //
 //  CompanionReportPresenter.swift
-//  boringNotch
+//  izaNotch
 //
 //  Capability protocol decoupling domain services (FuturesScout, Astronacci)
 //  from CompanionManager presenter state.

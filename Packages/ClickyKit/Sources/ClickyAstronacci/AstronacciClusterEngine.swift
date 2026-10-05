@@ -1,6 +1,6 @@
 //
 //  AstronacciClusterEngine.swift
-//  boringNotch (Izanotchy Futures Scout)
+//  izaNotch (Izanotchy Futures Scout)
 //
 //  Mathematical Key Reversal Zone (KRZ) & Fibonacci Cluster Engine
 //  Canon (Prof. Dr. Gema Goeyardi - The Art of Fibonacci Trading):

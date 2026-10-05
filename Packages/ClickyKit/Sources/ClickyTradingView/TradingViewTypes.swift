@@ -1,6 +1,6 @@
 //
 //  TradingViewTypes.swift
-//  boringNotch
+//  izaNotch
 //
 //  Modular TradingView Data Types & Action Protocol
 //  Reusable across multiple companions (Futures Scout, Research Buddy, etc.)

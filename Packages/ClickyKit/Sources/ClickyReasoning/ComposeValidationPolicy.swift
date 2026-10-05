@@ -2,7 +2,7 @@ import ClickyAIProviders
 import ClickyFoundation
 //
 //  ComposeValidationPolicy.swift
-//  boringNotch (Izanotchy)
+//  izaNotch (Izanotchy)
 //
 //  Modular Validation Policy: State evaluation for form composition & submission across any macOS app.
 //  Zero Linguistic Prompt Injections — App-Agnostic Single Responsibility.

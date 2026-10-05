@@ -1,7 +1,7 @@
 import ClickyFoundation
 //
 //  AFMLunaCoordinationBridge.swift
-//  boringNotch (Izanotchy)
+//  izaNotch (Izanotchy)
 //
 //  Unified Coordination Facade:
 //  - TaskIngressGateway: Ingress Language Normalization & Canonical Contract Decomposition

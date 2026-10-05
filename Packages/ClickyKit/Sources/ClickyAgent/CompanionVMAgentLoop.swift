@@ -1,6 +1,6 @@
 //
 //  CompanionVMAgentLoop.swift
-//  boringNotch
+//  izaNotch
 //
 //  Autonomous Dynamic Agent Loop for Companion VMs.
 //  Executes multi-turn visual & accessibility reasoning driven by persona.md

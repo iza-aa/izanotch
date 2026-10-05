@@ -2,7 +2,7 @@ import ClickyPlatform
 import ClickyFoundation
 //
 //  CUAScrollActionTool.swift
-//  boringNotch (Izanotchy)
+//  izaNotch (Izanotchy)
 //
 //  Physical Mouse Scroll Tool: Dispatches 2-finger swipe / wheel scroll events to target application coordinates.
 //

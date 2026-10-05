@@ -1,6 +1,6 @@
 //
 //  CompanionManager+Streaming.swift
-//  boringNotch (Izanotchy)
+//  izaNotch (Izanotchy)
 //
 //  Decomposed extension for CompanionManager.
 //

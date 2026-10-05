@@ -2,7 +2,7 @@ import ClickyAIProviders
 import ClickyFoundation
 //
 //  InspectValidationPolicy.swift
-//  boringNotch (Izanotchy)
+//  izaNotch (Izanotchy)
 //
 //  Modular Validation Policy: State evaluation for list/table inspection & reading across any macOS app.
 //  Zero Linguistic Prompt Injections — App-Agnostic Single Responsibility.

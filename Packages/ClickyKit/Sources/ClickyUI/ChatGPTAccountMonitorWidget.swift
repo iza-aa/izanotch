@@ -1,6 +1,6 @@
 //
 //  ChatGPTAccountMonitorWidget.swift
-//  boringNotch
+//  izaNotch
 //
 //  Dynamic Island Notch AI Widget: ChatGPT Multi-Account Pool & Usage Monitor
 //  Monitors active account, 6 Luna Medium model, cooldown timers, and hot failover pool.

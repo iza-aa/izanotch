@@ -2,7 +2,7 @@ import ClickyAIProviders
 import ClickyFoundation
 //
 //  TaskIngressGateway.swift
-//  boringNotch (Izanotchy)
+//  izaNotch (Izanotchy)
 //
 //  Ingress Gateway: Normalizes natural language instructions into Canonical English JSON Task Contracts.
 //  Zero Linguistic Prompt Injections — Multilingual Semantic Principles & Abstract Schemas.

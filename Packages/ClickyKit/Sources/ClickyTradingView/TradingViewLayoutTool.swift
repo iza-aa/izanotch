@@ -4,7 +4,7 @@ import ClickyCUA
 import ClickyFoundation
 //
 //  TradingViewLayoutTool.swift
-//  boringNotch
+//  izaNotch
 //
 //  Modular TradingView Workspace & Layout Tool
 //  Handles window maximization, sidebar toggle (Option+W), modal dismissal, and canvas geometry.

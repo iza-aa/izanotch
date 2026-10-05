@@ -1,6 +1,6 @@
 //
 //  AppSystemIconView.swift
-//  boringNotch
+//  izaNotch
 //
 //  Renders authentic macOS Retina application icons extracted directly from the system
 //  Replaces flat custom SF Symbols with 100% genuine Apple Mail & Safari 3D icons.

@@ -1,6 +1,6 @@
 //
 //  HomeSpaceRootView.swift
-//  boringNotch (Izanotchy)
+//  izaNotch (Izanotchy)
 //
 //  1:1 Implementation of HeyClicky v1.0.50 Studio (Foto 4):
 //  - Section 1 (Sidebar ~235pt):

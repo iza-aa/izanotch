@@ -1,6 +1,6 @@
 //
 //  CompanionManager+Onboarding.swift
-//  boringNotch (Izanotchy)
+//  izaNotch (Izanotchy)
 //
 //  Decomposed extension for CompanionManager.
 //

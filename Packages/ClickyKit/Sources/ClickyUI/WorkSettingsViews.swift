@@ -1,6 +1,6 @@
 //
 //  WorkSettingsViews.swift
-//  boringNotch (Izanotchy)
+//  izaNotch (Izanotchy)
 //
 //  Settings WORK Sections 1:1 with HeyClicky 1.0.50 Reference:
 //  - AgentsSettingsView (Foto 1): Agent folder, Auto-approve extra usage, Always allow computer use, Suggest agent tasks, Files & Folders.

@@ -1,6 +1,6 @@
 //
 //  CompanionManager+PayloadExtractors.swift
-//  boringNotch (Izanotchy)
+//  izaNotch (Izanotchy)
 //
 //  Decomposed extension for CompanionManager.
 //

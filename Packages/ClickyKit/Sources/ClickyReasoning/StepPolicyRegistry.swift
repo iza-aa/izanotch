@@ -2,7 +2,7 @@ import ClickyAIProviders
 import ClickyFoundation
 //
 //  StepPolicyRegistry.swift
-//  boringNotch (Izanotchy)
+//  izaNotch (Izanotchy)
 //
 //  Step Policy Protocol & Registry: Routes atomic action planning to intent-specific modular policies.
 //  Zero Linguistic Prompt Injections — Single Responsibility Architecture.

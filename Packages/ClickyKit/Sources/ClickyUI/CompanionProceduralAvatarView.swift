@@ -1,6 +1,6 @@
 //
 //  CompanionProceduralAvatarView.swift
-//  boringNotch
+//  izaNotch
 //
 //  Autentik 1:1 Engine Render Geometri 3D Strobi dari Bible Strong Avatar Lab
 //  Mendukung Procedural Blinking Alami (Squash Height) & Transisi Ekspresi Halus (Fitur F-02)

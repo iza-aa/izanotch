@@ -1,6 +1,6 @@
 //
 //  HomeSpaceControlPills.swift
-//  boringNotch (Izanotchy)
+//  izaNotch (Izanotchy)
 //
 //  Interactive UI pills and swatch controls for HomeSpace.
 //  Includes 3D Theme Swatch Button and Follow-Up Suggestion Pills.

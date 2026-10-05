@@ -1,6 +1,6 @@
 //
 //  CompanionManager+ReActExecution.swift
-//  boringNotch (Izanotchy)
+//  izaNotch (Izanotchy)
 //
 //  Decomposed extension for CompanionManager.
 //
