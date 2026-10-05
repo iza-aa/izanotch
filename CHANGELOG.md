@@ -9,6 +9,21 @@ Semua perubahan, milestone arsitektur, verifikasi fisik, dan perbaikan bug dicat
 ### 🎯 Objective
 Mengadopsi kedaulatan paten `ClickyModelInstructions.md` secara penuh, menghubungkan direct embedded Cua-Driver MCP (56 tools native) dengan RAM + Disk caching dan server-side prompt caching, serta menghapus seluruh kode tambalan spekulatif (regex tebakan koin, naskah dialog teater kaku, dan pemaksaan Turn 1 SOP).
 
+### 🏛️ Milestone 261: Pembersihan Ruang Disk & Eliminasi Seluruh Sampah Biner/Skrip Usang (2026-10-05)
+- **Penyelamatan Dokumen Riset Penting**:
+  - Menyalin dan mengamankan [`RESEARCH_LAYA_AFM_DECISION_MODEL.md`](file:///Users/heizaaa/Desktop/cdev/iza-3/docs/RESEARCH_LAYA_AFM_DECISION_MODEL.md) (riset arsitektur Laya, AFM 3B on-device, dan model keputusan CUA) dan [`cua_docker_e2e_handoff.md`](file:///Users/heizaaa/Desktop/cdev/iza-3/docs/cua_docker_e2e_handoff.md) ke dalam direktori `docs/`.
+- **Eliminasi Total File Sampah & Duplikat Biner (~1,78 GB Reclaimed)**:
+  - Menghapus biner ekstraksi DMG lama `HeyClicky.app` (749 MB).
+  - Menghapus biner duplikat `cua-driver.original` (62 MB) dan test app usang `GrokbotTestStudio.app` (856 KB).
+  - Menghapus 74 skrip pengujian per-revisi lama (`test_revisions_*.swift`, `test_task*.swift`, `patch_*.py`) yang fungsinya telah resmi digantikan oleh suite `swift test` di `Packages/ClickyKit/Tests/`.
+  - Menghapus direktori eksperimen target warisan `Sources/NotchDeck/`, `Tests/NotchDeckTests/`, dan root `Package.swift`.
+  - Menghapus 5 folder clone referensi luar di `cdev/izanotch/` (`cua` 482MB, `dynamicnotch-ref` 374MB, `boring.notch-ref` 9.9MB, `farzaa-clicky` 24MB, `izanotch-app` 83MB).
+  - Menghapus seluruh file `.DS_Store` liar di seluruh folder.
+- **Verifikasi Integritas Pasca-Pembersihan**:
+  - `Packages/ClickyKit` tetap terkompilasi bersih 100% (`swift build`).
+  - Seluruh 28 assertions formal package tests lulus 100% via `swift test`.
+  - Gate 6 (`./scripts/verify_gate.sh 6`) lulus 100%.
+
 ### 🏛️ Milestone 260: Eksekusi Langkah 6 — Verifikasi Akhir, Pensiun Skrip & Finalisasi Migrasi Modular Definitif Final (2026-10-05)
 - **Penyelesaian Penuh Migrasi Arsitektur Modular (Packages/ClickyKit)**:
   - Sukses mengeksekusi seluruh 7 gerbang migrasi terpadu (Langkah 0 s.d. 6) tanpa kegagalan atau pemecahan regresi.
