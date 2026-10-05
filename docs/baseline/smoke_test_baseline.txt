@@ -1,0 +1,25 @@
+[2026-10-05 14:24:37.132] [SUCCESS] [SHORTCUT] NSEvent global monitor successfully registered
+[2026-10-05 14:24:37.132] [SUCCESS] [SHORTCUT] CGEvent tap successfully created and enabled
+[2026-10-05 14:24:37.137] [INFO] [PERMISSIONS] Permissions updated — AX: true, Screen: true, Mic: true, Speech: true
+[2026-10-05 14:24:37.137] [SUCCESS] [PERMISSIONS] Permission granted: accessibility
+[2026-10-05 14:24:37.137] [SUCCESS] [PERMISSIONS] Permission granted: screen_recording
+[2026-10-05 14:24:37.137] [SUCCESS] [PERMISSIONS] Permission granted: microphone
+[2026-10-05 14:24:37.137] [SUCCESS] [PERMISSIONS] Permission granted: speech_recognition
+[2026-10-05 14:24:37.137] [INFO] [START] Clicky start — AX: true, Screen: true, Mic: true, Enabled: true
+[2026-10-05 14:24:37.165] [INFO] [SOUND] Preloaded audio chime: clicky-text-open
+[2026-10-05 14:24:37.166] [INFO] [SOUND] Preloaded audio chime: clicky-text-receive
+[2026-10-05 14:24:37.172] [INFO] [SOUND] Preloaded audio chime: clicky-question
+[2026-10-05 14:24:37.179] [INFO] [SOUND] Preloaded audio chime: clicky-text-close
+[2026-10-05 14:24:37.185] [INFO] [SOUND] Preloaded audio chime: agent-done
+[2026-10-05 14:24:37.186] [INFO] [ROSTER] Active companion switched to Inbox Buddy (#FF9800)
+[2026-10-05 14:24:37.186] [INFO] [ROSTER_SYNC] Synchronized 2 sessions from roster store. Active: 84B49701-95B5-4E20-93D5-2ACABD94D929
+[2026-10-05 14:24:37.189] [INFO] [ROSTER_SYNC] Synchronized 2 sessions from roster store. Active: 84B49701-95B5-4E20-93D5-2ACABD94D929
+[2026-10-05 14:24:37.496] [INFO] [CUA_DRIVER] Active companion 'Inbox Buddy' is sandboxed VM; host CUA daemon stopped.
+[2026-10-05 14:24:37.502] [SUCCESS] [SIRI_AI] Launched native Apple Foundation Models daemon on port 1976 (PID 76006)
+[2026-10-05 14:24:37.585] [INFO] [WATCHER] Background watcher start requested, but toggle is OFF (Passive Opt-In)
+[2026-10-05 14:24:37.585] [INFO] [VM_WATCHER] Starting continuous Companion VM background watcher (interval: 60s)...
+[2026-10-05 14:24:45.581] [INFO] [SHORTCUT] Escape pressed — aborting active flight and companion actions
+[2026-10-05 14:24:45.648] [INFO] [SOUND] Played chime: clicky-text-close
+[2026-10-05 14:24:45.661] [INFO] [ROSTER_SYNC] Synchronized 2 sessions from roster store. Active: 84B49701-95B5-4E20-93D5-2ACABD94D929
+[2026-10-05 14:24:45.662] [INFO] [WINDOW_STREAM] Stopped live window streaming
+[2026-10-05 14:24:45.663] [INFO] [VIRTUAL_DESKTOP] Virtual display dismantled cleanly.

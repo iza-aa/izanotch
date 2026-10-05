@@ -1,0 +1,1 @@
+designated => identifier "com.heizaaa.izanotch" and certificate leaf = H"0486079929ba5d54118f2d6baa1dac26fe2019d3"
