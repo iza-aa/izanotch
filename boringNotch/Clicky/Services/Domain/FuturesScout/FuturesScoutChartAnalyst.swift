@@ -31,7 +31,7 @@ public final class FuturesScoutChartAnalyst {
         let traceId = "analyst-\(UUID().uuidString.prefix(8))"
 
         ClickyLogger.info("[CHART_ANALYST]", "Starting on-demand analysis for \(displaySymbol) (trace: \(traceId))...")
-        CompanionManager.shared.setIntermediateStatusText("Mengambil data pasar & menganalisis \(displaySymbol)...")
+        reportStatus("Mengambil data pasar & menganalisis \(displaySymbol)...")
 
         // 1. Fetch Live Market Data First
         var klinesH1: [AstronacciKline] = []
@@ -68,7 +68,7 @@ public final class FuturesScoutChartAnalyst {
             > ⚠️ **Catatan Edukasi**: Analisis teknikal objektif berbasis metodologi Astronacci-Fibonacci. Bukan sinyal otomatis atau rekomendasi finansial.
             """
             let fallbackSpeech = "Koneksi data pasar terganggu untuk \(rawSymbol). Chart telah dibuka di TradingView."
-            await CompanionManager.shared.speakAndReportText(fallbackReport, speechNarrative: fallbackSpeech)
+            await deliverReport(fallbackReport, speechNarrative: fallbackSpeech)
             return
         }
 
@@ -87,10 +87,10 @@ public final class FuturesScoutChartAnalyst {
             ClickyLogger.warning("[CHART_ANALYST]", "Insufficient klines for analysis: \(error)")
             let emptyReport = "Maaf, data kandel tidak mencukupi untuk menganalisis \(displaySymbol) secara objektif."
             let emptySpeech = "Maaf, data kandel pasar belum mencukupi untuk menganalisis \(displaySymbol)."
-            await CompanionManager.shared.speakAndReportText(emptyReport, speechNarrative: emptySpeech)
+            await deliverReport(emptyReport, speechNarrative: emptySpeech)
 
         case .success(let result):
-            CompanionManager.shared.setIntermediateStatusText("Mengonfigurasi TradingView & memetakan level...")
+            reportStatus("Mengonfigurasi TradingView & memetakan level...")
 
             // 3. Physical CUA Execution: Single-Flight Locked Chain
             var subActions: [TradingViewActionPayload] = [
@@ -143,7 +143,7 @@ public final class FuturesScoutChartAnalyst {
                 cardMarkdown += "\n\n> ⚠️ **Catatan Chart**: Jendela TradingView belum beralih ke simbol \(displaySymbol) (verifikasi judul jendela tidak lolos). Mutasi chart dan overlay Fibonacci dibatalkan demi keamanan."
             }
             ClickySoundEngine.shared.play(.done)
-            await CompanionManager.shared.speakAndReportText(cardMarkdown, speechNarrative: voiceNarrative)
+            await deliverReport(cardMarkdown, speechNarrative: voiceNarrative)
         }
     }
 
@@ -209,7 +209,7 @@ public final class FuturesScoutChartAnalyst {
         let referenceDate = Date()
 
         ClickyLogger.info("[CHART_ANALYST]", "Starting multi-market radar scan for [\(universe.joined(separator: ", "))] (trace: \(traceId))...")
-        CompanionManager.shared.setIntermediateStatusText("Memindai pasar kripto (Market Radar)...")
+        reportStatus("Memindai pasar kripto (Market Radar)...")
 
         // 1. Parallel Pre-Screening Radar with Budget Timeout
         var evaluatedCandidates: [MarketCandidateEvaluation] = []
@@ -346,6 +346,16 @@ public final class FuturesScoutChartAnalyst {
         }
 
         ClickySoundEngine.shared.play(.done)
-        await CompanionManager.shared.speakAndReportText(cardMarkdown, speechNarrative: voiceNarrative)
+        await deliverReport(cardMarkdown, speechNarrative: voiceNarrative)
+    }
+
+    // MARK: - CompanionReportPresenter Decoupled Helpers
+
+    private func reportStatus(_ text: String) {
+        CompanionReportPresenterRegistry.shared?.setIntermediateStatusText(text)
+    }
+
+    private func deliverReport(_ text: String, speechNarrative: String?) async {
+        await CompanionReportPresenterRegistry.shared?.speakAndReportText(text, speechNarrative: speechNarrative)
     }
 }

@@ -157,7 +157,9 @@ public final class ComputerUsePhysicalExecutor {
             executeScroll(deltaY: -10)
 
         case .tradingViewAction:
-            if let tvPayload = payload.tradingViewPayload {
+            if let domainDispatcher = DomainActionDispatcherRegistry.shared {
+                await domainDispatcher.executeDomainAction(payload: payload)
+            } else if let tvPayload = payload.tradingViewPayload {
                 await TradingViewActionDispatcher.shared.execute(action: tvPayload)
             } else {
                 ClickyLogger.warning("[COMPUTER_USE]", "TradingView action requested but no tradingViewPayload found")
@@ -307,7 +309,7 @@ public final class ComputerUsePhysicalExecutor {
 
         if let closePoint = targetClosePoint {
             ClickyLogger.info("[COMPUTER_USE]", "Found on-screen window for \(app.localizedName ?? appName). Moving CuaDriver cursor overlay to close button at: \(closePoint)")
-            OverlayWindowManager.shared.hideOverlay()
+            CompanionUIHostRegistry.shared?.hideOverlay() ?? OverlayWindowManager.shared.hideOverlay()
             _ = try? await CuaDriverClient.shared.moveCursor(x: closePoint.x, y: closePoint.y)
             try? await Task.sleep(for: .milliseconds(500))
             ClickySoundEngine.shared.play(.send)

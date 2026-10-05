@@ -123,6 +123,10 @@
 		8CAV0010AABBCCDDEEFF0010 /* CompanionAvatarLabCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8CAV0009AABBCCDDEEFF0009 /* CompanionAvatarLabCatalog.swift */; };
 		8CAV0012AABBCCDDEEFF0012 /* CompanionAnimationEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8CAV0011AABBCCDDEEFF0011 /* CompanionAnimationEngine.swift */; };
 		8CAV0006AABBCCDDEEFF0006 /* clicky_default.avatar.json in Resources */ = {isa = PBXBuildFile; fileRef = 8CAV0005AABBCCDDEEFF0005 /* clicky_default.avatar.json */; };
+		8C5AC141AABBCCDDEEFF0041 /* CompanionUIHost.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C5AC142AABBCCDDEEFF0042 /* CompanionUIHost.swift */; };
+		8C5AC143AABBCCDDEEFF0043 /* CompanionReportPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C5AC144AABBCCDDEEFF0044 /* CompanionReportPresenter.swift */; };
+		8C5AC145AABBCCDDEEFF0045 /* DomainActionDispatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C5AC146AABBCCDDEEFF0046 /* DomainActionDispatcher.swift */; };
+		8C5AC147AABBCCDDEEFF0047 /* CompanionUIHostBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C5AC148AABBCCDDEEFF0048 /* CompanionUIHostBridge.swift */; };
 		1100290C2E847E2800035A57 /* NSItemProvider+LoadHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1100290B2E847E2800035A57 /* NSItemProvider+LoadHelpers.swift */; };
 		110029272E84FD4C00035A57 /* TemporaryFileStorageService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110029262E84FD4C00035A57 /* TemporaryFileStorageService.swift */; };
 		1100292A2E8691B400035A57 /* FileShareView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110029292E8691B400035A57 /* FileShareView.swift */; };
@@ -422,6 +426,10 @@
 		8CAV0009AABBCCDDEEFF0009 /* CompanionAvatarLabCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Clicky/UI/Avatars/CompanionAvatarLabCatalog.swift"; sourceTree = "<group>"; };
 		8CAV0011AABBCCDDEEFF0011 /* CompanionAnimationEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Clicky/UI/Avatars/CompanionAnimationEngine.swift"; sourceTree = "<group>"; };
 		8CAV0005AABBCCDDEEFF0005 /* clicky_default.avatar.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "Resources/Avatars/clicky_default.avatar.json"; sourceTree = "<group>"; };
+		8C5AC142AABBCCDDEEFF0042 /* CompanionUIHost.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Clicky/Core/Contracts/CompanionUIHost.swift"; sourceTree = "<group>"; };
+		8C5AC144AABBCCDDEEFF0044 /* CompanionReportPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Clicky/Core/Contracts/CompanionReportPresenter.swift"; sourceTree = "<group>"; };
+		8C5AC146AABBCCDDEEFF0046 /* DomainActionDispatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Clicky/Core/Contracts/DomainActionDispatcher.swift"; sourceTree = "<group>"; };
+		8C5AC148AABBCCDDEEFF0048 /* CompanionUIHostBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Clicky/UI/Common/CompanionUIHostBridge.swift"; sourceTree = "<group>"; };
 		1100290B2E847E2800035A57 /* NSItemProvider+LoadHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSItemProvider+LoadHelpers.swift"; sourceTree = "<group>"; };
 		110029262E84FD4C00035A57 /* TemporaryFileStorageService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TemporaryFileStorageService.swift; sourceTree = "<group>"; };
 		110029292E8691B400035A57 /* FileShareView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileShareView.swift; sourceTree = "<group>"; };
@@ -726,6 +734,10 @@
 				8CAV0009AABBCCDDEEFF0009 /* CompanionAvatarLabCatalog.swift */,
 				8CAV0011AABBCCDDEEFF0011 /* CompanionAnimationEngine.swift */,
 				8CAV0005AABBCCDDEEFF0005 /* clicky_default.avatar.json */,
+				8C5AC142AABBCCDDEEFF0042 /* CompanionUIHost.swift */,
+				8C5AC144AABBCCDDEEFF0044 /* CompanionReportPresenter.swift */,
+				8C5AC146AABBCCDDEEFF0046 /* DomainActionDispatcher.swift */,
+				8C5AC148AABBCCDDEEFF0048 /* CompanionUIHostBridge.swift */,
 			);
 			name = Clicky;
 			sourceTree = "<group>";
@@ -1421,6 +1433,10 @@
 				8CAV0008AABBCCDDEEFF0008 /* CompanionGazeTracker.swift in Sources */,
 				8CAV0010AABBCCDDEEFF0010 /* CompanionAvatarLabCatalog.swift in Sources */,
 				8CAV0012AABBCCDDEEFF0012 /* CompanionAnimationEngine.swift in Sources */,
+				8C5AC141AABBCCDDEEFF0041 /* CompanionUIHost.swift in Sources */,
+				8C5AC143AABBCCDDEEFF0043 /* CompanionReportPresenter.swift in Sources */,
+				8C5AC145AABBCCDDEEFF0045 /* DomainActionDispatcher.swift in Sources */,
+				8C5AC147AABBCCDDEEFF0047 /* CompanionUIHostBridge.swift in Sources */,
 				115C12EC2ED3D003009754CA /* OpenNotchHUD.swift in Sources */,
 				14C08BB92C8DE4B1000F8AA0 /* BoringCalendar.swift in Sources */,
 				5955950D2E900ED800C66711 /* ApplicationRelauncher.swift in Sources */,

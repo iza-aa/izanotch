@@ -13,12 +13,7 @@ import CoreGraphics
 import Defaults
 import Foundation
 
-// MARK: - Lapis 1: Kategori Perintah
-public enum ClickyCommandCategory: Equatable, Sendable {
-    case tunjuk(target: String)
-    case aksi(actionType: String, target: String)
-    case tanya(query: String)
-}
+// MARK: - Lapis 1: Kategori Perintah (Moved to Foundation L0: ClickyEnums.swift)
 
 // MARK: - Installed Applications Dynamic Discovery & Resolver (Opsi A)
 

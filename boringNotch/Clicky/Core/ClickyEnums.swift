@@ -290,3 +290,11 @@ public struct ComputerUseRequest: Identifiable, Equatable {
         self.payload = payload
     }
 }
+
+// MARK: - Command Category (L0 Foundation Contract)
+
+public enum ClickyCommandCategory: Equatable, Sendable {
+    case tunjuk(target: String)
+    case aksi(actionType: String, target: String)
+    case tanya(query: String)
+}

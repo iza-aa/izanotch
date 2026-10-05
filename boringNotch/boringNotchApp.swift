@@ -716,6 +716,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         _ = AntigravityBridgeManager.shared
         
+        // Wire capability contracts
+        CompanionUIHostRegistry.shared = CompanionUIHostBridge.shared
+        DomainActionDispatcherRegistry.shared = TradingViewActionDispatcher.shared
+        
         // Start Clicky companion pipeline (permissions, shortcut monitor, voice pipeline, overlay)
         CompanionManager.shared.start()
         FloatingCompanionRailWindowManager.shared.start()

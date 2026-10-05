@@ -629,3 +629,13 @@ public final class TradingViewActionDispatcher {
     }
 }
 
+// MARK: - DomainActionDispatcher Conformance
+
+extension TradingViewActionDispatcher: DomainActionDispatcher {
+    public func executeDomainAction(payload: ComputerUseActionPayload) async {
+        if let tvPayload = payload.tradingViewPayload {
+            _ = await execute(action: tvPayload)
+        }
+    }
+}
+

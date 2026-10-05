@@ -28,6 +28,8 @@ final class GlobalPushToTalkShortcutMonitor: ObservableObject {
         stop()
     }
 
+    public var onEscapePressed: (@MainActor () -> Void)? = nil
+
     func start() {
         if globalNSEventMonitor == nil {
             globalNSEventMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.flagsChanged, .keyDown, .keyUp]) { [weak self] event in
@@ -36,7 +38,7 @@ final class GlobalPushToTalkShortcutMonitor: ObservableObject {
                 if event.type == .keyDown && event.keyCode == 53 {
                     guard !Self.isSynthesizingInput else { return }
                     DispatchQueue.main.async {
-                        CompanionManager.shared.handleEscapePressed()
+                        self.onEscapePressed?()
                     }
                     return
                 }
@@ -155,7 +157,7 @@ final class GlobalPushToTalkShortcutMonitor: ObservableObject {
         if eventType == .keyDown && eventKeyCode == 53 {
             if !Self.isSynthesizingInput {
                 DispatchQueue.main.async {
-                    CompanionManager.shared.handleEscapePressed()
+                    self.onEscapePressed?()
                 }
             }
         }

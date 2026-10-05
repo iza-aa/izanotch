@@ -262,7 +262,7 @@ public actor FuturesScoutBackgroundWatcher {
             ClickySoundEngine.shared.play(.receive)
             NSSound(named: "Glass")?.play()
             Task {
-                await CompanionManager.shared.speakAndReportText(alertCard, speechNarrative: speech)
+                await CompanionReportPresenterRegistry.shared?.speakAndReportText(alertCard, speechNarrative: speech)
             }
         }
     }

@@ -93,7 +93,8 @@ public final class TaskStepPlanner: @unchecked Sendable {
 
         // Tier 3: Model reasoning fallback via GeminiBridgeClient
         do {
-            let turnRes = try await CompanionManager.shared.geminiClient.analyzeMessagesWithToolsStreaming(
+            let client = GeminiBridgeClient()
+            let turnRes = try await client.analyzeMessagesWithToolsStreaming(
                 messages: [["role": "user", "content": prompt]],
                 systemPrompt: instructions,
                 tools: [],

@@ -9,6 +9,28 @@ Semua perubahan, milestone arsitektur, verifikasi fisik, dan perbaikan bug dicat
 ### 🎯 Objective
 Mengadopsi kedaulatan paten `ClickyModelInstructions.md` secara penuh, menghubungkan direct embedded Cua-Driver MCP (56 tools native) dengan RAM + Disk caching dan server-side prompt caching, serta menghapus seluruh kode tambalan spekulatif (regex tebakan koin, naskah dialog teater kaku, dan pemaksaan Turn 1 SOP).
 
+### 🏛️ Milestone 255: Eksekusi Langkah 1 — Local Decoupling & Capability Contracts (2026-10-05)
+- **Pemutusan Keterikatan Melingkar & Kontrak Kapabilitas**:
+  - Dibuat 3 protokol kapabilitas di `boringNotch/Clicky/Core/Contracts/`:
+    - [`CompanionUIHost.swift`](file:///Users/heizaaa/Desktop/cdev/iza-3/boringNotch/Clicky/Core/Contracts/CompanionUIHost.swift): Memutus keterikatan langsung dari L5 (`CompanionManager`), L4 (`TradingViewActionDispatcher`), dan L2 (`ComputerUsePhysicalExecutor`) ke L6 (`HomeSpaceWindowManager` & `OverlayWindowManager`).
+    - [`CompanionReportPresenter.swift`](file:///Users/heizaaa/Desktop/cdev/iza-3/boringNotch/Clicky/Core/Contracts/CompanionReportPresenter.swift): Memutus keterikatan langsung dari domain engine L4 (`FuturesScoutChartAnalyst`, `FuturesScoutBackgroundWatcher`) ke L5 (`CompanionManager`).
+    - [`DomainActionDispatcher.swift`](file:///Users/heizaaa/Desktop/cdev/iza-3/boringNotch/Clicky/Core/Contracts/DomainActionDispatcher.swift): Memutus keterikatan dari executor CUA L2 (`ComputerUsePhysicalExecutor`) ke dispatcher domain L4 (`TradingViewActionDispatcher`).
+  - Dibuat jembatan UI [`CompanionUIHostBridge.swift`](file:///Users/heizaaa/Desktop/cdev/iza-3/boringNotch/Clicky/UI/Common/CompanionUIHostBridge.swift) di L6 dan didaftarkan pada saat startup aplikasi di `boringNotchApp.swift`.
+  - Memindahkan enum `ClickyCommandCategory` dari god-object `ClickyDeterministicPipeline.swift` ke [`ClickyEnums.swift`](file:///Users/heizaaa/Desktop/cdev/iza-3/boringNotch/Clicky/Core/ClickyEnums.swift) (L0 Foundation), menghilangkan dependensi ke atas dari L4 `TradingViewCommandRouter`.
+  - Memutus keterikatan shortcut audio L1 `GlobalPushToTalkShortcutMonitor` dari L5 `CompanionManager` melalui callback closure `onEscapePressed`.
+  - Memutus keterikatan penalaran L3 (`TaskIngressGateway`, `TaskStepPlanner`, `TaskEgressValidator`) dari L5 `CompanionManager.shared.geminiClient` dengan menginstansiasi langsung client L2 `GeminiBridgeClient()`.
+- **Kompilasi & Perbaikan Entitlements**:
+  - Menambahkan `<key>com.apple.security.cs.disable-library-validation</key><true/>` pada [`boringNotch.entitlements`](file:///Users/heizaaa/Desktop/cdev/iza-3/boringNotch/boringNotch.entitlements) untuk mengatasi pemblokiran dyld macOS Hardened Runtime terhadap dylib debug.
+  - Kompilasi `xcodebuild -scheme boringNotch -configuration Debug build`: **`** BUILD SUCCEEDED **`** (exit code 0).
+  - Biner baru berjalan stabil di bawah PID `82394` (SiriAIEngine AFM daemon PID `82400`).
+- **Verifikasi Gerbang Terpadu (Gate 1)**:
+  - Eksekusi [`scripts/verify_gate.sh 1`](file:///Users/heizaaa/Desktop/cdev/iza-3/scripts/verify_gate.sh): **LULUS 100% (EXIT CODE 0)**.
+  - Designated signing requirement identik dengan baseline.
+  - Kestabilan proses terverifikasi >15 detik pada PID `82394`.
+  - Startup TCC line terverifikasi persis di `clicky.log`.
+  - Seluruh 6 legacy test runner (28/28 assertions) lulus 100%.
+  - Audit batas baris file lolos (allowlist 9 file terkunci, god objects dalam pemantauan Step 2).
+
 ### 🏛️ Milestone 254: Eksekusi Langkah 0 — Baseline Snapshot, Git Hygiene & Tooling Verifikasi Modular (2026-10-05)
 - **Eksekusi Langkah 0 (Refactor Modular Aman & Terverifikasi)**:
   - Membersihkan direktori git: `artwork_cache/` di-untrack dan pola `artwork_cache/`, `*.sqlite`, `*.db` ditambahkan ke [`.gitignore`](file:///Users/heizaaa/Desktop/cdev/iza-3/.gitignore).

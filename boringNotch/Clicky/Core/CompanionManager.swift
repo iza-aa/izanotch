@@ -371,11 +371,19 @@ final class CompanionManager: ObservableObject {
     }
 
     func toggleHomeSpace() {
-        HomeSpaceWindowManager.shared.toggle()
+        if let host = CompanionUIHostRegistry.shared {
+            host.toggleHomeSpace()
+        } else {
+            HomeSpaceWindowManager.shared.toggle()
+        }
     }
 
     func openHomeSpace() {
-        HomeSpaceWindowManager.shared.show()
+        if let host = CompanionUIHostRegistry.shared {
+            host.showHomeSpace()
+        } else {
+            HomeSpaceWindowManager.shared.show()
+        }
     }
 
     func toggleHUD() {}
@@ -909,6 +917,7 @@ final class CompanionManager: ObservableObject {
     }
 
     func start() {
+        CompanionReportPresenterRegistry.shared = self
         refreshAllPermissions()
         ClickyLogger.info("[START]", "Clicky start — AX: \(hasAccessibilityPermission), Screen: \(hasScreenRecordingPermission), Mic: \(hasMicrophonePermission), Enabled: \(isClickyCursorEnabled)")
         print("🔑 Clicky start — accessibility: \(hasAccessibilityPermission), screen: \(hasScreenRecordingPermission), mic: \(hasMicrophonePermission), screenContent: \(hasScreenContentPermission), onboarded: \(hasCompletedOnboarding)")
@@ -1076,7 +1085,9 @@ final class CompanionManager: ObservableObject {
         MascotVirtualDesktopService.shared.stopVirtualDesktop()
 
         // F-22: Close HomeSpace if visible when Escape is pressed
-        if HomeSpaceWindowManager.shared.isVisible {
+        if let host = CompanionUIHostRegistry.shared {
+            if host.isHomeSpaceVisible { host.hideHomeSpace() }
+        } else if HomeSpaceWindowManager.shared.isVisible {
             HomeSpaceWindowManager.shared.hide()
         }
     }
@@ -1291,6 +1302,9 @@ final class CompanionManager: ObservableObject {
     }
 
     private func bindShortcutTransitions() {
+        globalPushToTalkShortcutMonitor.onEscapePressed = { [weak self] in
+            self?.handleEscapePressed()
+        }
         shortcutTransitionCancellable = globalPushToTalkShortcutMonitor
             .shortcutTransitionPublisher
             .receive(on: DispatchQueue.main)
@@ -3835,10 +3849,12 @@ final class CompanionManager: ObservableObject {
         CompanionRosterStore.shared.updateCompanionStatus(id: activeBuddy.id, status: .working)
 
         // Automatically hide HomeSpace chat studio so it does not block the visual screenshot of TradingView
-        let wasHomeSpaceVisible = await MainActor.run { HomeSpaceWindowManager.shared.isVisible }
+        let wasHomeSpaceVisible = await MainActor.run {
+            CompanionUIHostRegistry.shared?.isHomeSpaceVisible ?? HomeSpaceWindowManager.shared.isVisible
+        }
         if wasHomeSpaceVisible {
             await MainActor.run {
-                HomeSpaceWindowManager.shared.hide()
+                CompanionUIHostRegistry.shared?.hideHomeSpace() ?? HomeSpaceWindowManager.shared.hide()
             }
             ClickyLogger.info("[AUTONOMOUS_LOOP]", "Temporarily hid HomeSpace chat window to ensure unobstructed visual analysis")
             try? await Task.sleep(nanoseconds: 200_000_000)
@@ -3854,7 +3870,7 @@ final class CompanionManager: ObservableObject {
             }
             if wasHomeSpaceVisible {
                 Task { @MainActor in
-                    HomeSpaceWindowManager.shared.show()
+                    CompanionUIHostRegistry.shared?.showHomeSpace() ?? HomeSpaceWindowManager.shared.show()
                 }
             }
         }
@@ -4743,4 +4759,8 @@ final class CompanionManager: ObservableObject {
         return (cleanedText, request)
     }
 }
+
+// MARK: - CompanionReportPresenter Conformance
+
+extension CompanionManager: CompanionReportPresenter {}
 

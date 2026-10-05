@@ -195,7 +195,7 @@ public final class CompanionRosterStore: ObservableObject {
             allCompanions[idx].messages.append(message)
             allCompanions[idx].lastMessage = message.text
             allCompanions[idx].lastActiveAt = Date()
-            let isChatOpen = HomeSpaceWindowManager.shared.isVisible
+            let isChatOpen = CompanionUIHostRegistry.shared?.isHomeSpaceVisible ?? HomeSpaceWindowManager.shared.isVisible
             if !message.isUser && (!isChatOpen || allCompanions[idx].id != activeCompanionId) {
                 withAnimation(.spring(response: 0.28, dampingFraction: 0.8)) {
                     allCompanions[idx].hasUnreadMessages = true
@@ -235,7 +235,7 @@ public final class CompanionRosterStore: ObservableObject {
             allCompanions[idx].messages.append(message)
             allCompanions[idx].lastMessage = message.text
             allCompanions[idx].lastActiveAt = Date()
-            let isChatOpen = HomeSpaceWindowManager.shared.isVisible
+            let isChatOpen = CompanionUIHostRegistry.shared?.isHomeSpaceVisible ?? HomeSpaceWindowManager.shared.isVisible
             let targetId = allCompanions[idx].id
             if !message.isUser && (!isChatOpen || targetId != activeCompanionId) {
                 withAnimation(.spring(response: 0.28, dampingFraction: 0.8)) {

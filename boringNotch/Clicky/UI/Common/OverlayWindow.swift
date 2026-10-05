@@ -1144,6 +1144,9 @@ class OverlayWindowManager {
     static let shared = OverlayWindowManager()
     private var overlayWindows: [OverlayWindow] = []
     var hasShownOverlayBefore = false
+    var isOverlayVisible: Bool {
+        !overlayWindows.isEmpty
+    }
 
     func rebuildOverlayWindows() {
         showOverlay(onScreens: NSScreen.screens, companionManager: CompanionManager.shared)
