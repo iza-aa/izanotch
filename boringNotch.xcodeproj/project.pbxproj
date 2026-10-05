@@ -127,6 +127,27 @@
 		8C5AC143AABBCCDDEEFF0043 /* CompanionReportPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C5AC144AABBCCDDEEFF0044 /* CompanionReportPresenter.swift */; };
 		8C5AC145AABBCCDDEEFF0045 /* DomainActionDispatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C5AC146AABBCCDDEEFF0046 /* DomainActionDispatcher.swift */; };
 		8C5AC147AABBCCDDEEFF0047 /* CompanionUIHostBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C5AC148AABBCCDDEEFF0048 /* CompanionUIHostBridge.swift */; };
+		8C5AC151AABBCCDDEEFF0051 /* InstalledApplicationsResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C5AC152AABBCCDDEEFF0052 /* InstalledApplicationsResolver.swift */; };
+		8C5AC153AABBCCDDEEFF0053 /* ClickyDeterministicPipeline+ExecutionChains.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C5AC154AABBCCDDEEFF0054 /* ClickyDeterministicPipeline+ExecutionChains.swift */; };
+		8C5AC161AABBCCDDEEFF0061 /* HomeSpaceSidebarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C5AC162AABBCCDDEEFF0062 /* HomeSpaceSidebarView.swift */; };
+		8C5AC163AABBCCDDEEFF0063 /* HomeSpaceChatTranscriptView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C5AC164AABBCCDDEEFF0064 /* HomeSpaceChatTranscriptView.swift */; };
+		8C5AC165AABBCCDDEEFF0065 /* HomeSpaceHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C5AC166AABBCCDDEEFF0066 /* HomeSpaceHeaderView.swift */; };
+		8C5AC167AABBCCDDEEFF0067 /* HomeSpaceEditCharacterStudioView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C5AC168AABBCCDDEEFF0068 /* HomeSpaceEditCharacterStudioView.swift */; };
+		8C5AC169AABBCCDDEEFF0069 /* HomeSpaceConnectedAppsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C5AC16AAABBCCDDEEFF006A /* HomeSpaceConnectedAppsView.swift */; };
+		8C5AC16BAABBCCDDEEFF006B /* HomeSpaceOnboardingWizardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C5AC16CAABBCCDDEEFF006C /* HomeSpaceOnboardingWizardView.swift */; };
+		8C5AC16DAABBCCDDEEFF006D /* HomeSpaceOnboardingAppearanceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C5AC16EAABBCCDDEEFF006E /* HomeSpaceOnboardingAppearanceView.swift */; };
+		8C5AC171AABBCCDDEEFF0071 /* MacOSDockManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C5AC172AABBCCDDEEFF0072 /* MacOSDockManager.swift */; };
+		8C5AC173AABBCCDDEEFF0073 /* ActiveWorkSurfaceManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C5AC174AABBCCDDEEFF0074 /* ActiveWorkSurfaceManager.swift */; };
+		8C5AC175AABBCCDDEEFF0075 /* CompanionManager+Sessions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C5AC176AABBCCDDEEFF0076 /* CompanionManager+Sessions.swift */; };
+		8C5AC177AABBCCDDEEFF0077 /* CompanionManager+Lifecycle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C5AC178AABBCCDDEEFF0078 /* CompanionManager+Lifecycle.swift */; };
+		8C5AC179AABBCCDDEEFF0079 /* CompanionManager+Prompt.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C5AC17AAABBCCDDEEFF007A /* CompanionManager+Prompt.swift */; };
+		8C5AC17BAABBCCDDEEFF007B /* CompanionManager+Streaming.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C5AC17CAABBCCDDEEFF007C /* CompanionManager+Streaming.swift */; };
+		8C5AC17DAABBCCDDEEFF007D /* CompanionManager+AIPipeline.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C5AC17EAABBCCDDEEFF007E /* CompanionManager+AIPipeline.swift */; };
+		8C5AC17FAABBCCDDEEFF007F /* CompanionManager+ReActExecution.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C5AC180AABBCCDDEEFF0080 /* CompanionManager+ReActExecution.swift */; };
+		8C5AC181AABBCCDDEEFF0081 /* CompanionManager+FlightParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C5AC182AABBCCDDEEFF0082 /* CompanionManager+FlightParser.swift */; };
+		8C5AC183AABBCCDDEEFF0083 /* CompanionManager+Onboarding.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C5AC184AABBCCDDEEFF0084 /* CompanionManager+Onboarding.swift */; };
+		8C5AC185AABBCCDDEEFF0085 /* CompanionManager+ComputerUse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C5AC186AABBCCDDEEFF0086 /* CompanionManager+ComputerUse.swift */; };
+		8C5AC187AABBCCDDEEFF0087 /* CompanionManager+PayloadExtractors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C5AC188AABBCCDDEEFF0088 /* CompanionManager+PayloadExtractors.swift */; };
 		1100290C2E847E2800035A57 /* NSItemProvider+LoadHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1100290B2E847E2800035A57 /* NSItemProvider+LoadHelpers.swift */; };
 		110029272E84FD4C00035A57 /* TemporaryFileStorageService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110029262E84FD4C00035A57 /* TemporaryFileStorageService.swift */; };
 		1100292A2E8691B400035A57 /* FileShareView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110029292E8691B400035A57 /* FileShareView.swift */; };
@@ -430,6 +451,27 @@
 		8C5AC144AABBCCDDEEFF0044 /* CompanionReportPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Clicky/Core/Contracts/CompanionReportPresenter.swift"; sourceTree = "<group>"; };
 		8C5AC146AABBCCDDEEFF0046 /* DomainActionDispatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Clicky/Core/Contracts/DomainActionDispatcher.swift"; sourceTree = "<group>"; };
 		8C5AC148AABBCCDDEEFF0048 /* CompanionUIHostBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Clicky/UI/Common/CompanionUIHostBridge.swift"; sourceTree = "<group>"; };
+		8C5AC152AABBCCDDEEFF0052 /* InstalledApplicationsResolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Clicky/Core/InstalledApplicationsResolver.swift"; sourceTree = "<group>"; };
+		8C5AC154AABBCCDDEEFF0054 /* ClickyDeterministicPipeline+ExecutionChains.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Clicky/Core/ClickyDeterministicPipeline+ExecutionChains.swift"; sourceTree = "<group>"; };
+		8C5AC162AABBCCDDEEFF0062 /* HomeSpaceSidebarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Clicky/UI/HomeSpace/HomeSpaceSidebarView.swift"; sourceTree = "<group>"; };
+		8C5AC164AABBCCDDEEFF0064 /* HomeSpaceChatTranscriptView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Clicky/UI/HomeSpace/HomeSpaceChatTranscriptView.swift"; sourceTree = "<group>"; };
+		8C5AC166AABBCCDDEEFF0066 /* HomeSpaceHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Clicky/UI/HomeSpace/HomeSpaceHeaderView.swift"; sourceTree = "<group>"; };
+		8C5AC168AABBCCDDEEFF0068 /* HomeSpaceEditCharacterStudioView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Clicky/UI/HomeSpace/HomeSpaceEditCharacterStudioView.swift"; sourceTree = "<group>"; };
+		8C5AC16AAABBCCDDEEFF006A /* HomeSpaceConnectedAppsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Clicky/UI/HomeSpace/HomeSpaceConnectedAppsView.swift"; sourceTree = "<group>"; };
+		8C5AC16CAABBCCDDEEFF006C /* HomeSpaceOnboardingWizardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Clicky/UI/HomeSpace/HomeSpaceOnboardingWizardView.swift"; sourceTree = "<group>"; };
+		8C5AC16EAABBCCDDEEFF006E /* HomeSpaceOnboardingAppearanceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Clicky/UI/HomeSpace/HomeSpaceOnboardingAppearanceView.swift"; sourceTree = "<group>"; };
+		8C5AC172AABBCCDDEEFF0072 /* MacOSDockManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Clicky/Core/MacOSDockManager.swift"; sourceTree = "<group>"; };
+		8C5AC174AABBCCDDEEFF0074 /* ActiveWorkSurfaceManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Clicky/Core/ActiveWorkSurfaceManager.swift"; sourceTree = "<group>"; };
+		8C5AC176AABBCCDDEEFF0076 /* CompanionManager+Sessions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Clicky/Core/CompanionManager+Sessions.swift"; sourceTree = "<group>"; };
+		8C5AC178AABBCCDDEEFF0078 /* CompanionManager+Lifecycle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Clicky/Core/CompanionManager+Lifecycle.swift"; sourceTree = "<group>"; };
+		8C5AC17AAABBCCDDEEFF007A /* CompanionManager+Prompt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Clicky/Core/CompanionManager+Prompt.swift"; sourceTree = "<group>"; };
+		8C5AC17CAABBCCDDEEFF007C /* CompanionManager+Streaming.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Clicky/Core/CompanionManager+Streaming.swift"; sourceTree = "<group>"; };
+		8C5AC17EAABBCCDDEEFF007E /* CompanionManager+AIPipeline.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Clicky/Core/CompanionManager+AIPipeline.swift"; sourceTree = "<group>"; };
+		8C5AC180AABBCCDDEEFF0080 /* CompanionManager+ReActExecution.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Clicky/Core/CompanionManager+ReActExecution.swift"; sourceTree = "<group>"; };
+		8C5AC182AABBCCDDEEFF0082 /* CompanionManager+FlightParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Clicky/Core/CompanionManager+FlightParser.swift"; sourceTree = "<group>"; };
+		8C5AC184AABBCCDDEEFF0084 /* CompanionManager+Onboarding.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Clicky/Core/CompanionManager+Onboarding.swift"; sourceTree = "<group>"; };
+		8C5AC186AABBCCDDEEFF0086 /* CompanionManager+ComputerUse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Clicky/Core/CompanionManager+ComputerUse.swift"; sourceTree = "<group>"; };
+		8C5AC188AABBCCDDEEFF0088 /* CompanionManager+PayloadExtractors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Clicky/Core/CompanionManager+PayloadExtractors.swift"; sourceTree = "<group>"; };
 		1100290B2E847E2800035A57 /* NSItemProvider+LoadHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSItemProvider+LoadHelpers.swift"; sourceTree = "<group>"; };
 		110029262E84FD4C00035A57 /* TemporaryFileStorageService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TemporaryFileStorageService.swift; sourceTree = "<group>"; };
 		110029292E8691B400035A57 /* FileShareView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileShareView.swift; sourceTree = "<group>"; };
@@ -738,6 +780,27 @@
 				8C5AC144AABBCCDDEEFF0044 /* CompanionReportPresenter.swift */,
 				8C5AC146AABBCCDDEEFF0046 /* DomainActionDispatcher.swift */,
 				8C5AC148AABBCCDDEEFF0048 /* CompanionUIHostBridge.swift */,
+				8C5AC152AABBCCDDEEFF0052 /* InstalledApplicationsResolver.swift */,
+				8C5AC154AABBCCDDEEFF0054 /* ClickyDeterministicPipeline+ExecutionChains.swift */,
+				8C5AC162AABBCCDDEEFF0062 /* HomeSpaceSidebarView.swift */,
+				8C5AC164AABBCCDDEEFF0064 /* HomeSpaceChatTranscriptView.swift */,
+				8C5AC166AABBCCDDEEFF0066 /* HomeSpaceHeaderView.swift */,
+				8C5AC168AABBCCDDEEFF0068 /* HomeSpaceEditCharacterStudioView.swift */,
+				8C5AC16AAABBCCDDEEFF006A /* HomeSpaceConnectedAppsView.swift */,
+				8C5AC16CAABBCCDDEEFF006C /* HomeSpaceOnboardingWizardView.swift */,
+				8C5AC16EAABBCCDDEEFF006E /* HomeSpaceOnboardingAppearanceView.swift */,
+				8C5AC172AABBCCDDEEFF0072 /* MacOSDockManager.swift */,
+				8C5AC174AABBCCDDEEFF0074 /* ActiveWorkSurfaceManager.swift */,
+				8C5AC176AABBCCDDEEFF0076 /* CompanionManager+Sessions.swift */,
+				8C5AC178AABBCCDDEEFF0078 /* CompanionManager+Lifecycle.swift */,
+				8C5AC17AAABBCCDDEEFF007A /* CompanionManager+Prompt.swift */,
+				8C5AC17CAABBCCDDEEFF007C /* CompanionManager+Streaming.swift */,
+				8C5AC17EAABBCCDDEEFF007E /* CompanionManager+AIPipeline.swift */,
+				8C5AC180AABBCCDDEEFF0080 /* CompanionManager+ReActExecution.swift */,
+				8C5AC182AABBCCDDEEFF0082 /* CompanionManager+FlightParser.swift */,
+				8C5AC184AABBCCDDEEFF0084 /* CompanionManager+Onboarding.swift */,
+				8C5AC186AABBCCDDEEFF0086 /* CompanionManager+ComputerUse.swift */,
+				8C5AC188AABBCCDDEEFF0088 /* CompanionManager+PayloadExtractors.swift */,
 			);
 			name = Clicky;
 			sourceTree = "<group>";
@@ -1437,6 +1500,27 @@
 				8C5AC143AABBCCDDEEFF0043 /* CompanionReportPresenter.swift in Sources */,
 				8C5AC145AABBCCDDEEFF0045 /* DomainActionDispatcher.swift in Sources */,
 				8C5AC147AABBCCDDEEFF0047 /* CompanionUIHostBridge.swift in Sources */,
+				8C5AC151AABBCCDDEEFF0051 /* InstalledApplicationsResolver.swift in Sources */,
+				8C5AC153AABBCCDDEEFF0053 /* ClickyDeterministicPipeline+ExecutionChains.swift in Sources */,
+				8C5AC161AABBCCDDEEFF0061 /* HomeSpaceSidebarView.swift in Sources */,
+				8C5AC163AABBCCDDEEFF0063 /* HomeSpaceChatTranscriptView.swift in Sources */,
+				8C5AC165AABBCCDDEEFF0065 /* HomeSpaceHeaderView.swift in Sources */,
+				8C5AC167AABBCCDDEEFF0067 /* HomeSpaceEditCharacterStudioView.swift in Sources */,
+				8C5AC169AABBCCDDEEFF0069 /* HomeSpaceConnectedAppsView.swift in Sources */,
+				8C5AC16BAABBCCDDEEFF006B /* HomeSpaceOnboardingWizardView.swift in Sources */,
+				8C5AC16DAABBCCDDEEFF006D /* HomeSpaceOnboardingAppearanceView.swift in Sources */,
+				8C5AC171AABBCCDDEEFF0071 /* MacOSDockManager.swift in Sources */,
+				8C5AC173AABBCCDDEEFF0073 /* ActiveWorkSurfaceManager.swift in Sources */,
+				8C5AC175AABBCCDDEEFF0075 /* CompanionManager+Sessions.swift in Sources */,
+				8C5AC177AABBCCDDEEFF0077 /* CompanionManager+Lifecycle.swift in Sources */,
+				8C5AC179AABBCCDDEEFF0079 /* CompanionManager+Prompt.swift in Sources */,
+				8C5AC17BAABBCCDDEEFF007B /* CompanionManager+Streaming.swift in Sources */,
+				8C5AC17DAABBCCDDEEFF007D /* CompanionManager+AIPipeline.swift in Sources */,
+				8C5AC17FAABBCCDDEEFF007F /* CompanionManager+ReActExecution.swift in Sources */,
+				8C5AC181AABBCCDDEEFF0081 /* CompanionManager+FlightParser.swift in Sources */,
+				8C5AC183AABBCCDDEEFF0083 /* CompanionManager+Onboarding.swift in Sources */,
+				8C5AC185AABBCCDDEEFF0085 /* CompanionManager+ComputerUse.swift in Sources */,
+				8C5AC187AABBCCDDEEFF0087 /* CompanionManager+PayloadExtractors.swift in Sources */,
 				115C12EC2ED3D003009754CA /* OpenNotchHUD.swift in Sources */,
 				14C08BB92C8DE4B1000F8AA0 /* BoringCalendar.swift in Sources */,
 				5955950D2E900ED800C66711 /* ApplicationRelauncher.swift in Sources */,

@@ -9,7 +9,47 @@ Semua perubahan, milestone arsitektur, verifikasi fisik, dan perbaikan bug dicat
 ### 🎯 Objective
 Mengadopsi kedaulatan paten `ClickyModelInstructions.md` secara penuh, menghubungkan direct embedded Cua-Driver MCP (56 tools native) dengan RAM + Disk caching dan server-side prompt caching, serta menghapus seluruh kode tambalan spekulatif (regex tebakan koin, naskah dialog teater kaku, dan pemaksaan Turn 1 SOP).
 
-### 🏛️ Milestone 255: Eksekusi Langkah 1 — Local Decoupling & Capability Contracts (2026-10-05)
+### 🏛️ Milestone 256: Eksekusi Langkah 2 — Dekomposisi 3 God Object ke ≤ 800 Baris (2026-10-05)
+- **Dekomposisi God Object Berbasis Titik Potong AST Brace Depth ≤ 1**:
+  - `ClickyDeterministicPipeline.swift` (1.242 baris) didekomposisi menjadi 3 file:
+    - [`InstalledApplicationsResolver.swift`](file:///Users/heizaaa/Desktop/cdev/iza-3/boringNotch/Clicky/Core/InstalledApplicationsResolver.swift) (178 baris): Resolusi nama bundle dan penemuan aplikasi dinamis.
+    - [`ClickyDeterministicPipeline.swift`](file:///Users/heizaaa/Desktop/cdev/iza-3/boringNotch/Clicky/Core/ClickyDeterministicPipeline.swift) (478 baris): Orkestrator pipeline tunggal dan pemrosesan perintah deterministik.
+    - [`ClickyDeterministicPipeline+ExecutionChains.swift`](file:///Users/heizaaa/Desktop/cdev/iza-3/boringNotch/Clicky/Core/ClickyDeterministicPipeline+ExecutionChains.swift) (624 baris): Rantai eksekusi visual server, grounding AX, dan delegasi CUA.
+  - `HomeSpaceRootView.swift` (3.406 baris) didekomposisi menjadi 8 file:
+    - [`HomeSpaceRootView.swift`](file:///Users/heizaaa/Desktop/cdev/iza-3/boringNotch/Clicky/UI/HomeSpace/HomeSpaceRootView.swift) (489 baris): Container tampilan utama dan layout overlay notch.
+    - [`HomeSpaceSidebarView.swift`](file:///Users/heizaaa/Desktop/cdev/iza-3/boringNotch/Clicky/UI/HomeSpace/HomeSpaceSidebarView.swift) (483 baris): Navigasi sidebar sesi dan pengaturan.
+    - [`HomeSpaceChatTranscriptView.swift`](file:///Users/heizaaa/Desktop/cdev/iza-3/boringNotch/Clicky/UI/HomeSpace/HomeSpaceChatTranscriptView.swift) (501 baris): Area chat, streaming balasan AI, dan transcript.
+    - [`HomeSpaceHeaderView.swift`](file:///Users/heizaaa/Desktop/cdev/iza-3/boringNotch/Clicky/UI/HomeSpace/HomeSpaceHeaderView.swift) (333 baris): Header kontrol, status buddy, dan switch tab.
+    - [`HomeSpaceEditCharacterStudioView.swift`](file:///Users/heizaaa/Desktop/cdev/iza-3/boringNotch/Clicky/UI/HomeSpace/HomeSpaceEditCharacterStudioView.swift) (552 baris): Studio pengeditan avatar dan kustomisasi karakter.
+    - [`HomeSpaceConnectedAppsView.swift`](file:///Users/heizaaa/Desktop/cdev/iza-3/boringNotch/Clicky/UI/HomeSpace/HomeSpaceConnectedAppsView.swift) (281 baris): Tampilan integrasi aplikasi dan status koneksi eksternal.
+    - [`HomeSpaceOnboardingWizardView.swift`](file:///Users/heizaaa/Desktop/cdev/iza-3/boringNotch/Clicky/UI/HomeSpace/HomeSpaceOnboardingWizardView.swift) (415 baris): Wizard alur pembuatan companion baru.
+    - [`HomeSpaceOnboardingAppearanceView.swift`](file:///Users/heizaaa/Desktop/cdev/iza-3/boringNotch/Clicky/UI/HomeSpace/HomeSpaceOnboardingAppearanceView.swift) (447 baris): Penyesuaian visual dan preview animasi onboarding.
+  - `CompanionManager.swift` (4.766 baris) didekomposisi menjadi 13 file:
+    - [`MacOSDockManager.swift`](file:///Users/heizaaa/Desktop/cdev/iza-3/boringNotch/Clicky/Core/MacOSDockManager.swift) (162 baris): Penemuan posisi icon dock macOS via plist & screen coordinates.
+    - [`ActiveWorkSurfaceManager.swift`](file:///Users/heizaaa/Desktop/cdev/iza-3/boringNotch/Clicky/Core/ActiveWorkSurfaceManager.swift) (195 baris): Deteksi jendela frontmost dan posisi tombol close/minimize traffic light.
+    - [`CompanionManager.swift`](file:///Users/heizaaa/Desktop/cdev/iza-3/boringNotch/Clicky/Core/CompanionManager.swift) (298 baris): State inti, singleton lifecycle, dan property tersimpan.
+    - [`CompanionManager+Sessions.swift`](file:///Users/heizaaa/Desktop/cdev/iza-3/boringNotch/Clicky/Core/CompanionManager+Sessions.swift) (260 baris): Sinkronisasi sesi multi-buddy dan status izin.
+    - [`CompanionManager+Lifecycle.swift`](file:///Users/heizaaa/Desktop/cdev/iza-3/boringNotch/Clicky/Core/CompanionManager+Lifecycle.swift) (520 baris): Polling izin TCC (AX, Screen, Mic, Speech) dan event listener shortcut.
+    - [`CompanionManager+Prompt.swift`](file:///Users/heizaaa/Desktop/cdev/iza-3/boringNotch/Clicky/Core/CompanionManager+Prompt.swift) (343 baris): Konstruksi dynamic prompt SoM, konteks visual, dan format tag.
+    - [`CompanionManager+Streaming.swift`](file:///Users/heizaaa/Desktop/cdev/iza-3/boringNotch/Clicky/Core/CompanionManager+Streaming.swift) (487 baris): Parsing chunk streaming langsung, HUD condensation, dan deteksi tag TARGET.
+    - [`CompanionManager+AIPipeline.swift`](file:///Users/heizaaa/Desktop/cdev/iza-3/boringNotch/Clicky/Core/CompanionManager+AIPipeline.swift) (201 baris): Pipeline respon AI, speculative early grounder, dan TTS delivery.
+    - [`CompanionManager+ReActExecution.swift`](file:///Users/heizaaa/Desktop/cdev/iza-3/boringNotch/Clicky/Core/CompanionManager+ReActExecution.swift) (760 baris): Autonomous ReAct multi-turn tool calling loop dengan evaluasi consent.
+    - [`CompanionManager+FlightParser.swift`](file:///Users/heizaaa/Desktop/cdev/iza-3/boringNotch/Clicky/Core/CompanionManager+FlightParser.swift) (378 baris): Ekstraksi koordinat spasial [POINT], [TARGET], resolusi layar multi-monitor.
+    - [`CompanionManager+Onboarding.swift`](file:///Users/heizaaa/Desktop/cdev/iza-3/boringNotch/Clicky/Core/CompanionManager+Onboarding.swift) (219 baris): Player demo onboarding video, streaming bubble teks, dan musik background.
+    - [`CompanionManager+ComputerUse.swift`](file:///Users/heizaaa/Desktop/cdev/iza-3/boringNotch/Clicky/Core/CompanionManager+ComputerUse.swift) (544 baris): Proposisi aksi fisik kursor, verifikasi modal takeover, dan eksekusi CUA.
+    - [`CompanionManager+PayloadExtractors.swift`](file:///Users/heizaaa/Desktop/cdev/iza-3/boringNotch/Clicky/Core/CompanionManager+PayloadExtractors.swift) (552 baris): Ekstraksi payload terstruktur (fitur kustom, koordinat klik, parameter CUA).
+- **Pendaftaran Xcode Project**:
+  - Seluruh 21 file baru didaftarkan ke `boringNotch.xcodeproj/project.pbxproj` pada target `boringNotch` (PBXBuildFile, PBXFileReference, PBXGroup).
+- **Kompilasi & Kestabilan**:
+  - Kompilasi `xcodebuild -scheme boringNotch -configuration Debug build`: **`** BUILD SUCCEEDED **`** (exit code 0).
+  - Biner baru berjalan stabil di bawah PID `88013` (SiriAIEngine AFM daemon PID `88026`).
+- **Verifikasi Gerbang Terpadu (Gate 2)**:
+  - Eksekusi [`scripts/verify_gate.sh 2`](file:///Users/heizaaa/Desktop/cdev/iza-3/scripts/verify_gate.sh): **LULUS 100% (EXIT CODE 0)**.
+  - Designated signing requirement identik dengan baseline.
+  - Kestabilan proses terverifikasi >15 detik pada PID `88013`.
+  - Startup TCC line terverifikasi persis di `clicky.log`.
+  - Seluruh 6 legacy test runner (28/28 assertions) lulus 100%.
+  - Audit batas baris file lolos: ketiga God Object (`CompanionManager`, `HomeSpaceRootView`, `ClickyDeterministicPipeline`) terkonfirmasi $\le 800$ baris; allowlist terkunci pada 9 legacy file.
 - **Pemutusan Keterikatan Melingkar & Kontrak Kapabilitas**:
   - Dibuat 3 protokol kapabilitas di `boringNotch/Clicky/Core/Contracts/`:
     - [`CompanionUIHost.swift`](file:///Users/heizaaa/Desktop/cdev/iza-3/boringNotch/Clicky/Core/Contracts/CompanionUIHost.swift): Memutus keterikatan langsung dari L5 (`CompanionManager`), L4 (`TradingViewActionDispatcher`), dan L2 (`ComputerUsePhysicalExecutor`) ke L6 (`HomeSpaceWindowManager` & `OverlayWindowManager`).
