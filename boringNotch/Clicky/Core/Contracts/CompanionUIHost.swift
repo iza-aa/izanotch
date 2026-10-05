@@ -19,6 +19,27 @@ public protocol CompanionUIHost: AnyObject {
     var isOverlayVisible: Bool { get }
     func showOverlay()
     func hideOverlay()
+    func fadeOutOverlay()
+    
+    func showConsent(with request: ComputerUseRequest)
+    func dismissConsent()
+    func hideResponseOverlay()
+    
+    var activeAccountEmail: String { get }
+    var activeAccountPlan: String { get }
+}
+
+extension CompanionUIHost {
+    public func fadeOutOverlay() {
+        hideOverlay()
+    }
+    
+    public func showConsent(with request: ComputerUseRequest) {}
+    public func dismissConsent() {}
+    public func hideResponseOverlay() {}
+    
+    public var activeAccountEmail: String { "" }
+    public var activeAccountPlan: String { "" }
 }
 
 @MainActor

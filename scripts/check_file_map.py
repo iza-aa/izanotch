@@ -25,8 +25,9 @@ def get_file_mapping(files):
             "boringNotch/Clicky/Core/ClickyAnalytics.swift",
             "boringNotch/Clicky/Core/ClickyEnums.swift",
             "boringNotch/Clicky/Core/AppBundleConfiguration.swift",
-            "boringNotch/Clicky/Core/ClickyFunctionTool.swift"
-        ]:
+            "boringNotch/Clicky/Core/ClickyFunctionTool.swift",
+            "boringNotch/Clicky/Reasoning/Ingress/CanonicalTaskContract.swift"
+        ] or p.startswith("boringNotch/Clicky/Core/Contracts/"):
             mapping[p] = "ClickyFoundation"
         # L1: Platform
         elif p in [
@@ -36,7 +37,10 @@ def get_file_mapping(files):
             "boringNotch/Clicky/Workspace/Discovery/InstalledAppsDiscoveryService.swift",
             "boringNotch/Clicky/Workspace/VirtualDisplay/MascotVirtualDesktopService.swift",
             "boringNotch/Clicky/Services/Audio/GlobalPushToTalkShortcutMonitor.swift",
-            "boringNotch/Clicky/Roster/Context/IntegrationSuggestionMonitor.swift"
+            "boringNotch/Clicky/Roster/Context/IntegrationSuggestionMonitor.swift",
+            "boringNotch/Clicky/Core/ActiveWorkSurfaceManager.swift",
+            "boringNotch/Clicky/Core/MacOSDockManager.swift",
+            "boringNotch/Clicky/Core/InstalledApplicationsResolver.swift"
         ]:
             mapping[p] = "ClickyPlatform"
         # L2: Speech
@@ -76,7 +80,7 @@ def get_file_mapping(files):
             "boringNotch/Clicky/Core/ClickyDeterministicPipeline.swift",
             "boringNotch/Clicky/Core/ClickyFunctionToolRegistry.swift",
             "boringNotch/Clicky/Core/ClickyToolDispatcher.swift"
-        ]:
+        ] or p.startswith("boringNotch/Clicky/Core/CompanionManager+") or p.startswith("boringNotch/Clicky/Core/ClickyDeterministicPipeline+"):
             mapping[p] = "ClickyAgent"
         # L6: UI
         elif p.startswith("boringNotch/Clicky/UI/") or p in [

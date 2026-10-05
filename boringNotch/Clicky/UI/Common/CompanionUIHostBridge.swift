@@ -42,4 +42,28 @@ public final class CompanionUIHostBridge: CompanionUIHost {
     public func hideOverlay() {
         OverlayWindowManager.shared.hideOverlay()
     }
+    
+    public func fadeOutOverlay() {
+        OverlayWindowManager.shared.fadeOutAndHideOverlay()
+    }
+    
+    public func showConsent(with request: ComputerUseRequest) {
+        NotchComputerUseConsentWindow.shared.show(with: request)
+    }
+    
+    public func dismissConsent() {
+        NotchComputerUseConsentWindow.shared.dismiss()
+    }
+
+    public func hideResponseOverlay() {
+        CompanionResponseOverlayManager.shared.hideOverlay()
+    }
+    
+    public var activeAccountEmail: String {
+        AntigravityUsageManager.shared.activeAccount.email
+    }
+    
+    public var activeAccountPlan: String {
+        AntigravityUsageManager.shared.activeAccount.plan
+    }
 }

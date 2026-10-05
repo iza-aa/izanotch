@@ -1,0 +1,246 @@
+import ClickyAIProviders
+import ClickyFoundation
+//
+//  TaskIngressGateway.swift
+//  boringNotch (Izanotchy)
+//
+//  Ingress Gateway: Normalizes natural language instructions into Canonical English JSON Task Contracts.
+//  Zero Linguistic Prompt Injections — Multilingual Semantic Principles & Abstract Schemas.
+//
+
+import AppKit
+import Foundation
+import NaturalLanguage
+#if canImport(FoundationModels)
+import FoundationModels
+#endif
+
+public final class TaskIngressGateway: @unchecked Sendable {
+    public static let shared = TaskIngressGateway()
+
+    private init() {}
+
+    /// Deconstructs and normalizes a user prompt into a Canonical English JSON Task Contract
+    public func deconstructTaskGoal(
+        userPrompt: String,
+        companionSlug: String,
+        connectedApps: [String] = []
+    ) async -> AFMTaskDecomposition {
+        let trimmed = userPrompt.trimmingCharacters(in: .whitespacesAndNewlines)
+        if trimmed.isEmpty {
+            return AFMTaskDecomposition(
+                userIntent: userPrompt,
+                targetAppName: "None",
+                actionScope: "conversational",
+                plannedSubGoals: [],
+                requiresCUA: false,
+                intentType: "conversational",
+                targetEntity: "user",
+                targetIndex: nil,
+                searchQuery: nil,
+                normalizedGoal: "Respond to user conversationally",
+                userLanguage: Self.resolveLanguage(prompt: userPrompt)
+            )
+        }
+
+        let connectedAppsStr: String = {
+            if !connectedApps.isEmpty {
+                return connectedApps.joined(separator: ", ")
+            }
+            let running = NSWorkspace.shared.runningApplications
+                .filter { $0.activationPolicy == .regular }
+                .compactMap { $0.localizedName }
+            if !running.isEmpty {
+                return running.joined(separator: ", ")
+            }
+            return "Finder, System"
+        }()
+
+        let instructions = IngressPolicy.systemInstructions
+        let prompt = IngressPolicy.formatPrompt(
+            userPrompt: userPrompt,
+            companionSlug: companionSlug,
+            connectedAppsStr: connectedAppsStr
+        )
+
+        // Tier 1: Apple Foundation Models on-device session (NPU Neural Engine)
+        #if canImport(FoundationModels)
+        if #available(macOS 26.0, *) {
+            do {
+                let session = LanguageModelSession(instructions: instructions)
+                let response = try await session.respond(to: prompt)
+                let rawText = response.content.trimmingCharacters(in: .whitespacesAndNewlines)
+                if let parsed = parseTaskDecompositionJSON(from: rawText, userPrompt: userPrompt) {
+                    ClickyLogger.info("[TASK_INGRESS]", "Decomposed task plan via FoundationModels: targetApp=\(parsed.targetAppName), targetIndex=\(String(describing: parsed.targetIndex)), requiresCUA=\(parsed.requiresCUA)")
+                    return parsed
+                }
+            } catch {
+                ClickyLogger.warning("[TASK_INGRESS]", "FoundationModels decomposition error: \(error.localizedDescription)")
+            }
+        }
+        #endif
+
+        // Tier 2: Apple Foundation Models daemon via SiriAIEngine (port 1976)
+        if SiriAIEngine.shared.isDaemonRunning {
+            do {
+                let turnRes = try await SiriAIEngine.shared.analyzeMessagesWithToolsStreaming(
+                    messages: [["role": "user", "content": prompt]],
+                    systemPrompt: instructions,
+                    onTextChunk: { _ in }
+                )
+                if let parsed = parseTaskDecompositionJSON(from: turnRes.text, userPrompt: userPrompt) {
+                    ClickyLogger.info("[TASK_INGRESS]", "Decomposed task plan via SiriAIEngine: targetApp=\(parsed.targetAppName), targetIndex=\(String(describing: parsed.targetIndex))")
+                    return parsed
+                }
+            } catch {
+                ClickyLogger.warning("[TASK_INGRESS]", "SiriAIEngine decomposition error: \(error.localizedDescription)")
+            }
+        }
+
+        // Tier 3: Model reasoning fallback via GeminiBridgeClient
+        do {
+            let client = GeminiBridgeClient()
+            let turnRes = try await client.analyzeMessagesWithToolsStreaming(
+                messages: [["role": "user", "content": prompt]],
+                systemPrompt: instructions,
+                tools: [],
+                maxTokens: 512,
+                onTextChunk: { _ in }
+            )
+            if let parsed = parseTaskDecompositionJSON(from: turnRes.text, userPrompt: userPrompt) {
+                ClickyLogger.info("[TASK_INGRESS]", "Decomposed task plan via Gemini: targetApp=\(parsed.targetAppName), targetIndex=\(String(describing: parsed.targetIndex))")
+                return parsed
+            }
+        } catch {
+            ClickyLogger.warning("[TASK_INGRESS]", "Gemini decomposition fallback error: \(error.localizedDescription)")
+        }
+
+        // Safe graceful heuristic fallback
+        let lower = userPrompt.lowercased()
+        let matchedApp = connectedApps.first { lower.contains($0.lowercased()) }
+        let requiresCUA = (matchedApp != nil)
+        let candidateApp = matchedApp ?? "None"
+        let resolvedLang = Self.resolveLanguage(prompt: userPrompt)
+
+        return AFMTaskDecomposition(
+            userIntent: userPrompt,
+            targetAppName: candidateApp,
+            actionScope: requiresCUA ? "Interact with active \(candidateApp) window" : "conversational",
+            plannedSubGoals: requiresCUA ? ["Interact with \(candidateApp) interface to fulfill user request"] : [],
+            requiresCUA: requiresCUA,
+            intentType: requiresCUA ? "interact" : "conversational",
+            targetEntity: requiresCUA ? "main_window" : "user",
+            targetIndex: nil,
+            searchQuery: nil,
+            normalizedGoal: userPrompt,
+            userLanguage: resolvedLang,
+            requiresTakeoverOnCompletion: false
+        )
+    }
+
+    /// Dynamically resolves user language using Apple's on-device NaturalLanguage framework
+    public static func resolveLanguage(prompt: String, modelDetected: String? = nil) -> String {
+        if let detected = modelDetected?.trimmingCharacters(in: .whitespacesAndNewlines).lowercased(),
+           !detected.isEmpty, detected != "unspecified" {
+            return detected
+        }
+        let trimmed = prompt.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else {
+            return Locale.current.language.languageCode?.identifier ?? "id"
+        }
+        let recognizer = NLLanguageRecognizer()
+        recognizer.processString(trimmed)
+        if let dominant = recognizer.dominantLanguage?.rawValue, !dominant.isEmpty {
+            return dominant
+        }
+        return "id"
+    }
+
+    private func parseTaskDecompositionJSON(from text: String, userPrompt: String = "") -> AFMTaskDecomposition? {
+        guard let data = extractJSONData(from: text) else { return nil }
+        if var direct = try? JSONDecoder().decode(AFMTaskDecomposition.self, from: data) {
+            let finalLang = Self.resolveLanguage(prompt: userPrompt, modelDetected: direct.userLanguage)
+            let isConversational = direct.intentType.lowercased() == "conversational" || direct.targetAppName.lowercased() == "none"
+            let requiresCUA = isConversational ? false : direct.requiresCUA
+            let isInspect = direct.intentType.lowercased() == "inspect" || direct.intentType.lowercased() == "read"
+            let resolvedIndex: Int?
+            if isConversational {
+                resolvedIndex = nil
+            } else if direct.targetIndex != nil {
+                resolvedIndex = direct.targetIndex
+            } else if isInspect && direct.searchQuery == nil {
+                resolvedIndex = 1
+            } else {
+                resolvedIndex = nil
+            }
+
+            return AFMTaskDecomposition(
+                userIntent: direct.userIntent,
+                targetAppName: isConversational ? "None" : direct.targetAppName,
+                actionScope: isConversational ? "conversational" : direct.actionScope,
+                plannedSubGoals: isConversational ? [] : direct.plannedSubGoals,
+                requiresCUA: requiresCUA,
+                intentType: direct.intentType,
+                targetEntity: isConversational ? "user" : direct.targetEntity,
+                targetIndex: resolvedIndex,
+                searchQuery: isConversational ? nil : direct.searchQuery,
+                normalizedGoal: direct.normalizedGoal,
+                userLanguage: finalLang,
+                requiresTakeoverOnCompletion: isConversational ? false : direct.requiresTakeoverOnCompletion
+            )
+        }
+        if let dict = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
+            let intent = dict["userIntent"] as? String ?? dict["user_intent"] as? String ?? ""
+            let app = dict["targetAppName"] as? String ?? dict["target_app_name"] as? String ?? "None"
+            let scope = dict["actionScope"] as? String ?? dict["action_scope"] as? String ?? ""
+            let subGoals = dict["plannedSubGoals"] as? [String] ?? dict["planned_sub_goals"] as? [String] ?? []
+            let intentType = dict["intentType"] as? String ?? dict["intent_type"] as? String ?? (app == "None" ? "conversational" : "inspect")
+            let isConversational = intentType.lowercased() == "conversational" || app.lowercased() == "none"
+            let requiresCUA = isConversational ? false : (dict["requiresCUA"] as? Bool ?? dict["requires_cua"] as? Bool ?? true)
+            let targetEntity = isConversational ? "user" : (dict["targetEntity"] as? String ?? dict["target_entity"] as? String ?? "main_window")
+            let rawIndex = dict["targetIndex"] as? Int ?? dict["target_index"] as? Int
+            let searchQuery = isConversational ? nil : (dict["searchQuery"] as? String ?? dict["search_query"] as? String)
+            let isInspect = intentType.lowercased() == "inspect" || intentType.lowercased() == "read"
+            let resolvedIndex: Int?
+            if isConversational {
+                resolvedIndex = nil
+            } else if rawIndex != nil {
+                resolvedIndex = rawIndex
+            } else if isInspect && searchQuery == nil {
+                resolvedIndex = 1
+            } else {
+                resolvedIndex = nil
+            }
+            let normalizedGoal = dict["normalizedGoal"] as? String ?? dict["normalized_goal"] as? String ?? intent
+            let rawLang = dict["userLanguage"] as? String ?? dict["user_language"] as? String
+            let userLanguage = Self.resolveLanguage(prompt: userPrompt, modelDetected: rawLang)
+            let requiresTakeover = isConversational ? false : (dict["requiresTakeoverOnCompletion"] as? Bool ?? dict["requires_takeover_on_completion"] as? Bool ?? false)
+
+            if !intent.isEmpty || !subGoals.isEmpty || requiresCUA || !normalizedGoal.isEmpty {
+                return AFMTaskDecomposition(
+                    userIntent: intent.isEmpty ? "Execute user request" : intent,
+                    targetAppName: isConversational ? "None" : app,
+                    actionScope: isConversational ? "conversational" : scope,
+                    plannedSubGoals: isConversational ? [] : subGoals,
+                    requiresCUA: requiresCUA,
+                    intentType: intentType,
+                    targetEntity: targetEntity,
+                    targetIndex: resolvedIndex,
+                    searchQuery: searchQuery,
+                    normalizedGoal: normalizedGoal.isEmpty ? intent : normalizedGoal,
+                    userLanguage: userLanguage,
+                    requiresTakeoverOnCompletion: requiresTakeover
+                )
+            }
+        }
+        return nil
+    }
+
+    private func extractJSONData(from text: String) -> Data? {
+        var str = text
+        if let start = str.range(of: "{"), let end = str.range(of: "}", options: .backwards), start.lowerBound <= end.lowerBound {
+            str = String(str[start.lowerBound...end.lowerBound])
+        }
+        return str.data(using: .utf8)
+    }
+}

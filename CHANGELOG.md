@@ -9,6 +9,29 @@ Semua perubahan, milestone arsitektur, verifikasi fisik, dan perbaikan bug dicat
 ### 🎯 Objective
 Mengadopsi kedaulatan paten `ClickyModelInstructions.md` secara penuh, menghubungkan direct embedded Cua-Driver MCP (56 tools native) dengan RAM + Disk caching dan server-side prompt caching, serta menghapus seluruh kode tambalan spekulatif (regex tebakan koin, naskah dialog teater kaku, dan pemaksaan Turn 1 SOP).
 
+### 🏛️ Milestone 257: Eksekusi Langkah 3 — Ekstraksi Modul ke SPM Packages/ClickyKit (2026-10-05)
+- **Ekstraksi Paket Modular Swift (SPM)**:
+  - Pembentukan package `Packages/ClickyKit` dengan 11 target bertingkat (L0 s.d. L5) + 1 Umbrella product `ClickyKit`:
+    - L0: `ClickyFoundation` (tipe dasar, model data, logging, analitik, protokol host UI).
+    - L1: `ClickyPlatform` (audio engine, stream jendela, virtual desktop, dock manager, viewport controller).
+    - L2: `ClickyAIProviders`, `ClickySpeech`, `ClickyCUA`.
+    - L3: `ClickyReasoning` (policy registry, ingress gateway, step planner, egress validator).
+    - L4: `ClickyAstronacci`, `ClickyTradingView`, `ClickyFuturesScout`, `ClickyRoster`.
+    - L5: `ClickyDesignSystem`, `ClickyAgent` (CompanionManager, VMAgentLoop, DeterministicPipeline, Tools).
+    - L6 / UI: `ClickyUI` (komponen visual, window manager, modal, overlay).
+- **Protokol Downward Layering & Dependency Inversion**:
+  - `CompanionUIHost` protokol diperkaya dengan abstraksi UI (`hideResponseOverlay()`, `activeAccountEmail`, `activeAccountPlan`, `dismissConsent()`, `showConsent(with:)`) untuk memutuskan ketergantungan circular dari L5 (`ClickyAgent`) ke L6 (`ClickyUI`).
+  - `CompanionVMViewportController.swift` dipindahkan ke L1 (`ClickyPlatform`) sehingga memenuhi aturan acyclic downwards graph.
+  - Token `DS` (`ClickyDesignSystem`) diekspos sebagai public tokens.
+- **Verifikasi Gerbang (Unified Verification Gate Step 3)**:
+  - Kompilasi paket SPM: `swift build --package-path Packages/ClickyKit` **EXIT CODE 0** (`Build complete!`).
+  - Kompilasi biner utama: `xcodebuild -scheme boringNotch -configuration Debug build` **`** BUILD SUCCEEDED **`**.
+  - Kestabilan proses: PID baru `29064` terverifikasi hidup dan stabil (>15 detik).
+  - Kesesuaian Codesign: Designated requirement identik dengan baseline `IzanotchyDev`.
+  - Keseluruhan 28 asersi pengujian regresi warisan (Task L, M, O, P, Q, R) lulus 100% (6/6 runner pass).
+  - Audit batas baris: Semua 9 file terdaftar dalam allowlist mematuhi batas pagu (OverlayWindow: 1273 <= 1280; DesignSystem: 989 <= 1000).
+  - Skrip pengujian gerbang `./scripts/verify_gate.sh 3` lulus 100%.
+
 ### 🏛️ Milestone 256: Eksekusi Langkah 2 — Dekomposisi 3 God Object ke ≤ 800 Baris (2026-10-05)
 - **Dekomposisi God Object Berbasis Titik Potong AST Brace Depth ≤ 1**:
   - `ClickyDeterministicPipeline.swift` (1.242 baris) didekomposisi menjadi 3 file:
