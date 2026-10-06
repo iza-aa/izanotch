@@ -15,18 +15,17 @@ public struct DeepSeekAccount: Identifiable, Codable, Equatable {
     public var plan: String
     public var avatarColorHex: String
     public var savedAtString: String = ""
-    public var token: String = ""
+    public var tokenPayload: String? = nil
     
-    // Live Quota Metrics for DeepSeek-V3 and DeepSeek-R1
-    public var v3RemainingFraction: Double = 1.00
-    public var v3RefreshText: String = "Full Quota"
-    public var v3TotalTokens: String = "10M Tokens"
+    // Live Gemini Quota Metrics (Weekly & 5-Hour) fetched from CloudCode API
+    public var geminiWeeklyRemaining: Double = 1.00
+    public var geminiWeeklyRefreshText: String = "Ready"
+    public var geminiFiveHourRemaining: Double = 1.00
+    public var geminiFiveHourRefreshText: String = "Ready"
     
-    public var r1RemainingFraction: Double = 1.00
-    public var r1RefreshText: String = "Reasoner Ready"
-    public var r1TotalTokens: String = "DeepThink"
-    
-    public var balanceString: String = "Active"
+    public var score: Double {
+        (geminiWeeklyRemaining * 0.5) + (geminiFiveHourRemaining * 0.5)
+    }
     
     public var initials: String {
         let parts = name.split(separator: " ")
@@ -45,9 +44,8 @@ public struct DeepSeekProfileFile: Codable {
     public let email: String
     public let displayName: String?
     public let plan: String?
-    public let token: String?
     public let savedAt: String?
-    public let balance: String?
+    public let tokenPayload: String?
 }
 
 @MainActor
@@ -68,25 +66,30 @@ public final class DeepSeekUsageManager: ObservableObject {
     private var periodicTimer: Timer?
     
     // MARK: - Paths
-    public static var baseStorageDirectory: URL {
-        let home = FileManager.default.homeDirectoryForCurrentUser
-        return home.appendingPathComponent(".izanotchy/credentials/deepseek", isDirectory: true)
+    private var geminiHomeDir: URL {
+        let username = NSUserName()
+        let realHome = URL(fileURLWithPath: "/Users/\(username)")
+        return realHome.appendingPathComponent(".gemini")
+    }
+    
+    private var activeTokenFileURL: URL {
+        geminiHomeDir.appendingPathComponent("jetski-standalone-oauth-token")
     }
     
     private var profilesDirURL: URL {
-        Self.baseStorageDirectory.appendingPathComponent("profiles", isDirectory: true)
+        geminiHomeDir.appendingPathComponent("profiles")
     }
     
-    private var dshCredentialsURL: URL {
-        let home = FileManager.default.homeDirectoryForCurrentUser
-        return home.appendingPathComponent(".dsh/.credentials.yaml")
+    public var bestBackupAccount: DeepSeekAccount? {
+        let backups = accounts.filter { $0.email.lowercased() != activeAccount.email.lowercased() }
+        return backups.sorted(by: { $0.score > $1.score }).first
     }
     
     private init() {
         self.activeAccount = DeepSeekAccount(
-            name: "DeepSeek User",
-            email: "",
-            plan: "DeepSeek Platform",
+            name: "Rezky Haikal",
+            email: "rezkyhaikal2@gmail.com",
+            plan: "Google AI Pro",
             avatarColorHex: "#4D6BFE"
         )
         
@@ -94,7 +97,8 @@ public final class DeepSeekUsageManager: ObservableObject {
         loadProfiles()
         fetchLiveUsage()
         
-        periodicTimer = Timer.scheduledTimer(withTimeInterval: 5.0, repeats: true) { [weak self] _ in
+        // Refresh every 10 seconds
+        periodicTimer = Timer.scheduledTimer(withTimeInterval: 10.0, repeats: true) { [weak self] _ in
             Task { @MainActor in
                 self?.fetchLiveUsage()
             }
@@ -106,15 +110,12 @@ public final class DeepSeekUsageManager: ObservableObject {
     }
     
     private func ensureProfilesDirectoryExists() {
-        let dir = profilesDirURL
-        if !fileManager.fileExists(atPath: dir.path) {
-            try? fileManager.createDirectory(at: dir, withIntermediateDirectories: true, attributes: [
-                .posixPermissions: 0o700
-            ])
+        if !fileManager.fileExists(atPath: profilesDirURL.path) {
+            try? fileManager.createDirectory(at: profilesDirURL, withIntermediateDirectories: true)
         }
     }
     
-    // MARK: - Load Real Profiles from ~/.izanotchy/credentials/deepseek/profiles/
+    // MARK: - Load Real Profiles from ~/.gemini/profiles/
     public func loadProfiles() {
         ensureProfilesDirectoryExists()
         
@@ -129,22 +130,27 @@ public final class DeepSeekUsageManager: ObservableObject {
                     guard !email.isEmpty else { continue }
                     
                     let dName = (profile.displayName?.isEmpty ?? true) ? email : profile.displayName!
-                    let plan = (profile.plan?.isEmpty ?? true) ? "DeepSeek Platform" : profile.plan!
-                    let token = profile.token ?? ""
-                    let balance = profile.balance ?? "Active"
+                    let plan = (profile.plan?.isEmpty ?? true) ? "Google AI Pro" : profile.plan!
                     
-                    loadedAccounts.append(
-                        DeepSeekAccount(
-                            id: UUID(),
-                            name: dName,
-                            email: email,
-                            plan: plan,
-                            avatarColorHex: colorForEmail(email),
-                            savedAtString: profile.savedAt ?? "",
-                            token: token,
-                            balanceString: balance
-                        )
+                    var acc = DeepSeekAccount(
+                        id: UUID(),
+                        name: dName,
+                        email: email,
+                        plan: plan,
+                        avatarColorHex: colorForEmail(email),
+                        savedAtString: profile.savedAt ?? "",
+                        tokenPayload: profile.tokenPayload
                     )
+                    
+                    // Retain existing live quota if already fetched
+                    if let existing = self.accounts.first(where: { $0.email.lowercased() == email.lowercased() }) {
+                        acc.geminiWeeklyRemaining = existing.geminiWeeklyRemaining
+                        acc.geminiWeeklyRefreshText = existing.geminiWeeklyRefreshText
+                        acc.geminiFiveHourRemaining = existing.geminiFiveHourRemaining
+                        acc.geminiFiveHourRefreshText = existing.geminiFiveHourRefreshText
+                    }
+                    
+                    loadedAccounts.append(acc)
                 }
             }
         }
@@ -152,172 +158,374 @@ public final class DeepSeekUsageManager: ObservableObject {
         self.accounts = loadedAccounts
     }
     
-    // MARK: - Fetch Live Usage & Credentials from DeepSeek Harness (~/.dsh/.credentials.yaml)
-    public func fetchLiveUsage() {
-        guard fileManager.fileExists(atPath: dshCredentialsURL.path) else {
-            self.isConnected = false
-            return
-        }
-        
-        guard let content = try? String(contentsOf: dshCredentialsURL, encoding: .utf8) else {
-            self.isConnected = false
-            return
-        }
-        
-        // Extract token from credentials.yaml
-        var extractedToken: String? = nil
-        let lines = content.components(separatedBy: .newlines)
-        for line in lines {
-            let trimmed = line.trimmingCharacters(in: .whitespaces)
-            if trimmed.hasPrefix("token:") {
-                let tokenPart = trimmed.replacingOccurrences(of: "token:", with: "").trimmingCharacters(in: .whitespaces)
-                if !tokenPart.isEmpty {
-                    extractedToken = tokenPart
-                    break
+    // MARK: - Detect Active Email from Active System Token and ~/.dsh/active_account.json
+    private func detectLiveActiveEmail() -> String? {
+        // 1. Highest priority: ~/.dsh/active_account.json written by DeepSeek Harness / gemini-adapter
+        let dshActiveFile = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent(".dsh/active_account.json")
+        if let dshData = try? Data(contentsOf: dshActiveFile),
+           let dshJson = try? JSONSerialization.jsonObject(with: dshData) as? [String: Any],
+           let rawEmail = (dshJson["email"] as? String) ?? (dshJson["contact"] as? String) {
+            let clean = rawEmail.lowercased().trimmingCharacters(in: .whitespaces)
+            if clean.contains("@") && !clean.contains("*") {
+                return clean
+            }
+            // If masked (rez******al3@gmail.com), resolve to real profile
+            for f in (try? fileManager.contentsOfDirectory(at: profilesDirURL, includingPropertiesForKeys: nil)) ?? [] {
+                let name = f.deletingPathExtension().lastPathComponent.lowercased()
+                if name.hasPrefix(clean.prefix(3)) && name.hasSuffix(clean.suffix(12)) {
+                    return name
                 }
             }
         }
+
+        // 2. Next: inspect active token file
+        guard let tokenData = try? Data(contentsOf: activeTokenFileURL),
+              let json = try? JSONSerialization.jsonObject(with: tokenData) as? [String: Any] else {
+            return nil
+        }
         
-        guard let token = extractedToken, !token.isEmpty else {
-            self.isConnected = false
-            return
+        let tokenObj = json["token"] as? [String: Any]
+        let activeAccess = tokenObj?["access_token"] as? String
+        let activeRefresh = tokenObj?["refresh_token"] as? String
+        
+        guard let files = try? fileManager.contentsOfDirectory(at: profilesDirURL, includingPropertiesForKeys: nil) else {
+            return nil
+        }
+        
+        for f in files where f.pathExtension.lowercased() == "json" {
+            guard let data = try? Data(contentsOf: f),
+                  let profile = try? JSONDecoder().decode(DeepSeekProfileFile.self, from: data),
+                  let payloadStr = profile.tokenPayload,
+                  let pData = payloadStr.data(using: .utf8),
+                  let pJson = try? JSONSerialization.jsonObject(with: pData) as? [String: Any] else {
+                continue
+            }
+            
+            let pToken = pJson["token"] as? [String: Any]
+            let pAccess = (pToken?["access_token"] as? String) ?? (pJson["access_token"] as? String)
+            let pRefresh = (pToken?["refresh_token"] as? String) ?? (pJson["refresh_token"] as? String)
+            
+            if (activeAccess != nil && pAccess == activeAccess) ||
+               (activeRefresh != nil && pRefresh == activeRefresh) {
+                return profile.email.lowercased().trimmingCharacters(in: .whitespaces)
+            }
+        }
+        
+        return nil
+    }
+    
+    // MARK: - Fetch Real Live Quota for all accounts via Google CloudCode API
+    public func fetchLiveUsage() {
+        loadProfiles()
+        
+        if let detected = detectLiveActiveEmail(), !detected.isEmpty {
+            self.activeAccount.email = detected
+            Defaults[.activeAntigravityEmail] = detected
         }
         
         self.isConnected = true
         self.lastUpdatedDate = Date()
         
-        // Find matching saved account or update active account
-        if let matching = accounts.first(where: { $0.token == token }) {
-            self.activeAccount = matching
-            self.activeAccountId = matching.id
-        } else {
-            // Check if there is an active account in memory, else set default detected
-            if self.activeAccount.email.isEmpty {
-                let defaultEmail = "harness-user@deepseek.com"
-                self.activeAccount = DeepSeekAccount(
-                    name: "DeepSeek Harness",
-                    email: defaultEmail,
-                    plan: "Platform Tier",
-                    avatarColorHex: colorForEmail(defaultEmail),
-                    savedAtString: "Auto Detected",
-                    token: token,
-                    v3RemainingFraction: 0.95,
-                    v3RefreshText: "Ready",
-                    v3TotalTokens: "V3 Active",
-                    r1RemainingFraction: 0.92,
-                    r1RefreshText: "Ready",
-                    r1TotalTokens: "R1 Active",
-                    balanceString: "Connected"
-                )
+        // Fetch live quota for all accounts asynchronously
+        Task.detached(priority: .userInitiated) {
+            let currentAccounts = await MainActor.run { self.accounts }
+            
+            for acc in currentAccounts {
+                guard let payloadStr = acc.tokenPayload, let pData = payloadStr.data(using: .utf8),
+                      let pJson = try? JSONSerialization.jsonObject(with: pData) as? [String: Any] else {
+                    continue
+                }
+                
+                var tokenStr: String? = nil
+                if let tObj = pJson["token"] as? [String: Any] {
+                    tokenStr = tObj["access_token"] as? String
+                } else if let direct = pJson["access_token"] as? String {
+                    tokenStr = direct
+                }
+                
+                guard let token = tokenStr, !token.isEmpty else { continue }
+                
+                guard let url = URL(string: "https://daily-cloudcode-pa.googleapis.com/v1internal:retrieveUserQuota") else { continue }
+                var req = URLRequest(url: url)
+                req.httpMethod = "POST"
+                req.setValue("application/json", forHTTPHeaderField: "Content-Type")
+                req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+                req.setValue("antigravity/2.11.0", forHTTPHeaderField: "User-Agent")
+                req.httpBody = "{}".data(using: .utf8)
+                
+                guard let (respData, _) = try? await URLSession.shared.data(for: req),
+                      let respJson = try? JSONSerialization.jsonObject(with: respData) as? [String: Any],
+                      let buckets = respJson["buckets"] as? [[String: Any]] else {
+                    continue
+                }
+                
+                var remFraction = 1.0
+                var resetDateString: String? = nil
+                for b in buckets {
+                    let mId = (b["modelId"] as? String) ?? ""
+                    if mId == "gemini-3.8-flash-high" || mId.contains("gemini-3.8-flash") {
+                        remFraction = b["remainingFraction"] as? Double ?? 1.0
+                        resetDateString = b["resetTime"] as? String
+                        break
+                    }
+                }
+                
+                let refreshText = self.formatResetTime(resetDateString)
+                
+                await MainActor.run {
+                    if let idx = self.accounts.firstIndex(where: { $0.email.lowercased() == acc.email.lowercased() }) {
+                        self.accounts[idx].geminiWeeklyRemaining = remFraction
+                        self.accounts[idx].geminiWeeklyRefreshText = refreshText
+                        self.accounts[idx].geminiFiveHourRemaining = remFraction
+                        self.accounts[idx].geminiFiveHourRefreshText = refreshText
+                    }
+                    
+                    if self.activeAccount.email.lowercased() == acc.email.lowercased() {
+                        self.activeAccount.name = acc.name
+                        self.activeAccount.plan = acc.plan
+                        self.activeAccount.geminiWeeklyRemaining = remFraction
+                        self.activeAccount.geminiWeeklyRefreshText = refreshText
+                        self.activeAccount.geminiFiveHourRemaining = remFraction
+                        self.activeAccount.geminiFiveHourRefreshText = refreshText
+                        if let match = self.accounts.first(where: { $0.email.lowercased() == acc.email.lowercased() }) {
+                            self.activeAccountId = match.id
+                        }
+                    }
+                }
             }
+        }
+    }
+    
+    private nonisolated func formatResetTime(_ rawDateStr: String?) -> String {
+        guard let raw = rawDateStr, !raw.isEmpty else { return "Ready" }
+        
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        var targetDate = formatter.date(from: raw)
+        if targetDate == nil {
+            formatter.formatOptions = [.withInternetDateTime]
+            targetDate = formatter.date(from: raw)
+        }
+        
+        guard let date = targetDate else { return "Reset soon" }
+        let diff = date.timeIntervalSinceNow
+        guard diff > 0 else { return "Ready" }
+        
+        let totalMinutes = Int(round(diff / 60.0))
+        let hours = totalMinutes / 60
+        let minutes = totalMinutes % 60
+        
+        if hours > 0 {
+            return "\(hours)h \(minutes)m"
+        } else {
+            return "\(minutes)m"
         }
     }
     
     public func refresh() {
         self.isRefreshing = true
         fetchLiveUsage()
-        loadProfiles()
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
             self.isRefreshing = false
         }
     }
     
-    // MARK: - Save Live Profile
+    // MARK: - Save Current Live Profile
     public func saveLiveDetectedProfile() {
-        guard isConnected, !activeAccount.token.isEmpty else { return }
+        let email = activeAccount.email
+        guard !email.isEmpty else { return }
         
-        let email = activeAccount.email.isEmpty ? "deepseek-user@platform" : activeAccount.email
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd HH:mm"
-        let savedAt = formatter.string(from: Date())
+        ensureProfilesDirectoryExists()
+        let currentTokenPayload = fetchLiveSystemToken()
         
         let profile = DeepSeekProfileFile(
             email: email,
             displayName: activeAccount.name,
             plan: activeAccount.plan,
-            token: activeAccount.token,
-            savedAt: savedAt,
-            balance: activeAccount.balanceString
+            savedAt: ISO8601DateFormatter().string(from: Date()),
+            tokenPayload: currentTokenPayload
         )
         
-        let targetFile = profilesDirURL.appendingPathComponent("\(sanitizeFileName(email)).json")
-        if let data = try? JSONEncoder().encode(profile) {
-            try? data.write(to: targetFile, options: .atomic)
-            statusMessage = "Tersimpan di Vault"
+        let safeFilename = email.replacingOccurrences(of: "/", with: "_") + ".json"
+        let destURL = profilesDirURL.appendingPathComponent(safeFilename)
+        
+        do {
+            let encoded = try JSONEncoder().encode(profile)
+            try encoded.write(to: destURL, options: .atomic)
             loadProfiles()
+            showStatus("Profil tersimpan: \(email)")
+        } catch {
+            showStatus("Gagal menyimpan: \(error.localizedDescription)")
+        }
+    }
+    
+    public func currentProfileHasToken() -> Bool {
+        let email = activeAccount.email
+        guard !email.isEmpty else { return false }
+        let safeFilename = email.replacingOccurrences(of: "/", with: "_") + ".json"
+        let profileURL = profilesDirURL.appendingPathComponent(safeFilename)
+        guard let data = try? Data(contentsOf: profileURL),
+              let profile = try? JSONDecoder().decode(DeepSeekProfileFile.self, from: data) else {
+            return false
+        }
+        return profile.tokenPayload != nil && !(profile.tokenPayload?.isEmpty ?? true)
+    }
+    
+    // MARK: - Switch Account & Auto-Restart DeepSeek Harness
+    public func switchAccount(to id: UUID, autoRestart: Bool = true) {
+        guard let targetAccount = accounts.first(where: { $0.id == id }) else { return }
+        
+        withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
+            isSwitching = true
+            switchingTargetEmail = targetAccount.email
+            activeAccountId = id
+            activeAccount.email = targetAccount.email
+            activeAccount.name = targetAccount.name
+            activeAccount.geminiWeeklyRemaining = targetAccount.geminiWeeklyRemaining
+            activeAccount.geminiWeeklyRefreshText = targetAccount.geminiWeeklyRefreshText
+            activeAccount.geminiFiveHourRemaining = targetAccount.geminiFiveHourRemaining
+            activeAccount.geminiFiveHourRefreshText = targetAccount.geminiFiveHourRefreshText
+            Defaults[.activeAntigravityEmail] = targetAccount.email
+            lastUpdatedDate = Date()
+        }
+        
+        let safeFilename = targetAccount.email.replacingOccurrences(of: "/", with: "_") + ".json"
+        let profileURL = profilesDirURL.appendingPathComponent(safeFilename)
+        var targetPayload: String? = nil
+        if let data = try? Data(contentsOf: profileURL),
+           let profile = try? JSONDecoder().decode(DeepSeekProfileFile.self, from: data) {
+            targetPayload = profile.tokenPayload
+        }
+        
+        showStatus("Switching ke \(targetAccount.email)...")
+        
+        Task.detached(priority: .userInitiated) {
+            // 1. Write target OAuth token to macOS Keychain and fallback file
+            if let payload = targetPayload, !payload.isEmpty {
+                self.applyTokenToSystem(payload: payload)
+            }
+
+            // 2. Update ~/.dsh/active_account.json directly
+            let dshActiveFile = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent(".dsh/active_account.json")
+            let dshContent = """
+            {
+              "email": "\(targetAccount.email)",
+              "name": "\(targetAccount.name)",
+              "updatedAt": "\(ISO8601DateFormatter().string(from: Date()))"
+            }
+            """
+            try? dshContent.write(to: dshActiveFile, atomically: true, encoding: .utf8)
             
-            DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
-                if self.statusMessage == "Tersimpan di Vault" {
-                    self.statusMessage = nil
+            // 3. Also sync AntigravityUsageManager
+            await MainActor.run {
+                AntigravityUsageManager.shared.activeAccount.email = targetAccount.email
+                AntigravityUsageManager.shared.activeAccount.name = targetAccount.name
+            }
+            
+            // 4. Reliable Auto-restart of DeepSeek Harness via NSWorkspace and shell fallback
+            if autoRestart {
+                let killP = Process()
+                killP.executableURL = URL(fileURLWithPath: "/usr/bin/pkill")
+                killP.arguments = ["-9", "-f", "DeepSeek Harness"]
+                try? killP.run()
+                killP.waitUntilExit()
+                
+                try? await Task.sleep(for: .milliseconds(1500))
+                
+                await MainActor.run {
+                    let appURL = URL(fileURLWithPath: "/Applications/DeepSeek Harness.app")
+                    let config = NSWorkspace.OpenConfiguration()
+                    config.activates = true
+                    NSWorkspace.shared.openApplication(at: appURL, configuration: config, completionHandler: nil)
+                }
+            }
+            
+            try? await Task.sleep(for: .seconds(2.5))
+            
+            await MainActor.run {
+                self.fetchLiveUsage()
+                withAnimation(.easeInOut(duration: 0.4)) {
+                    self.isSwitching = false
+                    self.showStatus("DeepSeek aktif: \(targetAccount.email)")
                 }
             }
         }
     }
     
-    // MARK: - Switch Account
-    public func switchAccount(to targetId: UUID, autoRestart: Bool = true) {
-        guard let target = accounts.first(where: { $0.id == targetId }) else { return }
-        
-        self.isSwitching = true
-        self.switchingTargetEmail = target.email
-        
-        // Update ~/.dsh/.credentials.yaml token if available
-        if !target.token.isEmpty, fileManager.fileExists(atPath: dshCredentialsURL.path),
-           let content = try? String(contentsOf: dshCredentialsURL, encoding: .utf8) {
-            
-            var updatedLines: [String] = []
-            let lines = content.components(separatedBy: .newlines)
-            for line in lines {
-                let trimmed = line.trimmingCharacters(in: .whitespaces)
-                if trimmed.hasPrefix("token:") {
-                    let indent = line.prefix(while: { $0 == " " })
-                    updatedLines.append("\(indent)token: \(target.token)")
-                } else {
-                    updatedLines.append(line)
-                }
-            }
-            let updatedContent = updatedLines.joined(separator: "\n")
-            try? updatedContent.write(to: dshCredentialsURL, atomically: true, encoding: .utf8)
-        }
-        
-        self.activeAccount = target
-        self.activeAccountId = target.id
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
-            self.isSwitching = false
-            self.fetchLiveUsage()
-        }
-    }
-    
-    // MARK: - Delete Profile
+    // MARK: - Delete Profiles
     public func deleteProfile(email: String) {
-        let targetFile = profilesDirURL.appendingPathComponent("\(sanitizeFileName(email)).json")
-        try? fileManager.removeItem(at: targetFile)
+        let safeFilename = email.replacingOccurrences(of: "/", with: "_") + ".json"
+        let destURL = profilesDirURL.appendingPathComponent(safeFilename)
+        try? fileManager.removeItem(at: destURL)
         loadProfiles()
+        showStatus("Profil dihapus: \(email)")
     }
     
     public func deleteAllProfiles() {
         if let files = try? fileManager.contentsOfDirectory(at: profilesDirURL, includingPropertiesForKeys: nil) {
-            for f in files {
-                try? fileManager.removeItem(at: f)
+            for file in files {
+                try? fileManager.removeItem(at: file)
             }
         }
         loadProfiles()
+        showStatus("Semua profil dihapus")
     }
     
-    public func currentProfileHasToken() -> Bool {
-        !activeAccount.token.isEmpty
+    private nonisolated func fetchLiveSystemToken() -> String? {
+        let pipe = Pipe()
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/usr/bin/security")
+        process.arguments = ["find-generic-password", "-a", "antigravity", "-s", "gemini", "-w"]
+        process.standardOutput = pipe
+        try? process.run()
+        process.waitUntilExit()
+        
+        let out = String(data: pipe.fileHandleForReading.readDataToEndOfFile(), encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        if out.hasPrefix("go-keyring-base64:") {
+            let base64Part = String(out.dropFirst("go-keyring-base64:".count))
+            if let decodedData = Data(base64Encoded: base64Part),
+               let jsonString = String(data: decodedData, encoding: .utf8), !jsonString.isEmpty {
+                return jsonString
+            }
+        }
+        
+        let username = NSUserName()
+        let fileURL = URL(fileURLWithPath: "/Users/\(username)/.gemini/jetski-standalone-oauth-token")
+        if let tokenData = try? Data(contentsOf: fileURL),
+           let fileString = String(data: tokenData, encoding: .utf8), !fileString.isEmpty {
+            return fileString
+        }
+        
+        return nil
+    }
+    
+    private nonisolated func applyTokenToSystem(payload: String) {
+        let b64 = Data(payload.utf8).base64EncodedString()
+        let keychainVal = "go-keyring-base64:\(b64)"
+        
+        let secProcess = Process()
+        secProcess.executableURL = URL(fileURLWithPath: "/usr/bin/security")
+        secProcess.arguments = ["add-generic-password", "-a", "antigravity", "-s", "gemini", "-w", keychainVal, "-U"]
+        try? secProcess.run()
+        secProcess.waitUntilExit()
+        
+        let username = NSUserName()
+        let fileURL = URL(fileURLWithPath: "/Users/\(username)/.gemini/jetski-standalone-oauth-token")
+        try? payload.data(using: .utf8)?.write(to: fileURL, options: .atomic)
+    }
+    
+    private func showStatus(_ msg: String) {
+        self.statusMessage = msg
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
+            if self.statusMessage == msg {
+                self.statusMessage = nil
+            }
+        }
     }
     
     private func colorForEmail(_ email: String) -> String {
         let palette = ["#4D6BFE", "#00B4D8", "#7209B7", "#3A0CA3", "#4361EE", "#4CC9F0"]
         let hash = abs(email.hashValue)
         return palette[hash % palette.count]
-    }
-    
-    private func sanitizeFileName(_ name: String) -> String {
-        name.replacingOccurrences(of: "/", with: "_")
-            .replacingOccurrences(of: ":", with: "_")
-            .replacingOccurrences(of: " ", with: "_")
     }
 }

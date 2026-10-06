@@ -8,6 +8,58 @@
 import SwiftUI
 import Defaults
 
+// MARK: - DeepSeek Ambiance Background Glow (Dynamic White/Silver Glow based on Quota %)
+
+struct DeepSeekAmbianceView: View {
+    var usageLevel: Double = 1.0 // 0.0 (empty) to 1.0 (full)
+    
+    private var dynamicOpacity: Double {
+        let clamped = min(max(usageLevel, 0.0), 1.0)
+        return 0.06 + (clamped * 0.40)
+    }
+    
+    private var dynamicBlur: CGFloat {
+        let clamped = min(max(usageLevel, 0.0), 1.0)
+        return 12.0 + CGFloat(clamped * 10.0)
+    }
+    
+    var body: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .fill(
+                    LinearGradient(
+                        colors: [
+                            Color.white.opacity(0.35),
+                            Color(hex: "#E2E8F0").opacity(0.25),
+                            Color.white.opacity(0.15)
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+            
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .fill(
+                    RadialGradient(
+                        colors: [
+                            Color.white.opacity(0.30),
+                            Color(hex: "#CBD5E1").opacity(0.15),
+                            Color.clear
+                        ],
+                        center: .center,
+                        startRadius: 5,
+                        endRadius: 85
+                    )
+                )
+        }
+        .blur(radius: dynamicBlur)
+        .padding(-4)
+        .opacity(dynamicOpacity)
+        .animation(.spring(response: 0.45, dampingFraction: 0.75), value: usageLevel)
+        .allowsHitTesting(false)
+    }
+}
+
 // MARK: - Antigravity Ambiance Background Glow (Dynamic Full Blue based on Quota %)
 
 struct AntigravityAmbianceView: View {
@@ -1251,70 +1303,72 @@ struct AIUsageView: View {
         }
     }
     
-    // MARK: - DeepSeek Section (V3 General & R1 Reasoning)
+    // MARK: - DeepSeek Section (Active Account & Best Backup Account)
     
     private var deepSeekSection: some View {
         HStack(spacing: 16) {
-            deepSeekV3Card
-            deepSeekR1Card
+            deepSeekActiveCard
+            deepSeekBackupCard
         }
         .frame(maxWidth: .infinity)
     }
     
-    private var deepSeekV3Card: some View {
+    private var deepSeekActiveCard: some View {
         let account = deepSeekManager.activeAccount
+        let avgUsage = (account.geminiWeeklyRemaining + account.geminiFiveHourRemaining) / 2.0
+        
         return VStack(alignment: .leading, spacing: 5) {
             HStack(spacing: 4) {
-                Text("DeepSeek-V3")
+                Text("Akun Aktif")
                     .font(.system(size: 11, weight: .bold, design: .rounded))
                     .foregroundColor(.white.opacity(0.9))
-                Text("· Chat & Code")
+                Text("· \(account.email.isEmpty ? "DeepSeek" : account.email)")
                     .font(.system(size: 9.5, weight: .medium, design: .rounded))
-                    .foregroundColor(.white.opacity(0.45))
+                    .foregroundColor(.white.opacity(0.50))
+                    .lineLimit(1)
             }
             .padding(.leading, 2)
             
             ZStack {
+                DeepSeekAmbianceView(usageLevel: avgUsage)
+                
                 RoundedRectangle(cornerRadius: 10, style: .continuous)
                     .fill(
                         LinearGradient(
-                            colors: [Color.black.opacity(0.78), Color.black.opacity(0.60)],
+                            colors: [Color.black.opacity(0.75), Color.black.opacity(0.55)],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
                     )
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 10, style: .continuous)
-                            .stroke(
-                                LinearGradient(
-                                    colors: [Color.white.opacity(0.20), Color(hex: "#4D6BFE").opacity(0.18)],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                ),
-                                lineWidth: 0.8
-                            )
-                    )
                     .shadow(color: Color.black.opacity(0.35), radius: 3, x: 0, y: 1.5)
                 
                 VStack(spacing: 0) {
+                    // Row 1: Weekly Quota
                     HStack(alignment: .center, spacing: 8) {
                         VStack(alignment: .leading, spacing: 1.5) {
-                            Text("Standard Inference")
+                            Text("Weekly Limit Remaining")
                                 .font(.system(size: 10.5, weight: .semibold, design: .rounded))
                                 .foregroundColor(.white.opacity(0.95))
-                            Text(account.v3RefreshText)
+                            
+                            Text(account.geminiWeeklyRefreshText == "Ready" ? "Full Quota Available" : "Refreshes in \(account.geminiWeeklyRefreshText)")
                                 .font(.system(size: 8.5, weight: .medium, design: .rounded))
-                                .foregroundColor(.white.opacity(0.50))
+                                .foregroundColor(.white.opacity(0.48))
                                 .lineLimit(1)
                         }
                         
                         Spacer(minLength: 2)
                         
-                        HStack(spacing: 5) {
-                            CircularRingView(progress: account.v3RemainingFraction, size: 16, strokeWidth: 2.2)
-                            Text("\(Int(account.v3RemainingFraction * 100))%")
-                                .font(.system(size: 10, weight: .bold, design: .rounded))
-                                .foregroundColor(Color(hex: "#4D6BFE"))
+                        HStack(spacing: 6) {
+                            Text("\(Int(account.geminiWeeklyRemaining * 100))%")
+                                .font(.system(size: 11, weight: .bold, design: .rounded))
+                                .foregroundColor(.white)
+                                .monospacedDigit()
+                            
+                            CircularRingView(
+                                progress: account.geminiWeeklyRemaining,
+                                size: 18,
+                                strokeWidth: 2.4
+                            )
                         }
                     }
                     .padding(.horizontal, 10)
@@ -1324,28 +1378,33 @@ struct AIUsageView: View {
                         .fill(Color.white.opacity(0.08))
                         .frame(height: 1)
                     
+                    // Row 2: 5-Hour Quota
                     HStack(alignment: .center, spacing: 8) {
                         VStack(alignment: .leading, spacing: 1.5) {
-                            Text("Context & Quota")
+                            Text("Five Hour Limit Remaining")
                                 .font(.system(size: 10.5, weight: .semibold, design: .rounded))
                                 .foregroundColor(.white.opacity(0.95))
-                            Text("128K Window · High Speed")
+                            
+                            Text(account.geminiFiveHourRefreshText == "Ready" || account.geminiFiveHourRemaining >= 1.0 ? "Full Quota Available" : "Refreshes in \(account.geminiFiveHourRefreshText)")
                                 .font(.system(size: 8.5, weight: .medium, design: .rounded))
-                                .foregroundColor(.white.opacity(0.50))
+                                .foregroundColor(.white.opacity(0.48))
                                 .lineLimit(1)
                         }
                         
                         Spacer(minLength: 2)
                         
-                        Text(account.v3TotalTokens)
-                            .font(.system(size: 9.5, weight: .bold, design: .rounded))
-                            .foregroundColor(.white.opacity(0.85))
-                            .padding(.horizontal, 7)
-                            .padding(.vertical, 2.5)
-                            .background(
-                                Capsule()
-                                    .fill(Color(hex: "#4D6BFE").opacity(0.20))
+                        HStack(spacing: 6) {
+                            Text("\(Int(account.geminiFiveHourRemaining * 100))%")
+                                .font(.system(size: 11, weight: .bold, design: .rounded))
+                                .foregroundColor(.white)
+                                .monospacedDigit()
+                            
+                            CircularRingView(
+                                progress: account.geminiFiveHourRemaining,
+                                size: 18,
+                                strokeWidth: 2.4
                             )
+                        }
                     }
                     .padding(.horizontal, 10)
                     .frame(maxHeight: .infinity)
@@ -1355,93 +1414,112 @@ struct AIUsageView: View {
         }
     }
     
-    private var deepSeekR1Card: some View {
-        let account = deepSeekManager.activeAccount
+    private var deepSeekBackupCard: some View {
+        let backup = deepSeekManager.bestBackupAccount
+        let avgUsage = backup?.score ?? 1.0
+        
         return VStack(alignment: .leading, spacing: 5) {
             HStack(spacing: 4) {
-                Text("DeepSeek-R1")
+                Text("Cadangan Terbaik")
                     .font(.system(size: 11, weight: .bold, design: .rounded))
                     .foregroundColor(.white.opacity(0.9))
-                Text("· Reasoner")
+                Text("· \(backup?.email ?? "Tidak ada")")
                     .font(.system(size: 9.5, weight: .medium, design: .rounded))
-                    .foregroundColor(.white.opacity(0.45))
+                    .foregroundColor(.white.opacity(0.50))
+                    .lineLimit(1)
             }
             .padding(.leading, 2)
             
             ZStack {
+                DeepSeekAmbianceView(usageLevel: avgUsage)
+                
                 RoundedRectangle(cornerRadius: 10, style: .continuous)
                     .fill(
                         LinearGradient(
-                            colors: [Color.black.opacity(0.78), Color.black.opacity(0.60)],
+                            colors: [Color.black.opacity(0.75), Color.black.opacity(0.55)],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
                     )
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 10, style: .continuous)
-                            .stroke(
-                                LinearGradient(
-                                    colors: [Color.white.opacity(0.20), Color(hex: "#00B4D8").opacity(0.18)],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                ),
-                                lineWidth: 0.8
-                            )
-                    )
                     .shadow(color: Color.black.opacity(0.35), radius: 3, x: 0, y: 1.5)
                 
-                VStack(spacing: 0) {
-                    HStack(alignment: .center, spacing: 8) {
-                        VStack(alignment: .leading, spacing: 1.5) {
-                            Text("Deep Thinking Mode")
-                                .font(.system(size: 10.5, weight: .semibold, design: .rounded))
-                                .foregroundColor(.white.opacity(0.95))
-                            Text(account.r1RefreshText)
-                                .font(.system(size: 8.5, weight: .medium, design: .rounded))
-                                .foregroundColor(.white.opacity(0.50))
-                                .lineLimit(1)
+                if let b = backup {
+                    VStack(spacing: 0) {
+                        // Row 1: Weekly Quota
+                        HStack(alignment: .center, spacing: 8) {
+                            VStack(alignment: .leading, spacing: 1.5) {
+                                Text("Weekly Limit Remaining")
+                                    .font(.system(size: 10.5, weight: .semibold, design: .rounded))
+                                    .foregroundColor(.white.opacity(0.95))
+                                
+                                Text(b.geminiWeeklyRefreshText == "Ready" ? "Full Quota Available" : "Refreshes in \(b.geminiWeeklyRefreshText)")
+                                    .font(.system(size: 8.5, weight: .medium, design: .rounded))
+                                    .foregroundColor(.white.opacity(0.48))
+                                    .lineLimit(1)
+                            }
+                            
+                            Spacer(minLength: 2)
+                            
+                            HStack(spacing: 6) {
+                                Text("\(Int(b.geminiWeeklyRemaining * 100))%")
+                                    .font(.system(size: 11, weight: .bold, design: .rounded))
+                                    .foregroundColor(.white)
+                                    .monospacedDigit()
+                                
+                                CircularRingView(
+                                    progress: b.geminiWeeklyRemaining,
+                                    size: 18,
+                                    strokeWidth: 2.4
+                                )
+                            }
                         }
+                        .padding(.horizontal, 10)
+                        .frame(maxHeight: .infinity)
                         
-                        Spacer(minLength: 2)
+                        Rectangle()
+                            .fill(Color.white.opacity(0.08))
+                            .frame(height: 1)
                         
-                        HStack(spacing: 5) {
-                            CircularRingView(progress: account.r1RemainingFraction, size: 16, strokeWidth: 2.2)
-                            Text("\(Int(account.r1RemainingFraction * 100))%")
-                                .font(.system(size: 10, weight: .bold, design: .rounded))
-                                .foregroundColor(Color(hex: "#00B4D8"))
+                        // Row 2: 5-Hour Quota
+                        HStack(alignment: .center, spacing: 8) {
+                            VStack(alignment: .leading, spacing: 1.5) {
+                                Text("Five Hour Limit Remaining")
+                                    .font(.system(size: 10.5, weight: .semibold, design: .rounded))
+                                    .foregroundColor(.white.opacity(0.95))
+                                
+                                Text(b.geminiFiveHourRefreshText == "Ready" || b.geminiFiveHourRemaining >= 1.0 ? "Full Quota Available" : "Refreshes in \(b.geminiFiveHourRefreshText)")
+                                    .font(.system(size: 8.5, weight: .medium, design: .rounded))
+                                    .foregroundColor(.white.opacity(0.48))
+                                    .lineLimit(1)
+                            }
+                            
+                            Spacer(minLength: 2)
+                            
+                            HStack(spacing: 6) {
+                                Text("\(Int(b.geminiFiveHourRemaining * 100))%")
+                                    .font(.system(size: 11, weight: .bold, design: .rounded))
+                                    .foregroundColor(.white)
+                                    .monospacedDigit()
+                                
+                                CircularRingView(
+                                    progress: b.geminiFiveHourRemaining,
+                                    size: 18,
+                                    strokeWidth: 2.4
+                                )
+                            }
                         }
+                        .padding(.horizontal, 10)
+                        .frame(maxHeight: .infinity)
                     }
-                    .padding(.horizontal, 10)
-                    .frame(maxHeight: .infinity)
-                    
-                    Rectangle()
-                        .fill(Color.white.opacity(0.08))
-                        .frame(height: 1)
-                    
-                    HStack(alignment: .center, spacing: 8) {
-                        VStack(alignment: .leading, spacing: 1.5) {
-                            Text("Chain of Thought")
-                                .font(.system(size: 10.5, weight: .semibold, design: .rounded))
-                                .foregroundColor(.white.opacity(0.95))
-                            Text("Math, Code & Logic Engine")
-                                .font(.system(size: 8.5, weight: .medium, design: .rounded))
-                                .foregroundColor(.white.opacity(0.50))
-                                .lineLimit(1)
-                        }
-                        
-                        Spacer(minLength: 2)
-                        
-                        Text(account.r1TotalTokens)
-                            .font(.system(size: 9.5, weight: .bold, design: .rounded))
+                } else {
+                    VStack(spacing: 4) {
+                        Text("Belum ada akun cadangan")
+                            .font(.system(size: 10.5, weight: .semibold, design: .rounded))
                             .foregroundColor(.white.opacity(0.85))
-                            .padding(.horizontal, 7)
-                            .padding(.vertical, 2.5)
-                            .background(
-                                Capsule()
-                                    .fill(Color(hex: "#00B4D8").opacity(0.20))
-                            )
+                        Text("Simpan profil tambahan di Vault")
+                            .font(.system(size: 8.5, weight: .medium, design: .rounded))
+                            .foregroundColor(.white.opacity(0.50))
                     }
-                    .padding(.horizontal, 10)
                     .frame(maxHeight: .infinity)
                 }
             }
