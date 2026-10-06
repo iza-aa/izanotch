@@ -97,6 +97,54 @@ struct AntigravityIconView: View {
     }
 }
 
+// MARK: - DeepSeek Fixed Size Icon Component
+
+struct DeepSeekIconView: View {
+    var size: CGFloat = 14
+    
+    private var renderedImage: NSImage? {
+        if let nsImg = NSImage(named: "deepseek") {
+            let targetSize = NSSize(width: size, height: size)
+            let newImg = NSImage(size: targetSize)
+            newImg.lockFocus()
+            nsImg.draw(in: NSRect(origin: .zero, size: targetSize),
+                       from: NSRect(origin: .zero, size: nsImg.size),
+                       operation: .sourceOver,
+                       fraction: 1.0)
+            newImg.unlockFocus()
+            return newImg
+        }
+        if let directImg = NSImage(contentsOfFile: "/Applications/DeepSeek Harness.app/Contents/Resources/icon.icns") {
+            let targetSize = NSSize(width: size, height: size)
+            let newImg = NSImage(size: targetSize)
+            newImg.lockFocus()
+            directImg.draw(in: NSRect(origin: .zero, size: targetSize),
+                           from: NSRect(origin: .zero, size: directImg.size),
+                           operation: .sourceOver,
+                           fraction: 1.0)
+            newImg.unlockFocus()
+            return newImg
+        }
+        return nil
+    }
+    
+    var body: some View {
+        Group {
+            if let img = renderedImage {
+                Image(nsImage: img)
+                    .frame(width: size, height: size)
+                    .clipShape(RoundedRectangle(cornerRadius: 3, style: .continuous))
+            } else {
+                Image(systemName: "brain.head.profile")
+                    .font(.system(size: size * 0.7, weight: .bold))
+                    .foregroundColor(Color(hex: "#4D6BFE"))
+                    .frame(width: size, height: size)
+            }
+        }
+        .frame(width: size, height: size)
+    }
+}
+
 // MARK: - Circular Progress Ring Component (#3F7D35)
 
 struct CircularRingView: View {
@@ -191,6 +239,7 @@ struct AntigravitySwitchingLoadingView: View {
 
 struct AIUsageView: View {
     @ObservedObject var usageManager = AntigravityUsageManager.shared
+    @ObservedObject var deepSeekManager = DeepSeekUsageManager.shared
     @ObservedObject var bridgeManager = AntigravityBridgeManager.shared
     @Default(.selectedAIAssistant) var selectedApp: String
     @State private var refreshAngle: Double = 0
@@ -202,10 +251,14 @@ struct AIUsageView: View {
     private var isChatGPT: Bool {
         selectedApp == "ChatGPT"
     }
+
+    private var isDeepSeek: Bool {
+        selectedApp == "DeepSeek"
+    }
     
     var body: some View {
         Group {
-            if usageManager.isSwitching {
+            if usageManager.isSwitching || deepSeekManager.isSwitching {
                 AntigravitySwitchingLoadingView()
                     .transition(.opacity)
             } else {
@@ -213,11 +266,17 @@ struct AIUsageView: View {
                     // 1. Top Bar: App Switcher + Status / Email Switcher + Reload Button
                     topControlBar
 
-                    // 2. Main Content: Siri AI (AFM) View OR ChatGPT Pool OR Disconnected View OR Active Live Cards
+                    // 2. Main Content: Siri AI (AFM) View OR ChatGPT Pool OR DeepSeek View OR Disconnected View OR Active Live Cards
                     if isSiriAI {
                         siriAiSection
                     } else if isChatGPT {
                         ChatGPTAccountMonitorWidget()
+                    } else if isDeepSeek {
+                        if !deepSeekManager.isConnected {
+                            deepSeekDisconnectedCard
+                        } else {
+                            deepSeekSection
+                        }
                     } else if !usageManager.isConnected {
                         disconnectedCard
                     } else {
@@ -235,7 +294,7 @@ struct AIUsageView: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-        .animation(.easeInOut(duration: 0.35), value: usageManager.isSwitching)
+        .animation(.easeInOut(duration: 0.35), value: usageManager.isSwitching || deepSeekManager.isSwitching)
     }
     
     // MARK: - Disconnected State View (No Fake Usage)
@@ -293,6 +352,60 @@ struct AIUsageView: View {
         }
         .frame(height: 86)
     }
+
+    private var deepSeekDisconnectedCard: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                .fill(
+                    LinearGradient(
+                        colors: [Color.black.opacity(0.75), Color.black.opacity(0.55)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+                .shadow(color: Color.black.opacity(0.35), radius: 3, x: 0, y: 1.5)
+            
+            VStack(spacing: 6) {
+                HStack(spacing: 6) {
+                    Circle()
+                        .fill(Color.orange)
+                        .frame(width: 7, height: 7)
+                    
+                    Text("DeepSeek Belum Terhubung")
+                        .font(.system(size: 11, weight: .bold, design: .rounded))
+                        .foregroundColor(.white)
+                }
+                
+                Text("Buka aplikasi DeepSeek Harness untuk menyinkronkan akun & kuota secara langsung.")
+                    .font(.system(size: 9.5, weight: .medium, design: .rounded))
+                    .foregroundColor(.white.opacity(0.6))
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 20)
+                
+                Button(action: {
+                    deepSeekManager.refresh()
+                }) {
+                    HStack(spacing: 4) {
+                        Image(systemName: "arrow.clockwise")
+                            .font(.system(size: 9, weight: .semibold))
+                        Text("Hubungkan Ulang")
+                            .font(.system(size: 9.5, weight: .bold, design: .rounded))
+                    }
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 3.5)
+                    .background(
+                        RoundedRectangle(cornerRadius: 5, style: .continuous)
+                            .fill(Color.white.opacity(0.15))
+                    )
+                }
+                .buttonStyle(PlainButtonStyle())
+                .padding(.top, 2)
+            }
+            .padding(.vertical, 12)
+        }
+        .frame(height: 86)
+    }
     
     // MARK: - Top Control Bar
     
@@ -317,22 +430,12 @@ struct AIUsageView: View {
                 }
                 
                 Button(action: {
-                    selectedApp = "Cursor"
+                    selectedApp = "DeepSeek"
                 }) {
-                    if selectedApp == "Cursor" {
-                        Label("Cursor", systemImage: "checkmark")
+                    if isDeepSeek {
+                        Label("DeepSeek", systemImage: "checkmark")
                     } else {
-                        Text("Cursor")
-                    }
-                }
-                
-                Button(action: {
-                    selectedApp = "Claude Code"
-                }) {
-                    if selectedApp == "Claude Code" {
-                        Label("Claude Code", systemImage: "checkmark")
-                    } else {
-                        Text("Claude Code")
+                        Text("DeepSeek")
                     }
                 }
 
@@ -350,9 +453,9 @@ struct AIUsageView: View {
                     selectedApp = "ChatGPT"
                 }) {
                     if isChatGPT {
-                        Label("ChatGPT (6 Luna)", systemImage: "checkmark")
+                        Label("ChatGPT", systemImage: "checkmark")
                     } else {
-                        Text("ChatGPT (6 Luna)")
+                        Text("ChatGPT")
                     }
                 }
             } label: {
@@ -371,6 +474,8 @@ struct AIUsageView: View {
                         Image(systemName: "cpu.fill")
                             .font(.system(size: 10, weight: .bold))
                             .foregroundColor(Color(hex: "#10A37F"))
+                    } else if isDeepSeek {
+                        DeepSeekIconView(size: 13)
                     } else {
                         AntigravityIconView(size: 13)
                     }
@@ -449,6 +554,99 @@ struct AIUsageView: View {
                             .font(.system(size: 9.5, weight: .semibold, design: .rounded))
                             .foregroundColor(.white)
                             .lineLimit(1)
+                        
+                        Image(systemName: "chevron.down")
+                            .font(.system(size: 6.5, weight: .semibold))
+                            .foregroundColor(.white.opacity(0.45))
+                    }
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 2.5)
+                    .background(
+                        RoundedRectangle(cornerRadius: 6, style: .continuous)
+                            .fill(Color.white.opacity(0.08))
+                    )
+                }
+                .menuStyle(BorderlessButtonMenuStyle())
+                .menuIndicator(.hidden)
+                .fixedSize()
+            } else if isDeepSeek {
+                let account = deepSeekManager.activeAccount
+                let hasProfiles = !deepSeekManager.accounts.isEmpty
+                let isCurrentSaved = deepSeekManager.accounts.contains(where: { $0.email.lowercased() == account.email.lowercased() })
+                
+                Menu {
+                    Text("Profil DeepSeek di Vault")
+                    
+                    if hasProfiles {
+                        ForEach(deepSeekManager.accounts) { acc in
+                            Button(action: {
+                                deepSeekManager.switchAccount(to: acc.id, autoRestart: true)
+                            }) {
+                                if acc.email.lowercased() == account.email.lowercased() {
+                                    Label(acc.email, systemImage: "checkmark.circle.fill")
+                                } else {
+                                    Label(acc.email, systemImage: "person.circle")
+                                }
+                            }
+                        }
+                        
+                        Divider()
+                        
+                        Menu("Hapus Profil") {
+                            ForEach(deepSeekManager.accounts) { acc in
+                                Button(role: .destructive, action: {
+                                    deepSeekManager.deleteProfile(email: acc.email)
+                                }) {
+                                    Label("Hapus \(acc.email)", systemImage: "trash")
+                                }
+                            }
+                            
+                            Divider()
+                            
+                            Button(role: .destructive, action: {
+                                deepSeekManager.deleteAllProfiles()
+                            }) {
+                                Label("Hapus Semua Profil", systemImage: "trash.fill")
+                            }
+                        }
+                    } else {
+                        Text("Belum ada profil tersimpan")
+                    }
+                    
+                    let needsTokenUpdate = isCurrentSaved && !deepSeekManager.currentProfileHasToken()
+                    if deepSeekManager.isConnected && !account.email.isEmpty && (!isCurrentSaved || needsTokenUpdate) {
+                        Divider()
+                        
+                        Button(action: {
+                            deepSeekManager.saveLiveDetectedProfile()
+                        }) {
+                            if needsTokenUpdate {
+                                Label("Update token \(account.email)", systemImage: "arrow.triangle.2.circlepath")
+                            } else {
+                                Label("Simpan \(account.email) ke Vault", systemImage: "square.and.arrow.down.fill")
+                            }
+                        }
+                    }
+                } label: {
+                    HStack(spacing: 3.5) {
+                        if !deepSeekManager.isConnected {
+                            Circle()
+                                .fill(Color.orange)
+                                .frame(width: 5, height: 5)
+                            
+                            Text("Belum Terhubung")
+                                .font(.system(size: 9.5, weight: .semibold, design: .rounded))
+                                .foregroundColor(.white.opacity(0.85))
+                        } else {
+                            Circle()
+                                .fill(Color.green)
+                                .frame(width: 5, height: 5)
+                            
+                            Text(account.email.isEmpty ? "DeepSeek" : account.email)
+                                .font(.system(size: 9.5, weight: .semibold, design: .rounded))
+                                .foregroundColor(.white)
+                                .lineLimit(1)
+                        }
                         
                         Image(systemName: "chevron.down")
                             .font(.system(size: 6.5, weight: .semibold))
@@ -557,7 +755,7 @@ struct AIUsageView: View {
             }
             
             // Transient status pill
-            if let status = usageManager.statusMessage {
+            if let status = (isDeepSeek ? deepSeekManager.statusMessage : usageManager.statusMessage) {
                 Text(status)
                     .font(.system(size: 8.5, weight: .medium, design: .rounded))
                     .foregroundColor(Color(red: 0.4, green: 0.85, blue: 1.0))
@@ -580,7 +778,11 @@ struct AIUsageView: View {
                 withAnimation(.easeInOut(duration: 0.6)) {
                     refreshAngle += 360
                 }
-                usageManager.refresh()
+                if isDeepSeek {
+                    deepSeekManager.refresh()
+                } else {
+                    usageManager.refresh()
+                }
             }) {
                 Image(systemName: "arrow.clockwise")
                     .font(.system(size: 9.5, weight: .semibold))
@@ -1049,6 +1251,204 @@ struct AIUsageView: View {
         }
     }
     
+    // MARK: - DeepSeek Section (V3 General & R1 Reasoning)
+    
+    private var deepSeekSection: some View {
+        HStack(spacing: 16) {
+            deepSeekV3Card
+            deepSeekR1Card
+        }
+        .frame(maxWidth: .infinity)
+    }
+    
+    private var deepSeekV3Card: some View {
+        let account = deepSeekManager.activeAccount
+        return VStack(alignment: .leading, spacing: 5) {
+            HStack(spacing: 4) {
+                Text("DeepSeek-V3")
+                    .font(.system(size: 11, weight: .bold, design: .rounded))
+                    .foregroundColor(.white.opacity(0.9))
+                Text("· Chat & Code")
+                    .font(.system(size: 9.5, weight: .medium, design: .rounded))
+                    .foregroundColor(.white.opacity(0.45))
+            }
+            .padding(.leading, 2)
+            
+            ZStack {
+                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                    .fill(
+                        LinearGradient(
+                            colors: [Color.black.opacity(0.78), Color.black.opacity(0.60)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 10, style: .continuous)
+                            .stroke(
+                                LinearGradient(
+                                    colors: [Color.white.opacity(0.20), Color(hex: "#4D6BFE").opacity(0.18)],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                ),
+                                lineWidth: 0.8
+                            )
+                    )
+                    .shadow(color: Color.black.opacity(0.35), radius: 3, x: 0, y: 1.5)
+                
+                VStack(spacing: 0) {
+                    HStack(alignment: .center, spacing: 8) {
+                        VStack(alignment: .leading, spacing: 1.5) {
+                            Text("Standard Inference")
+                                .font(.system(size: 10.5, weight: .semibold, design: .rounded))
+                                .foregroundColor(.white.opacity(0.95))
+                            Text(account.v3RefreshText)
+                                .font(.system(size: 8.5, weight: .medium, design: .rounded))
+                                .foregroundColor(.white.opacity(0.50))
+                                .lineLimit(1)
+                        }
+                        
+                        Spacer(minLength: 2)
+                        
+                        HStack(spacing: 5) {
+                            CircularRingView(progress: account.v3RemainingFraction, size: 16, strokeWidth: 2.2)
+                            Text("\(Int(account.v3RemainingFraction * 100))%")
+                                .font(.system(size: 10, weight: .bold, design: .rounded))
+                                .foregroundColor(Color(hex: "#4D6BFE"))
+                        }
+                    }
+                    .padding(.horizontal, 10)
+                    .frame(maxHeight: .infinity)
+                    
+                    Rectangle()
+                        .fill(Color.white.opacity(0.08))
+                        .frame(height: 1)
+                    
+                    HStack(alignment: .center, spacing: 8) {
+                        VStack(alignment: .leading, spacing: 1.5) {
+                            Text("Context & Quota")
+                                .font(.system(size: 10.5, weight: .semibold, design: .rounded))
+                                .foregroundColor(.white.opacity(0.95))
+                            Text("128K Window · High Speed")
+                                .font(.system(size: 8.5, weight: .medium, design: .rounded))
+                                .foregroundColor(.white.opacity(0.50))
+                                .lineLimit(1)
+                        }
+                        
+                        Spacer(minLength: 2)
+                        
+                        Text(account.v3TotalTokens)
+                            .font(.system(size: 9.5, weight: .bold, design: .rounded))
+                            .foregroundColor(.white.opacity(0.85))
+                            .padding(.horizontal, 7)
+                            .padding(.vertical, 2.5)
+                            .background(
+                                Capsule()
+                                    .fill(Color(hex: "#4D6BFE").opacity(0.20))
+                            )
+                    }
+                    .padding(.horizontal, 10)
+                    .frame(maxHeight: .infinity)
+                }
+            }
+            .frame(height: 86)
+        }
+    }
+    
+    private var deepSeekR1Card: some View {
+        let account = deepSeekManager.activeAccount
+        return VStack(alignment: .leading, spacing: 5) {
+            HStack(spacing: 4) {
+                Text("DeepSeek-R1")
+                    .font(.system(size: 11, weight: .bold, design: .rounded))
+                    .foregroundColor(.white.opacity(0.9))
+                Text("· Reasoner")
+                    .font(.system(size: 9.5, weight: .medium, design: .rounded))
+                    .foregroundColor(.white.opacity(0.45))
+            }
+            .padding(.leading, 2)
+            
+            ZStack {
+                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                    .fill(
+                        LinearGradient(
+                            colors: [Color.black.opacity(0.78), Color.black.opacity(0.60)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 10, style: .continuous)
+                            .stroke(
+                                LinearGradient(
+                                    colors: [Color.white.opacity(0.20), Color(hex: "#00B4D8").opacity(0.18)],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                ),
+                                lineWidth: 0.8
+                            )
+                    )
+                    .shadow(color: Color.black.opacity(0.35), radius: 3, x: 0, y: 1.5)
+                
+                VStack(spacing: 0) {
+                    HStack(alignment: .center, spacing: 8) {
+                        VStack(alignment: .leading, spacing: 1.5) {
+                            Text("Deep Thinking Mode")
+                                .font(.system(size: 10.5, weight: .semibold, design: .rounded))
+                                .foregroundColor(.white.opacity(0.95))
+                            Text(account.r1RefreshText)
+                                .font(.system(size: 8.5, weight: .medium, design: .rounded))
+                                .foregroundColor(.white.opacity(0.50))
+                                .lineLimit(1)
+                        }
+                        
+                        Spacer(minLength: 2)
+                        
+                        HStack(spacing: 5) {
+                            CircularRingView(progress: account.r1RemainingFraction, size: 16, strokeWidth: 2.2)
+                            Text("\(Int(account.r1RemainingFraction * 100))%")
+                                .font(.system(size: 10, weight: .bold, design: .rounded))
+                                .foregroundColor(Color(hex: "#00B4D8"))
+                        }
+                    }
+                    .padding(.horizontal, 10)
+                    .frame(maxHeight: .infinity)
+                    
+                    Rectangle()
+                        .fill(Color.white.opacity(0.08))
+                        .frame(height: 1)
+                    
+                    HStack(alignment: .center, spacing: 8) {
+                        VStack(alignment: .leading, spacing: 1.5) {
+                            Text("Chain of Thought")
+                                .font(.system(size: 10.5, weight: .semibold, design: .rounded))
+                                .foregroundColor(.white.opacity(0.95))
+                            Text("Math, Code & Logic Engine")
+                                .font(.system(size: 8.5, weight: .medium, design: .rounded))
+                                .foregroundColor(.white.opacity(0.50))
+                                .lineLimit(1)
+                        }
+                        
+                        Spacer(minLength: 2)
+                        
+                        Text(account.r1TotalTokens)
+                            .font(.system(size: 9.5, weight: .bold, design: .rounded))
+                            .foregroundColor(.white.opacity(0.85))
+                            .padding(.horizontal, 7)
+                            .padding(.vertical, 2.5)
+                            .background(
+                                Capsule()
+                                    .fill(Color(hex: "#00B4D8").opacity(0.20))
+                            )
+                    }
+                    .padding(.horizontal, 10)
+                    .frame(maxHeight: .infinity)
+                }
+            }
+            .frame(height: 86)
+        }
+    }
+
     // MARK: - Gemini Models Section
     
     private var geminiSection: some View {

@@ -221,6 +221,7 @@
 		1443E7F32C609DCE0027C1FC /* matters.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1443E7F22C609DCE0027C1FC /* matters.swift */; };
 		147163982C5D35B70068B555 /* MusicVisualizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 147163972C5D35B70068B555 /* MusicVisualizer.swift */; };
 		9A0000022C5D35FF0068B555 /* AntigravityUsageManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A0000012C5D35FF0068B555 /* AntigravityUsageManager.swift */; };
+		9A0000122C5D35FF0068B555 /* DeepSeekUsageManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A0000112C5D35FF0068B555 /* DeepSeekUsageManager.swift */; };
 		9A00000C2C5D35FF0068B555 /* AntigravityBridgeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A00000B2C5D35FF0068B555 /* AntigravityBridgeManager.swift */; };
 		9A0000082C5D35FF0068B555 /* GitHubManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A0000072C5D35FF0068B555 /* GitHubManager.swift */; };
 				9A0000042C5D35FF0068B555 /* AIUsageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A0000032C5D35FF0068B555 /* AIUsageView.swift */; };
@@ -539,6 +540,7 @@
 		1443E7F42C609E650027C1FC /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		147163972C5D35B70068B555 /* MusicVisualizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicVisualizer.swift; sourceTree = "<group>"; };
 		9A0000012C5D35FF0068B555 /* AntigravityUsageManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AntigravityUsageManager.swift; sourceTree = "<group>"; };
+		9A0000112C5D35FF0068B555 /* DeepSeekUsageManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeepSeekUsageManager.swift; sourceTree = "<group>"; };
 		9A00000B2C5D35FF0068B555 /* AntigravityBridgeManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AntigravityBridgeManager.swift; sourceTree = "<group>"; };
 		9A0000072C5D35FF0068B555 /* GitHubManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GitHubManager.swift; sourceTree = "<group>"; };
 				9A0000032C5D35FF0068B555 /* AIUsageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIUsageView.swift; sourceTree = "<group>"; };
@@ -981,6 +983,7 @@
 				isa = PBXGroup;
 				children = (
 					9A0000012C5D35FF0068B555 /* AntigravityUsageManager.swift */,
+					9A0000112C5D35FF0068B555 /* DeepSeekUsageManager.swift */,
 						9A00000B2C5D35FF0068B555 /* AntigravityBridgeManager.swift */,
 					9A0000072C5D35FF0068B555 /* GitHubManager.swift */,
 				11D58EA12E760AE100FA8377 /* ImageService.swift */,
@@ -1569,6 +1572,7 @@
 				14C08BC12C8E03AD000F8AA0 /* NSImage+Extensions.swift in Sources */,
 				149E0B9A2C737D40006418B1 /* WebcamView.swift in Sources */,
 				9A0000022C5D35FF0068B555 /* AntigravityUsageManager.swift in Sources */,
+				9A0000122C5D35FF0068B555 /* DeepSeekUsageManager.swift in Sources */,
 				9A00000C2C5D35FF0068B555 /* AntigravityBridgeManager.swift in Sources */,
 				9A0000082C5D35FF0068B555 /* GitHubManager.swift in Sources */,
 						9A0000042C5D35FF0068B555 /* AIUsageView.swift in Sources */,
