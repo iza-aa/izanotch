@@ -62,12 +62,12 @@ Prasyarat masuk TASK-047: 8 skenario `scenarios.fasec.json` lulus + 8 bloker B1-
 
 ### FASE 4 — MEMORI & MULTI-COMPANION (PRD §A1, A7, G3, G11; sumber S1, S2, S4)
 
-| ID | [Tipe] | Scope | Baca | Bukti review |
-|---|---|---|---|---|
-| MT-13 | [non-UI] | CompanionMemory: preferensi stabil + fakta + ringkasan kerja per companion; bukan pengganti sumber otoritatif (wajib cite terkini untuk keputusan) | S1-memory | Setelah sesi: preferensi teringat; keputusan konsekuensial selalu cite sumber |
-| MT-14 | [non-UI] | Memory compaction (pola G3): sesi panjang → state opak append-only, dilarang edit/reorder, re-compact diizinkan | S4-compaction | Sesi 50+ turn tetap dalam context; ringkasan state mempertahankan fakta kunci |
-| MT-15 | [non-UI] | Handoff antar companion (pola bot-to-bot async): pesan handoff tercatat, satu owner per stage | S2-handoff | Handoff Inbox→Futures tercatat & dikerjakan companion penerima |
-| MT-16 | [non-UI] | Multi-companion paralel: satu screen per companion, satu computer-use task per companion | S1-parallel | Dua companion jalan paralel tanpa saling mengunci |
+| ID | [Tipe] | Scope | Baca | Bukti review | Status |
+|---|---|---|---|---|---|
+| MT-13 | [non-UI] | CompanionMemory: preferensi stabil + fakta + ringkasan kerja per companion; bukan pengganti sumber otoritatif (wajib cite terkini untuk keputusan) | S1-memory | Setelah sesi: preferensi teringat; keputusan konsekuensial selalu cite sumber | LULUS |
+| MT-14 | [non-UI] | Memory compaction (pola G3): sesi panjang → state opak append-only, dilarang edit/reorder, re-compact diizinkan | S4-compaction | Sesi 50+ turn tetap dalam context; ringkasan state mempertahankan fakta kunci | LULUS |
+| MT-15 | [non-UI] | Handoff antar companion (pola bot-to-bot async): pesan handoff tercatat, satu owner per stage | S2-handoff | Handoff Inbox→Futures tercatat & dikerjakan companion penerima | LULUS |
+| MT-16 | [non-UI] | Multi-companion paralel: satu screen per companion, satu computer-use task per companion | S1-parallel | Dua companion jalan paralel tanpa saling mengunci | LULUS |
 
 ### FASE 5 — GOVERNANCE (PRD §A12, G7; sumber S3, S4)
 
