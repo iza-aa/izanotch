@@ -165,9 +165,58 @@ extension HomeSpaceRootView {
                     )
                     .frame(maxWidth: 360, alignment: .leading)
                 }
+                if interviewEngine.userTurnCount == 0 {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Pilih Template Arketipe Bawaan (PRD §A3):")
+                            .font(.system(size: 11, weight: .semibold))
+                            .foregroundStyle(.white.opacity(0.65))
+                            .padding(.horizontal, 20)
+
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack(spacing: 8) {
+                                ForEach(CompanionArchetype.all8Archetypes) { arch in
+                                    Button(action: {
+                                        interviewEngine.applyArchetype(arch)
+                                    }) {
+                                        VStack(alignment: .leading, spacing: 4) {
+                                            HStack(spacing: 6) {
+                                                Circle()
+                                                    .fill(Color(hex: arch.cloudColorHex))
+                                                    .frame(width: 8, height: 8)
+                                                Text(arch.name)
+                                                    .font(.system(size: 12, weight: .bold))
+                                                    .foregroundStyle(.white)
+                                            }
+                                            Text(arch.role)
+                                                .font(.system(size: 10))
+                                                .foregroundStyle(.white.opacity(0.7))
+                                                .lineLimit(1)
+                                            Text(arch.summary)
+                                                .font(.system(size: 9.5))
+                                                .foregroundStyle(.white.opacity(0.5))
+                                                .lineLimit(2)
+                                        }
+                                        .padding(10)
+                                        .frame(width: 170, height: 75, alignment: .topLeading)
+                                        .background(
+                                            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                                .fill(Color.white.opacity(0.06))
+                                                .overlay(
+                                                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                                        .stroke(Color(hex: arch.cloudColorHex).opacity(0.35), lineWidth: 0.8)
+                                                )
+                                        )
+                                    }
+                                    .buttonStyle(.plain)
+                                }
+                            }
+                            .padding(.horizontal, 20)
+                        }
+                    }
+                    .frame(maxWidth: .infinity)
+                }
 
                 Spacer()
-
                 // Bottom Controls (Foto 4)
                 VStack(spacing: 10) {
                     // Large Voice Button: "Hold Control + Option to answer"
