@@ -594,3 +594,136 @@ public final class CompanionHandoffService: ObservableObject {
         return handoff
     }
 }
+// MARK: - CompanionTemplate & Template Service (PRD §A4, MT-26: Share & Import Template)
+
+public struct CompanionTemplate: Codable, Sendable, Identifiable, Equatable {
+    public var id: String { templateId }
+    public let templateId: String
+    public let name: String
+    public let role: String
+    public let summary: String
+    public let cloudColorHex: String
+    public let ringColorHex: String
+    public let mood: AgentCloudFaceMood
+    public let templateAvatarId: String
+    public let activeSkills: [String]
+    public let workflowAppNames: [String]
+    public let routines: [CompanionAutomation]
+    public let exportedAt: Date
+
+    public init(
+        templateId: String = "tpl-\(UUID().uuidString.prefix(8))",
+        name: String,
+        role: String,
+        summary: String,
+        cloudColorHex: String,
+        ringColorHex: String,
+        mood: AgentCloudFaceMood = .happy,
+        templateAvatarId: String = "strobi",
+        activeSkills: [String] = [],
+        workflowAppNames: [String] = [],
+        routines: [CompanionAutomation] = [],
+        exportedAt: Date = Date()
+    ) {
+        self.templateId = templateId
+        self.name = name
+        self.role = role
+        self.summary = summary
+        self.cloudColorHex = cloudColorHex
+        self.ringColorHex = ringColorHex
+        self.mood = mood
+        self.templateAvatarId = templateAvatarId
+        self.activeSkills = activeSkills
+        self.workflowAppNames = workflowAppNames
+        self.routines = routines
+        self.exportedAt = exportedAt
+    }
+}
+
+@MainActor
+public final class CompanionTemplateService: ObservableObject {
+    public static let shared = CompanionTemplateService()
+
+    private init() {}
+
+    /// Exports companion definition as a sanitized portable template.
+    /// Invariant (PRD §A4): ALL secrets, customer data, and chat history are stripped!
+    public func exportTemplate(for profile: CompanionProfile) -> CompanionTemplate {
+        // 1. Fetch routines and sanitize them (reset run history and redact secrets)
+        let rawRoutines = CompanionAutomationStore.shared.automations.filter { $0.owningCompanion == profile.slug }
+        let sanitizedRoutines = rawRoutines.map { r -> CompanionAutomation in
+            var sanitized = r
+            sanitized.runHistory = [] // Strip execution history
+            sanitized.prompt = SecretsVault.shared.redactSecrets(from: sanitized.prompt)
+            return sanitized
+        }
+
+        // 2. Redact any potential credentials from summary / standing rules
+        let cleanSummary = SecretsVault.shared.redactSecrets(from: profile.summary)
+
+        let template = CompanionTemplate(
+            templateId: "tpl-\(profile.slug)-\(UUID().uuidString.prefix(6))",
+            name: profile.name,
+            role: profile.role,
+            summary: cleanSummary,
+            cloudColorHex: profile.cloudColorHex,
+            ringColorHex: profile.ringColorHex,
+            mood: profile.mood,
+            templateAvatarId: profile.templateId,
+            activeSkills: profile.activeSkills,
+            workflowAppNames: profile.workflowAppNames,
+            routines: sanitizedRoutines
+        )
+
+        ClickyLogger.info("[TEMPLATE]", "Exported companion '\(profile.name)' to template '\(template.templateId)' (secrets & history stripped).")
+        return template
+    }
+
+    /// Imports a companion from template creating a fresh, clean companion instance
+    @discardableResult
+    public func importTemplate(from template: CompanionTemplate, newName: String? = nil) -> CompanionProfile {
+        let effectiveName = newName ?? template.name
+        let cleanSlug = "\(effectiveName.lowercased().replacingOccurrences(of: " ", with: "-"))-imported-\(UUID().uuidString.prefix(4))"
+
+        let profile = CompanionProfile(
+            id: UUID(),
+            slug: cleanSlug,
+            name: effectiveName,
+            role: template.role,
+            summary: template.summary,
+            cloudColorHex: template.cloudColorHex,
+            ringColorHex: template.ringColorHex,
+            status: .idle,
+            lastMessage: "",
+            activeSkills: template.activeSkills,
+            mdPath: "\(cleanSlug).md",
+            isPinnedToRail: true,
+            messages: [], // Fresh clean copy, zero old history
+            mood: template.mood,
+            templateId: template.templateAvatarId,
+            workflowAppNames: template.workflowAppNames
+        )
+
+        // Register profile in roster
+        CompanionRosterStore.shared.addOrUpdateCompanion(profile)
+
+        // Register sanitized routines under new companion slug
+        for r in template.routines {
+            let freshRoutine = CompanionAutomation(
+                id: "auto-\(UUID().uuidString.prefix(8))",
+                name: r.name,
+                prompt: r.prompt,
+                targetBuddySlug: cleanSlug,
+                trigger: r.trigger,
+                isEnabled: r.isEnabled,
+                approvalBoundary: r.approvalBoundary,
+                noDataPolicy: r.noDataPolicy,
+                runHistory: []
+            )
+            try? CompanionAutomationStore.shared.addAutomation(freshRoutine)
+        }
+
+        ClickyLogger.info("[TEMPLATE]", "Imported template '\(template.templateId)' as clean companion '\(effectiveName)' (slug: \(cleanSlug)).")
+        return profile
+    }
+}
