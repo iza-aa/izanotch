@@ -8,57 +8,6 @@
 import SwiftUI
 import Defaults
 
-// MARK: - DeepSeek Ambiance Background Glow (Dynamic White/Silver Glow based on Quota %)
-
-struct DeepSeekAmbianceView: View {
-    var usageLevel: Double = 1.0 // 0.0 (empty) to 1.0 (full)
-    
-    private var dynamicOpacity: Double {
-        let clamped = min(max(usageLevel, 0.0), 1.0)
-        return 0.06 + (clamped * 0.40)
-    }
-    
-    private var dynamicBlur: CGFloat {
-        let clamped = min(max(usageLevel, 0.0), 1.0)
-        return 12.0 + CGFloat(clamped * 10.0)
-    }
-    
-    var body: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .fill(
-                    LinearGradient(
-                        colors: [
-                            Color.white.opacity(0.35),
-                            Color(hex: "#E2E8F0").opacity(0.25),
-                            Color.white.opacity(0.15)
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-            
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .fill(
-                    RadialGradient(
-                        colors: [
-                            Color.white.opacity(0.30),
-                            Color(hex: "#CBD5E1").opacity(0.15),
-                            Color.clear
-                        ],
-                        center: .center,
-                        startRadius: 5,
-                        endRadius: 85
-                    )
-                )
-        }
-        .blur(radius: dynamicBlur)
-        .padding(-4)
-        .opacity(dynamicOpacity)
-        .animation(.spring(response: 0.45, dampingFraction: 0.75), value: usageLevel)
-        .allowsHitTesting(false)
-    }
-}
 
 // MARK: - Antigravity Ambiance Background Glow (Dynamic Full Blue based on Quota %)
 
@@ -149,53 +98,6 @@ struct AntigravityIconView: View {
     }
 }
 
-// MARK: - DeepSeek Fixed Size Icon Component
-
-struct DeepSeekIconView: View {
-    var size: CGFloat = 14
-    
-    private var renderedImage: NSImage? {
-        if let nsImg = NSImage(named: "deepseek") {
-            let targetSize = NSSize(width: size, height: size)
-            let newImg = NSImage(size: targetSize)
-            newImg.lockFocus()
-            nsImg.draw(in: NSRect(origin: .zero, size: targetSize),
-                       from: NSRect(origin: .zero, size: nsImg.size),
-                       operation: .sourceOver,
-                       fraction: 1.0)
-            newImg.unlockFocus()
-            return newImg
-        }
-        if let directImg = NSImage(contentsOfFile: "/Applications/DeepSeek Harness.app/Contents/Resources/icon.icns") {
-            let targetSize = NSSize(width: size, height: size)
-            let newImg = NSImage(size: targetSize)
-            newImg.lockFocus()
-            directImg.draw(in: NSRect(origin: .zero, size: targetSize),
-                           from: NSRect(origin: .zero, size: directImg.size),
-                           operation: .sourceOver,
-                           fraction: 1.0)
-            newImg.unlockFocus()
-            return newImg
-        }
-        return nil
-    }
-    
-    var body: some View {
-        Group {
-            if let img = renderedImage {
-                Image(nsImage: img)
-                    .frame(width: size, height: size)
-                    .clipShape(RoundedRectangle(cornerRadius: 3, style: .continuous))
-            } else {
-                Image(systemName: "brain.head.profile")
-                    .font(.system(size: size * 0.7, weight: .bold))
-                    .foregroundColor(Color(hex: "#4D6BFE"))
-                    .frame(width: size, height: size)
-            }
-        }
-        .frame(width: size, height: size)
-    }
-}
 
 // MARK: - Circular Progress Ring Component (#3F7D35)
 
@@ -291,7 +193,6 @@ struct AntigravitySwitchingLoadingView: View {
 
 struct AIUsageView: View {
     @ObservedObject var usageManager = AntigravityUsageManager.shared
-    @ObservedObject var deepSeekManager = DeepSeekUsageManager.shared
     @ObservedObject var bridgeManager = AntigravityBridgeManager.shared
     @Default(.selectedAIAssistant) var selectedApp: String
     @State private var refreshAngle: Double = 0
@@ -303,14 +204,14 @@ struct AIUsageView: View {
     private var isChatGPT: Bool {
         selectedApp == "ChatGPT"
     }
-
-    private var isDeepSeek: Bool {
-        selectedApp == "DeepSeek"
-    }
     
+    private var isAppSwitching: Bool {
+        usageManager.isSwitching
+    }
+
     var body: some View {
         Group {
-            if usageManager.isSwitching || deepSeekManager.isSwitching {
+            if isAppSwitching {
                 AntigravitySwitchingLoadingView()
                     .transition(.opacity)
             } else {
@@ -318,17 +219,11 @@ struct AIUsageView: View {
                     // 1. Top Bar: App Switcher + Status / Email Switcher + Reload Button
                     topControlBar
 
-                    // 2. Main Content: Siri AI (AFM) View OR ChatGPT Pool OR DeepSeek View OR Disconnected View OR Active Live Cards
+                    // 2. Main Content: Siri AI (AFM) View OR ChatGPT Pool OR Disconnected View OR Active Live Cards
                     if isSiriAI {
                         siriAiSection
                     } else if isChatGPT {
                         ChatGPTAccountMonitorWidget()
-                    } else if isDeepSeek {
-                        if !deepSeekManager.isConnected {
-                            deepSeekDisconnectedCard
-                        } else {
-                            deepSeekSection
-                        }
                     } else if !usageManager.isConnected {
                         disconnectedCard
                     } else {
@@ -346,7 +241,12 @@ struct AIUsageView: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-        .animation(.easeInOut(duration: 0.35), value: usageManager.isSwitching || deepSeekManager.isSwitching)
+        .animation(.easeInOut(duration: 0.35), value: isAppSwitching)
+        .onAppear {
+            if selectedApp == "DeepSeek" {
+                selectedApp = "Antigravity"
+            }
+        }
     }
     
     // MARK: - Disconnected State View (No Fake Usage)
@@ -405,59 +305,6 @@ struct AIUsageView: View {
         .frame(height: 86)
     }
 
-    private var deepSeekDisconnectedCard: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .fill(
-                    LinearGradient(
-                        colors: [Color.black.opacity(0.75), Color.black.opacity(0.55)],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-                .shadow(color: Color.black.opacity(0.35), radius: 3, x: 0, y: 1.5)
-            
-            VStack(spacing: 6) {
-                HStack(spacing: 6) {
-                    Circle()
-                        .fill(Color.orange)
-                        .frame(width: 7, height: 7)
-                    
-                    Text("DeepSeek Belum Terhubung")
-                        .font(.system(size: 11, weight: .bold, design: .rounded))
-                        .foregroundColor(.white)
-                }
-                
-                Text("Buka aplikasi DeepSeek Harness untuk menyinkronkan akun & kuota secara langsung.")
-                    .font(.system(size: 9.5, weight: .medium, design: .rounded))
-                    .foregroundColor(.white.opacity(0.6))
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, 20)
-                
-                Button(action: {
-                    deepSeekManager.refresh()
-                }) {
-                    HStack(spacing: 4) {
-                        Image(systemName: "arrow.clockwise")
-                            .font(.system(size: 9, weight: .semibold))
-                        Text("Hubungkan Ulang")
-                            .font(.system(size: 9.5, weight: .bold, design: .rounded))
-                    }
-                    .foregroundColor(.white)
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 3.5)
-                    .background(
-                        RoundedRectangle(cornerRadius: 5, style: .continuous)
-                            .fill(Color.white.opacity(0.15))
-                    )
-                }
-                .buttonStyle(PlainButtonStyle())
-                .padding(.top, 2)
-            }
-            .padding(.vertical, 12)
-        }
-        .frame(height: 86)
-    }
     
     // MARK: - Top Control Bar
     
@@ -478,16 +325,6 @@ struct AIUsageView: View {
                         Label("Antigravity", systemImage: "checkmark")
                     } else {
                         Text("Antigravity")
-                    }
-                }
-                
-                Button(action: {
-                    selectedApp = "DeepSeek"
-                }) {
-                    if isDeepSeek {
-                        Label("DeepSeek", systemImage: "checkmark")
-                    } else {
-                        Text("DeepSeek")
                     }
                 }
 
@@ -526,8 +363,6 @@ struct AIUsageView: View {
                         Image(systemName: "cpu.fill")
                             .font(.system(size: 10, weight: .bold))
                             .foregroundColor(Color(hex: "#10A37F"))
-                    } else if isDeepSeek {
-                        DeepSeekIconView(size: 13)
                     } else {
                         AntigravityIconView(size: 13)
                     }
@@ -621,99 +456,7 @@ struct AIUsageView: View {
                 .menuStyle(BorderlessButtonMenuStyle())
                 .menuIndicator(.hidden)
                 .fixedSize()
-            } else if isDeepSeek {
-                let account = deepSeekManager.activeAccount
-                let hasProfiles = !deepSeekManager.accounts.isEmpty
-                let isCurrentSaved = deepSeekManager.accounts.contains(where: { $0.email.lowercased() == account.email.lowercased() })
-                
-                Menu {
-                    Text("Profil DeepSeek di Vault")
-                    
-                    if hasProfiles {
-                        ForEach(deepSeekManager.accounts) { acc in
-                            Button(action: {
-                                deepSeekManager.switchAccount(to: acc.id, autoRestart: true)
-                            }) {
-                                if acc.email.lowercased() == account.email.lowercased() {
-                                    Label(acc.email, systemImage: "checkmark.circle.fill")
-                                } else {
-                                    Label(acc.email, systemImage: "person.circle")
-                                }
-                            }
-                        }
-                        
-                        Divider()
-                        
-                        Menu("Hapus Profil") {
-                            ForEach(deepSeekManager.accounts) { acc in
-                                Button(role: .destructive, action: {
-                                    deepSeekManager.deleteProfile(email: acc.email)
-                                }) {
-                                    Label("Hapus \(acc.email)", systemImage: "trash")
-                                }
-                            }
-                            
-                            Divider()
-                            
-                            Button(role: .destructive, action: {
-                                deepSeekManager.deleteAllProfiles()
-                            }) {
-                                Label("Hapus Semua Profil", systemImage: "trash.fill")
-                            }
-                        }
-                    } else {
-                        Text("Belum ada profil tersimpan")
-                    }
-                    
-                    let needsTokenUpdate = isCurrentSaved && !deepSeekManager.currentProfileHasToken()
-                    if deepSeekManager.isConnected && !account.email.isEmpty && (!isCurrentSaved || needsTokenUpdate) {
-                        Divider()
-                        
-                        Button(action: {
-                            deepSeekManager.saveLiveDetectedProfile()
-                        }) {
-                            if needsTokenUpdate {
-                                Label("Update token \(account.email)", systemImage: "arrow.triangle.2.circlepath")
-                            } else {
-                                Label("Simpan \(account.email) ke Vault", systemImage: "square.and.arrow.down.fill")
-                            }
-                        }
-                    }
-                } label: {
-                    HStack(spacing: 3.5) {
-                        if !deepSeekManager.isConnected {
-                            Circle()
-                                .fill(Color.orange)
-                                .frame(width: 5, height: 5)
-                            
-                            Text("Belum Terhubung")
-                                .font(.system(size: 9.5, weight: .semibold, design: .rounded))
-                                .foregroundColor(.white.opacity(0.85))
-                        } else {
-                            Circle()
-                                .fill(Color.green)
-                                .frame(width: 5, height: 5)
-                            
-                            Text(account.email.isEmpty ? "DeepSeek" : account.email)
-                                .font(.system(size: 9.5, weight: .semibold, design: .rounded))
-                                .foregroundColor(.white)
-                                .lineLimit(1)
-                        }
-                        
-                        Image(systemName: "chevron.down")
-                            .font(.system(size: 6.5, weight: .semibold))
-                            .foregroundColor(.white.opacity(0.45))
-                    }
-                    .padding(.horizontal, 6)
-                    .padding(.vertical, 2.5)
-                    .background(
-                        RoundedRectangle(cornerRadius: 6, style: .continuous)
-                            .fill(Color.white.opacity(0.08))
-                    )
-                }
-                .menuStyle(BorderlessButtonMenuStyle())
-                .menuIndicator(.hidden)
-                .fixedSize()
+
             } else {
                 Menu {
                     Text("Profil Tersimpan di Vault")
@@ -807,7 +550,7 @@ struct AIUsageView: View {
             }
             
             // Transient status pill
-            if let status = (isDeepSeek ? deepSeekManager.statusMessage : usageManager.statusMessage) {
+            if let status = usageManager.statusMessage {
                 Text(status)
                     .font(.system(size: 8.5, weight: .medium, design: .rounded))
                     .foregroundColor(Color(red: 0.4, green: 0.85, blue: 1.0))
@@ -830,11 +573,7 @@ struct AIUsageView: View {
                 withAnimation(.easeInOut(duration: 0.6)) {
                     refreshAngle += 360
                 }
-                if isDeepSeek {
-                    deepSeekManager.refresh()
-                } else {
-                    usageManager.refresh()
-                }
+                usageManager.refresh()
             }) {
                 Image(systemName: "arrow.clockwise")
                     .font(.system(size: 9.5, weight: .semibold))
@@ -1303,229 +1042,6 @@ struct AIUsageView: View {
         }
     }
     
-    // MARK: - DeepSeek Section (Active Account & Best Backup Account)
-    
-    private var deepSeekSection: some View {
-        HStack(spacing: 16) {
-            deepSeekActiveCard
-            deepSeekBackupCard
-        }
-        .frame(maxWidth: .infinity)
-    }
-    
-    private var deepSeekActiveCard: some View {
-        let account = deepSeekManager.activeAccount
-        let avgUsage = (account.geminiWeeklyRemaining + account.geminiFiveHourRemaining) / 2.0
-        
-        return VStack(alignment: .leading, spacing: 5) {
-            HStack(spacing: 4) {
-                Text("Akun Aktif")
-                    .font(.system(size: 11, weight: .bold, design: .rounded))
-                    .foregroundColor(.white.opacity(0.9))
-                Text("· \(account.email.isEmpty ? "DeepSeek" : account.email)")
-                    .font(.system(size: 9.5, weight: .medium, design: .rounded))
-                    .foregroundColor(.white.opacity(0.50))
-                    .lineLimit(1)
-            }
-            .padding(.leading, 2)
-            
-            ZStack {
-                DeepSeekAmbianceView(usageLevel: avgUsage)
-                
-                RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .fill(
-                        LinearGradient(
-                            colors: [Color.black.opacity(0.75), Color.black.opacity(0.55)],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-                    .shadow(color: Color.black.opacity(0.35), radius: 3, x: 0, y: 1.5)
-                
-                VStack(spacing: 0) {
-                    // Row 1: Weekly Quota
-                    HStack(alignment: .center, spacing: 8) {
-                        VStack(alignment: .leading, spacing: 1.5) {
-                            Text("Weekly Limit Remaining")
-                                .font(.system(size: 10.5, weight: .semibold, design: .rounded))
-                                .foregroundColor(.white.opacity(0.95))
-                            
-                            Text(account.geminiWeeklyRefreshText == "Ready" ? "Full Quota Available" : "Refreshes in \(account.geminiWeeklyRefreshText)")
-                                .font(.system(size: 8.5, weight: .medium, design: .rounded))
-                                .foregroundColor(.white.opacity(0.48))
-                                .lineLimit(1)
-                        }
-                        
-                        Spacer(minLength: 2)
-                        
-                        HStack(spacing: 6) {
-                            Text("\(Int(account.geminiWeeklyRemaining * 100))%")
-                                .font(.system(size: 11, weight: .bold, design: .rounded))
-                                .foregroundColor(.white)
-                                .monospacedDigit()
-                            
-                            CircularRingView(
-                                progress: account.geminiWeeklyRemaining,
-                                size: 18,
-                                strokeWidth: 2.4
-                            )
-                        }
-                    }
-                    .padding(.horizontal, 10)
-                    .frame(maxHeight: .infinity)
-                    
-                    Rectangle()
-                        .fill(Color.white.opacity(0.08))
-                        .frame(height: 1)
-                    
-                    // Row 2: 5-Hour Quota
-                    HStack(alignment: .center, spacing: 8) {
-                        VStack(alignment: .leading, spacing: 1.5) {
-                            Text("Five Hour Limit Remaining")
-                                .font(.system(size: 10.5, weight: .semibold, design: .rounded))
-                                .foregroundColor(.white.opacity(0.95))
-                            
-                            Text(account.geminiFiveHourRefreshText == "Ready" || account.geminiFiveHourRemaining >= 1.0 ? "Full Quota Available" : "Refreshes in \(account.geminiFiveHourRefreshText)")
-                                .font(.system(size: 8.5, weight: .medium, design: .rounded))
-                                .foregroundColor(.white.opacity(0.48))
-                                .lineLimit(1)
-                        }
-                        
-                        Spacer(minLength: 2)
-                        
-                        HStack(spacing: 6) {
-                            Text("\(Int(account.geminiFiveHourRemaining * 100))%")
-                                .font(.system(size: 11, weight: .bold, design: .rounded))
-                                .foregroundColor(.white)
-                                .monospacedDigit()
-                            
-                            CircularRingView(
-                                progress: account.geminiFiveHourRemaining,
-                                size: 18,
-                                strokeWidth: 2.4
-                            )
-                        }
-                    }
-                    .padding(.horizontal, 10)
-                    .frame(maxHeight: .infinity)
-                }
-            }
-            .frame(height: 86)
-        }
-    }
-    
-    private var deepSeekBackupCard: some View {
-        let backup = deepSeekManager.bestBackupAccount
-        let avgUsage = backup?.score ?? 1.0
-        
-        return VStack(alignment: .leading, spacing: 5) {
-            HStack(spacing: 4) {
-                Text("Cadangan Terbaik")
-                    .font(.system(size: 11, weight: .bold, design: .rounded))
-                    .foregroundColor(.white.opacity(0.9))
-                Text("· \(backup?.email ?? "Tidak ada")")
-                    .font(.system(size: 9.5, weight: .medium, design: .rounded))
-                    .foregroundColor(.white.opacity(0.50))
-                    .lineLimit(1)
-            }
-            .padding(.leading, 2)
-            
-            ZStack {
-                DeepSeekAmbianceView(usageLevel: avgUsage)
-                
-                RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .fill(
-                        LinearGradient(
-                            colors: [Color.black.opacity(0.75), Color.black.opacity(0.55)],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-                    .shadow(color: Color.black.opacity(0.35), radius: 3, x: 0, y: 1.5)
-                
-                if let b = backup {
-                    VStack(spacing: 0) {
-                        // Row 1: Weekly Quota
-                        HStack(alignment: .center, spacing: 8) {
-                            VStack(alignment: .leading, spacing: 1.5) {
-                                Text("Weekly Limit Remaining")
-                                    .font(.system(size: 10.5, weight: .semibold, design: .rounded))
-                                    .foregroundColor(.white.opacity(0.95))
-                                
-                                Text(b.geminiWeeklyRefreshText == "Ready" ? "Full Quota Available" : "Refreshes in \(b.geminiWeeklyRefreshText)")
-                                    .font(.system(size: 8.5, weight: .medium, design: .rounded))
-                                    .foregroundColor(.white.opacity(0.48))
-                                    .lineLimit(1)
-                            }
-                            
-                            Spacer(minLength: 2)
-                            
-                            HStack(spacing: 6) {
-                                Text("\(Int(b.geminiWeeklyRemaining * 100))%")
-                                    .font(.system(size: 11, weight: .bold, design: .rounded))
-                                    .foregroundColor(.white)
-                                    .monospacedDigit()
-                                
-                                CircularRingView(
-                                    progress: b.geminiWeeklyRemaining,
-                                    size: 18,
-                                    strokeWidth: 2.4
-                                )
-                            }
-                        }
-                        .padding(.horizontal, 10)
-                        .frame(maxHeight: .infinity)
-                        
-                        Rectangle()
-                            .fill(Color.white.opacity(0.08))
-                            .frame(height: 1)
-                        
-                        // Row 2: 5-Hour Quota
-                        HStack(alignment: .center, spacing: 8) {
-                            VStack(alignment: .leading, spacing: 1.5) {
-                                Text("Five Hour Limit Remaining")
-                                    .font(.system(size: 10.5, weight: .semibold, design: .rounded))
-                                    .foregroundColor(.white.opacity(0.95))
-                                
-                                Text(b.geminiFiveHourRefreshText == "Ready" || b.geminiFiveHourRemaining >= 1.0 ? "Full Quota Available" : "Refreshes in \(b.geminiFiveHourRefreshText)")
-                                    .font(.system(size: 8.5, weight: .medium, design: .rounded))
-                                    .foregroundColor(.white.opacity(0.48))
-                                    .lineLimit(1)
-                            }
-                            
-                            Spacer(minLength: 2)
-                            
-                            HStack(spacing: 6) {
-                                Text("\(Int(b.geminiFiveHourRemaining * 100))%")
-                                    .font(.system(size: 11, weight: .bold, design: .rounded))
-                                    .foregroundColor(.white)
-                                    .monospacedDigit()
-                                
-                                CircularRingView(
-                                    progress: b.geminiFiveHourRemaining,
-                                    size: 18,
-                                    strokeWidth: 2.4
-                                )
-                            }
-                        }
-                        .padding(.horizontal, 10)
-                        .frame(maxHeight: .infinity)
-                    }
-                } else {
-                    VStack(spacing: 4) {
-                        Text("Belum ada akun cadangan")
-                            .font(.system(size: 10.5, weight: .semibold, design: .rounded))
-                            .foregroundColor(.white.opacity(0.85))
-                        Text("Simpan profil tambahan di Vault")
-                            .font(.system(size: 8.5, weight: .medium, design: .rounded))
-                            .foregroundColor(.white.opacity(0.50))
-                    }
-                    .frame(maxHeight: .infinity)
-                }
-            }
-            .frame(height: 86)
-        }
-    }
 
     // MARK: - Gemini Models Section
     

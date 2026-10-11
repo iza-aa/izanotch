@@ -201,6 +201,23 @@ public final class ComputerUsePhysicalExecutor {
         let downType: CGEventType = (button == .right) ? .rightMouseDown : .leftMouseDown
         let upType: CGEventType = (button == .right) ? .rightMouseUp : .leftMouseUp
 
+        if MascotVirtualDesktopService.shared.isVirtualDisplayActive {
+            if let pid = MascotVirtualDesktopService.shared.currentAppPid {
+                for i in 1...clickCount {
+                    let downEvent = CGEvent(mouseEventSource: source, mouseType: downType, mouseCursorPosition: point, mouseButton: button)
+                    downEvent?.setIntegerValueField(.mouseEventClickState, value: Int64(i))
+                    downEvent?.postToPid(pid)
+                    usleep(30000)
+
+                    let upEvent = CGEvent(mouseEventSource: source, mouseType: upType, mouseCursorPosition: point, mouseButton: button)
+                    upEvent?.setIntegerValueField(.mouseEventClickState, value: Int64(i))
+                    upEvent?.postToPid(pid)
+                    usleep(35000)
+                }
+            }
+            return
+        }
+
         // Move system cursor
         let moveEvent = CGEvent(mouseEventSource: source, mouseType: .mouseMoved, mouseCursorPosition: point, mouseButton: button)
         moveEvent?.post(tap: .cghidEventTap)
@@ -233,6 +250,30 @@ public final class ComputerUsePhysicalExecutor {
 
         ClickyLogger.info("[PHYSICAL_EXEC]", "Typing text: '\(text)' (autoSendReturn: \(autoSendReturn))")
 
+        if MascotVirtualDesktopService.shared.isVirtualDisplayActive {
+            if let pid = MascotVirtualDesktopService.shared.currentAppPid {
+                for character in text {
+                    var unicharArray = Array(String(character).utf16)
+                    guard let keyDown = CGEvent(keyboardEventSource: source, virtualKey: 0, keyDown: true),
+                          let keyUp = CGEvent(keyboardEventSource: source, virtualKey: 0, keyDown: false) else { continue }
+
+                    keyDown.keyboardSetUnicodeString(stringLength: unicharArray.count, unicodeString: &unicharArray)
+                    keyUp.keyboardSetUnicodeString(stringLength: unicharArray.count, unicodeString: &unicharArray)
+
+                    keyDown.postToPid(pid)
+                    usleep(delayDown)
+                    keyUp.postToPid(pid)
+                    usleep(delayUp)
+                }
+
+                if autoSendReturn {
+                    usleep(250000)
+                    executeRawKey(key: 0x24, flags: []) // Return key
+                }
+            }
+            return
+        }
+
         for character in text {
             var unicharArray = Array(String(character).utf16)
             guard let keyDown = CGEvent(keyboardEventSource: source, virtualKey: 0, keyDown: true),
@@ -246,7 +287,6 @@ public final class ComputerUsePhysicalExecutor {
             keyUp.post(tap: .cghidEventTap)
             usleep(delayUp)
         }
-
         if autoSendReturn {
             // Jeda 250ms agar input field menyelesaikan pemrosesan teks sebelum commit
             usleep(250000)
@@ -425,6 +465,20 @@ public final class ComputerUsePhysicalExecutor {
     }
 
     public func executeRawKey(key: CGKeyCode, flags: CGEventFlags) {
+        if MascotVirtualDesktopService.shared.isVirtualDisplayActive {
+            if let pid = MascotVirtualDesktopService.shared.currentAppPid {
+                let source = CGEventSource(stateID: .hidSystemState)
+                let keyDown = CGEvent(keyboardEventSource: source, virtualKey: key, keyDown: true)
+                keyDown?.flags = flags
+                let keyUp = CGEvent(keyboardEventSource: source, virtualKey: key, keyDown: false)
+                keyUp?.flags = flags
+                keyDown?.postToPid(pid)
+                usleep(25000)
+                keyUp?.postToPid(pid)
+            }
+            return
+        }
+
         let source = CGEventSource(stateID: .hidSystemState)
         let keyDown = CGEvent(keyboardEventSource: source, virtualKey: key, keyDown: true)
         keyDown?.flags = flags

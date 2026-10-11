@@ -24,35 +24,63 @@ public final class CompanionVMViewportController: NSObject, ObservableObject, WK
     @Published public var isLoading: Bool = false
     @Published public var vmCursorPosition: CGPoint = CGPoint(x: 350, y: 220)
     @Published public var isClicking: Bool = false
-    @Published public var isTakeoverActive: Bool = false
+    @Published public var isTakeoverActive: Bool = false {
+        didSet {
+            guard oldValue != isTakeoverActive else { return }
+            handleTakeoverStateChange()
+        }
+    }
     @Published public var requiresLoginTakeover: Bool = false
     @Published public var currentApp: String = "mail" // "mail", "safari"
-    @Published public var mailProvider: String = "icloud" // "icloud", "gmail", "outlook"
+    @Published public var mailProvider: String = "gmail" // "gmail", "outlook", "icloud"
 
     public private(set) var webView: WKWebView?
+    public weak var viewportContainer: NSView? = nil
     private var currentSlug: String = "inbox-buddy"
 
     public override init() {
         super.init()
     }
 
+    public func handleTakeoverStateChange() {
+        if isTakeoverActive {
+            let win = self.webView?.window ?? HomeSpaceWindowManager.shared.window ?? NSApp.keyWindow
+            if let win = win, let wv = self.webView {
+                win.makeKeyAndOrderFront(nil)
+                NSApp.activate(ignoringOtherApps: true)
+                let shifted = win.makeFirstResponder(wv)
+                ClickyLogger.info("[TAKEOVER]", "First responder shifted to WKWebView: success=\(shifted), window='\(win.title)'")
+            } else {
+                ClickyLogger.warning("[TAKEOVER]", "Cannot shift first responder: webView or window is nil.")
+            }
+        } else {
+            let win = self.webView?.window ?? HomeSpaceWindowManager.shared.window ?? NSApp.keyWindow
+            if let win = win, let wv = self.webView, win.firstResponder == wv {
+                win.makeFirstResponder(nil)
+                ClickyLogger.info("[TAKEOVER]", "First responder resigned from WKWebView.")
+            }
+        }
+    }
     // MARK: - Viewport Lifecycle & App Loading
-    public func prepareViewport(slug: String, app: String) {
+    public func prepareViewport(slug: String, app: String, prompt: String? = nil) {
         self.currentSlug = slug
         self.currentApp = app.lowercased()
-
+        if self.currentApp == "mail" {
+            self.mailProvider = Self.resolveMailProvider(for: slug, prompt: prompt)
+        }
         if webView == nil {
             let config = WKWebViewConfiguration()
-            // Persistent storage so logins, cookies, and tokens persist between sessions
             config.websiteDataStore = WKWebsiteDataStore.default()
-            config.preferences.javaScriptEnabled = true
+            config.defaultWebpagePreferences.allowsContentJavaScript = true
             
-            let wv = WKWebView(frame: CGRect(x: 0, y: 0, width: 700, height: 380), configuration: config)
+            // Desktop-first layout: width >= 1024
+            let wv = WKWebView(frame: CGRect(x: 0, y: 0, width: 1024, height: 640), configuration: config)
+            wv.customUserAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.3 Safari/605.1.15"
             wv.navigationDelegate = self
             wv.uiDelegate = self
             wv.setValue(false, forKey: "drawsBackground") // dark native feel
             self.webView = wv
-            ClickyLogger.info("[VM_VIEWPORT]", "Initialized WebKit runtime for companion: \(slug)")
+            ClickyLogger.info("[VM_VIEWPORT]", "Initialized WebKit runtime for companion: \(slug) (desktop-first user agent & 1024 layout)")
         }
 
         if self.currentApp == "mail" {
@@ -69,21 +97,44 @@ public final class CompanionVMViewportController: NSObject, ObservableObject, WK
 
     public func loadMailApp() {
         guard let wv = webView else { return }
-        let targetUrl: URL
-        switch mailProvider {
-        case "gmail":
-            targetUrl = URL(string: "https://mail.google.com")!
-        case "outlook":
-            targetUrl = URL(string: "https://outlook.live.com/mail/")!
-        default: // icloud
-            targetUrl = URL(string: "https://www.icloud.com/mail")!
+        let adapter = WebSiteAdapterRegistry.shared.adapter(forProviderId: mailProvider)
+        let targetUrl = adapter.entryURL
+
+        // If webView is already navigated to this domain, do not force reload to preserve authenticated session
+        if let currentHost = wv.url?.host?.lowercased(), let targetHost = targetUrl.host?.lowercased(),
+           (currentHost.contains(targetHost) || targetHost.contains(currentHost)) {
+            ClickyLogger.info("[VM_VIEWPORT]", "WebView already on domain '\(currentHost)'; preserving active session without reloading.")
+            return
         }
+
         self.currentUrlString = targetUrl.absoluteString
-        self.pageTitle = "\(mailProvider.capitalized) Mail"
+        self.pageTitle = adapter.name
         wv.load(URLRequest(url: targetUrl))
         ClickyLogger.info("[VM_VIEWPORT]", "Loading real Mail interface: \(targetUrl.absoluteString)")
     }
 
+    /// Resolves webmail provider dynamically via unified WebSiteAdapterRegistry (Zero Hardcoding).
+    public static func resolveMailProvider(for companionSlug: String? = nil, prompt: String? = nil) -> String {
+        let companionDomains: String = {
+            if let slug = companionSlug,
+               let companion = CompanionRosterStore.shared.allCompanions.first(where: { $0.slug == slug }) {
+                return companion.allowedSafariDomains.joined(separator: " ")
+            }
+            return ""
+        }()
+        let query = "\(prompt ?? "") \(companionDomains) \(companionSlug ?? "")"
+        return WebSiteAdapterRegistry.shared.adapter(forEmailOrDomain: query).id
+    }
+
+    // MARK: - Desktop-First Viewport Layout & Zoom
+
+    public func updateViewportLayout(width: CGFloat, height: CGFloat, isModal: Bool = false) {
+        guard let wv = webView else { return }
+        let targetWidth = max(width, 1024.0)
+        let zoom: CGFloat = isModal ? 1.0 : (width < 1024.0 ? max(width / 1024.0, 0.65) : 1.0)
+        wv.pageZoom = zoom
+        ClickyLogger.info("[WEB_VIEWPORT]", "Relayout triggered: container=(\(Int(width))x\(Int(height))), layoutWidth=\(Int(targetWidth)), zoom=\(String(format: "%.2f", zoom)), isModal=\(isModal)")
+    }
     public func loadSafariApp(urlString: String = "https://www.google.com") {
         guard let wv = webView else { return }
         guard let url = URL(string: urlString.hasPrefix("http") ? urlString : "https://\(urlString)") else { return }

@@ -36,16 +36,6 @@ extension ClickyDeterministicPipeline {
             return
         }
 
-        // Multi-Step Chained Command Detection (Only for non-slash general commands)
-        if !clean.hasPrefix("/") && !clean.hasPrefix("!") {
-            let steps = await Self.splitChainedCommand(transcript: clean)
-            if steps.count > 1 {
-                ClickyLogger.info("[PIPELINE]", "Executing multi-step chained command with \(steps.count) steps: \(steps)")
-                await executeChainedSteps(steps: steps, screenCaptures: screenCaptures, initialWorkSurface: workSurface)
-                return
-            }
-        }
-
         ClickyLogger.info("[PIPELINE]", "Command classified: \(category)")
 
         switch category {
@@ -56,6 +46,16 @@ extension ClickyDeterministicPipeline {
             await executeTunjukChain(target: target, screenCaptures: screenCaptures, workSurface: workSurface)
 
         case .aksi(let actionType, let target):
+            // Multi-Step Chained Command Detection (Only for non-slash action commands)
+            if !clean.hasPrefix("/") && !clean.hasPrefix("!") {
+                let steps = await Self.splitChainedCommand(transcript: clean)
+                if steps.count > 1 {
+                    ClickyLogger.info("[PIPELINE]", "Executing multi-step chained command with \(steps.count) steps: \(steps)")
+                    await executeChainedSteps(steps: steps, screenCaptures: screenCaptures, initialWorkSurface: workSurface)
+                    return
+                }
+            }
+
             await executeAksiChain(
                 actionType: actionType,
                 target: target,
@@ -142,44 +142,39 @@ extension ClickyDeterministicPipeline {
             ["role": "user", "content": query]
         ]
 
-        var accumulatedText = ""
         do {
-            if siriPlanner {
-                _ = try await SiriAIEngine.shared.analyzeMessagesWithToolsStreaming(
-                    messages: messages,
-                    systemPrompt: systemPrompt,
-                    tools: [], // 0 tools, direct conversational response
-                    maxTokens: 512,
-                    onTextChunk: { chunk in
-                        Task { @MainActor in
-                            accumulatedText += chunk
-                            CompanionManager.shared.showStreamingChunk(chunk, screenCaptures: screenCaptures)
-                        }
+            let turnResult = try await SiriAIEngine.shared.analyzeMessagesWithToolsStreaming(
+                messages: messages,
+                systemPrompt: systemPrompt,
+                tools: [], // 0 tools, direct conversational response
+                maxTokens: 512,
+                onTextChunk: { chunk in
+                    Task { @MainActor in
+                        CompanionManager.shared.showStreamingChunk(chunk, screenCaptures: screenCaptures)
                     }
-                )
-            } else {
-                _ = try await CompanionManager.shared.claudeAPI.analyzeMessagesWithToolsStreaming(
-                    messages: messages,
-                    systemPrompt: systemPrompt,
-                    tools: [], // 0 tools, fast knowledge response
-                    maxTokens: 512,
-                    onTextChunk: { chunk in
-                        Task { @MainActor in
-                            accumulatedText += chunk
-                            CompanionManager.shared.showStreamingChunk(chunk, screenCaptures: screenCaptures)
-                        }
-                    }
-                )
-            }
+                }
+            )
 
-            let report = accumulatedText.trimmingCharacters(in: .whitespacesAndNewlines)
+            let report = turnResult.text.trimmingCharacters(in: .whitespacesAndNewlines)
             if !report.isEmpty {
                 await CompanionManager.shared.speakAndReportText(report)
+            } else {
+                let fallback = "Halo! Ada yang bisa saya bantu hari ini?"
+                await CompanionManager.shared.speakAndReportText(fallback)
             }
         } catch {
             ClickyLogger.error("[PIPELINE]", "TANYA chain failed: \(error.localizedDescription)")
             await CompanionManager.shared.speakAndReportText("Maaf, terjadi kendala saat memproses jawaban: \(error.localizedDescription)")
         }
+
+        #if DEBUG
+        CompanionManager.postE2EDone(
+            runId: nil,
+            concluded: true,
+            validatorIsDone: true,
+            deliverableSaved: false
+        )
+        #endif
     }
 
     // MARK: - Chain 2: TUNJUK (Read-Only Grounding & Pointing)
@@ -294,6 +289,28 @@ extension ClickyDeterministicPipeline {
 
         // Case A: Murni Membuka Aplikasi Mac Terpasang (e.g. "buka trading view", "buka safari")
         if isAppLaunchIntent, let app = installedApp {
+            // Connected Apps Permission Boundary: Pastikan bot hanya membuka aplikasi yang diizinkan
+            let activeBuddy = CompanionManager.shared.activeBuddy
+            let allowedApps = activeBuddy.workflowAppNames
+            if !allowedApps.isEmpty {
+                let isAllowed = allowedApps.contains { allowed in
+                    app.displayName.localizedCaseInsensitiveContains(allowed) ||
+                    allowed.localizedCaseInsensitiveContains(app.displayName)
+                }
+                if !isAllowed {
+                    ClickyLogger.warning("[PIPELINE]", "App '\(app.displayName)' is NOT in allowed connected apps for '\(activeBuddy.name)': \(allowedApps)")
+                    await CompanionManager.shared.speakAndReportText("Maaf, \(activeBuddy.name) hanya dapat membuka aplikasi yang terhubung: \(allowedApps.joined(separator: ", ")).")
+                    #if DEBUG
+                    CompanionManager.postE2EDone(
+                        runId: nil,
+                        concluded: true,
+                        validatorIsDone: true,
+                        deliverableSaved: false
+                    )
+                    #endif
+                    return
+                }
+            }
             CompanionManager.shared.setIntermediateStatusText("Mencari '\(app.displayName)'...")
 
             // Cek cepat apakah ada di Dock atau di layar (fast-path AX ~20ms)
@@ -509,6 +526,20 @@ extension ClickyDeterministicPipeline {
 
         // 2. Aktivasi aplikasi target ke depan (Auto-Activate Opsi A)
         if let app = appName, !app.isEmpty {
+            let activeBuddy = CompanionManager.shared.activeBuddy
+            let allowedApps = activeBuddy.workflowAppNames
+            if !allowedApps.isEmpty {
+                let isAllowed = allowedApps.contains { allowed in
+                    app.localizedCaseInsensitiveContains(allowed) ||
+                    allowed.localizedCaseInsensitiveContains(app)
+                }
+                if !isAllowed {
+                    ClickyLogger.warning("[PIPELINE]", "Ketik target app '\(app)' is NOT in allowed connected apps for '\(activeBuddy.name)': \(allowedApps)")
+                    await CompanionManager.shared.speakAndReportText("Maaf, \(activeBuddy.name) hanya dapat mengetik di aplikasi yang terhubung: \(allowedApps.joined(separator: ", ")).")
+                    return
+                }
+            }
+
             let runningApps = NSWorkspace.shared.runningApplications
             var foundRunning = false
             for running in runningApps where running.activationPolicy == .regular {

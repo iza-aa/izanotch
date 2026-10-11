@@ -411,7 +411,7 @@ public final class ClickyDeterministicPipeline: ObservableObject {
         }
 
         // Jika jumlah bagian sebelum filter > jumlah bagian yang lolos, artinya ada segmen bermakna yang hilang (lossy)
-        let isLossy = rawParts.count > filtered.count
+        let isLossy = !filtered.isEmpty && rawParts.count > filtered.count
         return (filtered, isLossy)
     }
 

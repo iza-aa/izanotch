@@ -140,20 +140,37 @@ final class CompanionManager: ObservableObject {
         streamingResponseText
     }
 
-    /// Google Gemini AI client that communicates with the local Antigravity Gemini bridge by default
-    lazy var geminiClient: GeminiBridgeClient = {
-        let bridgePort = Defaults[.antigravityBridgePort] > 0 ? Defaults[.antigravityBridgePort] : 8080
-        return GeminiBridgeClient(proxyURL: "http://127.0.0.1:\(bridgePort)/v1/messages", model: selectedModel)
-    }()
-
-    var claudeAPI: GeminiBridgeClient {
-        geminiClient
+    /// On-Device Apple Foundation Models engine (replaces legacy cloud APIs)
+    var claudeAPI: SiriAIEngine {
+        SiriAIEngine.shared
     }
 
     lazy var elevenLabsTTSClient: ElevenLabsTTSClient = {
         return ElevenLabsTTSClient(proxyURL: "https://your-worker-name.your-subdomain.workers.dev/tts")
     }()
 
+    #if DEBUG
+    // TASK-044 Ground-Truth Oracle E2E Reporting Contract
+    public var activeE2ERunId: String? = nil
+    public static func postE2EDone(runId: String? = nil, concluded: Bool, validatorIsDone: Bool, deliverableSaved: Bool) {
+        let rId = runId ?? CompanionManager.shared.activeE2ERunId
+        guard let resolvedRunId = rId else { return }
+        let info: [String: Any] = [
+            "runId": resolvedRunId,
+            "concluded": concluded,
+            "validatorIsDone": validatorIsDone,
+            "deliverableSaved": deliverableSaved
+        ]
+        DistributedNotificationCenter.default().postNotificationName(
+            NSNotification.Name("iza.e2e.done"),
+            object: nil,
+            userInfo: info,
+            deliverImmediately: true
+        )
+        ClickyLogger.info("[E2E_IPC]", "Posted iza.e2e.done: runId=\(resolvedRunId), concluded=\(concluded), isDone=\(validatorIsDone), deliverable=\(deliverableSaved)")
+        CompanionManager.shared.activeE2ERunId = nil
+    }
+    #endif
     /// Conversation history so Claude remembers prior exchanges within a session.
     /// Each entry is the user's transcript, the stripped spoken text, and the raw response
     /// (preserving [POINT:x,y:label] tags) so subsequent turns can imitate the tag format.

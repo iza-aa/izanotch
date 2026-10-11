@@ -33,7 +33,7 @@ public struct GeneralValidationPolicy: ValidationPolicy {
         You are an on-device AFM State Validator for \(appName).
         Evaluate whether the user goal has been accomplished based on observation and executed steps.
         Output ONLY a valid JSON object matching this schema:
-        {"isDone":true,"requiresTakeover":false,"systemState":"brief state summary","extractedData":"factual data extracted"}
+        {"isDone":true,"requiresTakeover":false,"systemState":"<factual_state_summary>","extractedData":"<extracted_content_summary>"}
         """
     }
 }

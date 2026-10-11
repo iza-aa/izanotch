@@ -55,18 +55,28 @@ public final class AFMLunaCoordinationBridge: @unchecked Sendable {
         snapshotPath: String,
         targetElement: String,
         subGoal: String,
-        pid: pid_t?
+        pid: pid_t?,
+        actionType: String? = nil
     ) async -> LunaPerceptionResult? {
         // Fast-path: Quick bounded AXUIElement check (1.2s timeout)
         if let pid = pid, pid > 0 {
-            if let axPoint = await ClickyHybridGroundingEngine.shared.locateViaAXUIElementAsync(pid: pid, targetQuery: targetElement, timeoutSeconds: 1.2) {
+            if let axPoint = await ClickyHybridGroundingEngine.shared.locateViaAXUIElementAsync(
+                pid: pid,
+                targetQuery: targetElement,
+                actionType: actionType,
+                timeoutSeconds: 1.2
+            ) {
                 ClickyLogger.info("[LUNA_PERCEPTION]", "Resolved '\(targetElement)' via Fast-Path AX at (\(Int(axPoint.x)), \(Int(axPoint.y)))")
                 return LunaPerceptionResult(targetElement: targetElement, coordinate: axPoint, confidence: 1.0, sourceMethod: "AXUIElement")
             }
         }
         
-        // Primary Vision: 6 Luna Medium Headless Vision VM
+        // Primary Vision: 6 Luna Medium Headless Vision VM (Bypassed if infrastructure incident active)
         if FileManager.default.fileExists(atPath: snapshotPath) {
+            guard await ChatGPTCodexVisionService.shared.isVisionServiceHealthy else {
+                ClickyLogger.warning("[LUNA_PERCEPTION]", "Skipping Luna: Vision infrastructure flagged unhealthy. Fast-path failover active.")
+                return nil
+            }
             do {
                 ClickyLogger.info("[LUNA_PERCEPTION]", "Consulting 6 Luna Medium Vision for: '\(targetElement)' (Sub-goal: \(subGoal))...")
                 let codexHome = await ChatGPTAccountPoolManager.shared.getActiveCodexHome()

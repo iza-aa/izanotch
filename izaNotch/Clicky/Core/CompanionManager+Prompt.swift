@@ -64,9 +64,6 @@ extension CompanionManager {
         TARGET: <compact English referring expression, max ~12 words: object + strong visual cue + short position>
         Example: "TARGET: blue outlined text field at bottom".
         Then write one natural spoken sentence for TTS on the next line.
-        FORBIDDEN in your output: [POINT:...], [BOX:...], [TARGET:...:...], [CANDIDATE:...], any x/y numbers, any numbered-mark ids.
-        There are NO numbered marks on the screenshot. NEVER invent bracket tags.
-        (Legacy bracket tags are parsed passively for old logs/debug only.)
         If pointing wouldn't help or is irrelevant, do NOT include any TARGET line.
 
         running GUI applications on this Mac:
@@ -80,6 +77,7 @@ extension CompanionManager {
 
         var companionIdentityContext = ""
         var hasLoadedSpec = false
+        var isTradingSpecialized = false
         if let b = buddy {
             // Resolve companion slug and load corresponding markdown specification from ~/.izanotchy/companions/<slug>/persona.md
             let slug = CompanionRosterStore.shared.allCompanions.first(where: { $0.id == b.id })?.slug
@@ -159,11 +157,11 @@ extension CompanionManager {
                 """
             }
 
-            let isFuturesScout = b.name.localizedCaseInsensitiveContains("Futures") ||
-                                 b.roleDescription.localizedCaseInsensitiveContains("Futures") ||
-                                 b.roleDescription.localizedCaseInsensitiveContains("Analyst") ||
-                                 b.roleDescription.localizedCaseInsensitiveContains("Trading")
-            if isFuturesScout {
+            isTradingSpecialized = b.name.localizedCaseInsensitiveContains("Futures") ||
+                                   b.roleDescription.localizedCaseInsensitiveContains("Futures") ||
+                                   b.roleDescription.localizedCaseInsensitiveContains("Analyst") ||
+                                   b.roleDescription.localizedCaseInsensitiveContains("Trading")
+            if isTradingSpecialized {
                 companionIdentityContext += """
 
                 SPECIALIZATION — FUTURES ANALYST & TRADINGVIEW EXPERT:
@@ -229,11 +227,11 @@ extension CompanionManager {
         if pointing wouldn't help or is irrelevant, do NOT include any TARGET line.
         CRITICAL: NEVER include any TARGET line for casual greetings (e.g. "Halo", "Hai", "Apa kabar"), general chit-chat, code explanations, or general Q&A!
         NEVER tell the user to close a window unless the user specifically and explicitly asked to close/quit it!
-        \(Self.buildComputerUsePrompt(isPreApproved: isPreApproved, isSiriAIPlannerPath: isSiriAIPlannerPath))
+        \(Self.buildComputerUsePrompt(isPreApproved: isPreApproved, isSiriAIPlannerPath: isSiriAIPlannerPath, isTradingSpecialized: isTradingSpecialized))
         """
     }
 
-    static func buildComputerUsePrompt(isPreApproved: Bool = false, isSiriAIPlannerPath: Bool = false) -> String {
+    static func buildComputerUsePrompt(isPreApproved: Bool = false, isSiriAIPlannerPath: Bool = false, isTradingSpecialized: Bool = false) -> String {
         // Opsi D Fase 2 diet: path Siri (isSiriAI) adalah planner-only — SiriAIEngine
         // tidak pernah mengirim tools (toolCalls selalu []). Blok 56-tools +
         // tvActions (~90 baris) hanya membebani konteks on-device (TN3193).
@@ -248,7 +246,7 @@ extension CompanionManager {
             """
         }
         let isFullAccess = Defaults[.alwaysAllowComputerUse] || isPreApproved
-        let tvActionsDesc = """
+        let tvActionsDesc = isTradingSpecialized ? """
         TradingView Automation Actions (Zero Tool Limitation):
         You have direct autonomous control over TradingView.app via the following specialized tags:
         - Auto-Fit / Reset Price Scale: [ACTION:tv_reset_scale] (instantly un-squashes candles so chart is full-height and readable via ⌥+R)
@@ -266,7 +264,7 @@ extension CompanionManager {
         - Dynamic Pine Script v5 (Tier 4 Compiler & Auto-Injector): [ACTION:tv_pine:<pinescript_code>]
           Use this to inject full Pine Script v5 code (overlay=true) via Pine Editor to plot mathematically precise levels, order blocks, or custom strategies directly onto the chart!
         - Clear Chart Drawings: [ACTION:tv_clear:all:clear drawings]
-        """
+        """ : ""
 
         let universalDirectives = """
         ⚠️ CRITICAL CUA-DRIVER RULES — Read these FIRST before any action:
@@ -294,18 +292,9 @@ extension CompanionManager {
         When the user asks you to interact with an application (e.g. close/quit Safari, Terminal, Chrome, click on UI, type, inspect windows):
         ALWAYS INVOKE NATIVE TOOLS DIRECTLY. Do NOT output raw text action tags like [ACTION:...] or <COMPUTER_USE_REQUEST> blocks.
 
-        1. APP TERMINATION & CLOSING (SMART HYBRID CONTRACT — OPTION 3):
-          - Step 1: Call `list_apps` to locate the target application and obtain its PID.
-          - Step 2: Call `list_windows(pid: <pid>)` to check if the target app has an on-screen window on the active display.
-          - Step 3 (SMART HYBRID EXECUTION):
-            * ROUTE A (ON-SCREEN VISIBLE WINDOW): If `list_windows` returns a window with `is_on_screen: true` and valid `bounds`:
-              - Compute the macOS red close button coordinate: (bounds.origin.x + 14, bounds.origin.y + 14).
-              - Call `move_cursor(x: bounds.origin.x + 14, y: bounds.origin.y + 14)` so the agent cursor glides directly to the close button, then call `click(pid: <pid>, x: 14, y: 14, delivery_mode: "foreground", window_id: <wid>)` or `kill_app(pid: <pid>)`.
-            * ROUTE B (BACKGROUND / MINIMIZED / NO VISIBLE WINDOW):
-              - Do NOT call `move_cursor`! NEVER move the cursor to the screen center (e.g. 640, 400)!
-              - Call `kill_app(pid: <pid>)` immediately and deterministically.
-          - Step 4: After closing the app, provide a brief 1-sentence confirmation (e.g. "Terminal berhasil saya tutup.").
-          - ZERO POINTLESS MOVEMENTS RULE: NEVER call `move_cursor` to the center of the screen (e.g. 640, 400 or 756, 491) or into empty space! Only move the cursor when pointing at a real, concrete UI element (like a close button, menu, or drawing canvas).
+        1. APP TERMINATION & CLOSING:
+          - To close or quit an application, call `kill_app(pid: <pid>)` or click its close button when visible.
+          - After closing the app, provide a brief 1-sentence confirmation (e.g. "Terminal berhasil saya tutup.").
 
         2. CLICKING, DRAWING & INTERACTING (PHYSICAL CUA DRIVER ACTIONS):
           - For UI interactions or drawing tasks (like AutoDraw), call `move_cursor` or `drag` with the real, concrete coordinates on screen.

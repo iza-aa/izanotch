@@ -20,6 +20,7 @@ public final class MascotVirtualDesktopService: ObservableObject {
     @Published public private(set) var currentAppPid: pid_t?
     @Published public var currentWindowBounds: CGRect? = nil
     @Published public var virtualReticle: CGPoint = CGPoint(x: 0.5, y: 0.5) // Normalized (0...1, 0...1)
+    @Published public var isReticleVisible: Bool = false
     @Published public var isClickingReticle: Bool = false
     @Published public var isHumanTakeoverActive: Bool = false
     @Published public private(set) var isStreaming: Bool = false
@@ -127,17 +128,18 @@ public final class MascotVirtualDesktopService: ObservableObject {
         self.virtualDisplayObj = display
         self.displayID = dID
         
-        let screens = NSScreen.screens
-        if let vmScreen = screens.first(where: {
-            $0.localizedName.contains("VM") ||
-            $0.localizedName.contains("Izanotchy") ||
-            ($0.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? CGDirectDisplayID) == dID
-        }) {
-            self.displayBounds = vmScreen.frame
-        } else {
-            let b = CGDisplayBounds(dID)
-            self.displayBounds = b.width > 0 ? b : CGRect(x: 1512, y: 0, width: 1920, height: 1080)
-        }
+        // Quartz WindowServer Coordinate System:
+        // Native window bounds in AppleScript and WindowServer require CGDisplayBounds (Y=0 is top-left).
+        // NSScreen.frame uses Cocoa coordinates (Y=0 at bottom-left), which produces negative Y values (-98.0)
+        // that AppleScript rejects and WindowServer clamps back to the primary host display!
+        let qBounds = CGDisplayBounds(dID)
+        let validQBounds = qBounds.width > 0 ? qBounds : CGRect(x: 1512, y: 0, width: 1920, height: 1080)
+        self.displayBounds = CGRect(
+            x: validQBounds.origin.x > 0 ? validQBounds.origin.x : 1512.0,
+            y: max(validQBounds.origin.y, 0.0),
+            width: validQBounds.width,
+            height: validQBounds.height
+        )
         self.isVirtualDisplayActive = true
 
         ClickyLogger.info("[VIRTUAL_DESKTOP]", "Virtual display created successfully! ID: \(dID), Bounds: \(self.displayBounds)")
@@ -195,80 +197,142 @@ public final class MascotVirtualDesktopService: ObservableObject {
         }
 
         let originX = displayBounds.origin.x > 0 ? displayBounds.origin.x : 1512.0
-        let originY = displayBounds.origin.y
-        let targetX1 = Int(originX + 40)
-        let targetY1 = Int(originY + 40)
-        let targetX2 = Int(originX + 1300)
-        let targetY2 = Int(originY + 840)
+        let originY = max(displayBounds.origin.y, 0.0)
+        let dW = displayBounds.width > 0 ? displayBounds.width : 1920.0
+        let dH = displayBounds.height > 0 ? displayBounds.height : 1080.0
+        let targetX1 = Int(originX + 20)
+        let targetY1 = max(Int(originY + 20), 20)
+        let targetX2 = Int(originX + dW - 20)
+        let targetY2 = max(Int(originY + dH - 20), Int(dH - 20))
 
-        // 1. Move all application windows to virtual desktop via AppleScript
-        // If Mail, route the correct window (inbox viewer vs compose) to index 1 based on intent
-        let scriptSource = """
-        tell application "\(appName)"
-            if (count of windows) > 0 then
-                repeat with win in windows
-                    set bounds of win to {\(targetX1), \(targetY1), \(targetX2), \(targetY2)}
-                end repeat
-            end if
-            return (count of windows) > 0
-        end tell
-        """
-        var appleScriptMoved = false
-        if let appleScript = NSAppleScript(source: scriptSource) {
-            var errorInfo: NSDictionary?
-            let result = appleScript.executeAndReturnError(&errorInfo)
-            if errorInfo == nil && result.booleanValue {
-                appleScriptMoved = true
-                ClickyLogger.info("[VIRTUAL_DESKTOP]", "Moved all \"\(appName)\" windows to virtual desktop via AppleScript: {\(targetX1), \(targetY1), \(targetX2), \(targetY2)}")
-            }
+        // 1. Hide-First Rule: Hide workflow app via NSWorkspace PID immediately so windows NEVER show on host screen!
+        var targetAppRef: NSRunningApplication?
+        if let app = NSWorkspace.shared.runningApplications.first(where: {
+            let name = $0.localizedName?.lowercased() ?? ""
+            let clean = appName.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+            return name == clean || name.hasPrefix(clean) || name.contains(clean)
+        }) {
+            targetAppRef = app
+            app.hide()
+            ClickyLogger.info("[VIRTUAL_DESKTOP]", "Hide-First: Hid \"\(appName)\" (PID \(app.processIdentifier)) before window relocation.")
         }
 
         // 2. Resolve PID & Candidate Windows
         let candidates = CompanionWindowStreamService.shared.findCandidateWindows(appName: appName)
-        if let firstCandidate = candidates.first {
-            self.currentAppPid = firstCandidate.pid
-            self.currentWindowBounds = firstCandidate.bounds
+        let effectivePid = candidates.first?.pid ?? targetAppRef?.processIdentifier ?? resolveEffectivePid()
 
-            // Universal WindowServer Stacking: Raise dynamically chosen candidate to index 1 by window ID
-            let raiseScript = """
-            tell application "\(appName)"
-                try
-                    set targetWins to (every window whose id is \(firstCandidate.windowId))
-                    if (count of targetWins) > 0 then
-                        set index of item 1 of targetWins to 1
-                    end if
-                end try
-            end tell
-            """
-            if let rScript = NSAppleScript(source: raiseScript) {
-                var rErr: NSDictionary?
-                rScript.executeAndReturnError(&rErr)
+        if let pid = effectivePid, pid > 0 {
+            self.currentAppPid = pid
+            if let firstCandidate = candidates.first {
+                self.currentWindowBounds = firstCandidate.bounds
             }
 
-            // Fallback AXUIElement jika AppleScript tidak memindahkan
-            if !appleScriptMoved {
-                let appRef = AXUIElementCreateApplication(firstCandidate.pid)
-                var windowsRef: CFTypeRef?
-                if AXUIElementCopyAttributeValue(appRef, kAXWindowsAttribute as CFString, &windowsRef) == .success,
-                   let windows = windowsRef as? [AXUIElement] {
-                    for win in windows {
-                        var pt = CGPoint(x: CGFloat(targetX1), y: CGFloat(targetY1))
-                        if let val = AXValueCreate(.cgPoint, &pt) {
-                            AXUIElementSetAttributeValue(win, kAXPositionAttribute as CFString, val)
-                        }
-                        var sz = CGSize(width: 1260, height: 800)
-                        if let val = AXValueCreate(.cgSize, &sz) {
-                            AXUIElementSetAttributeValue(win, kAXSizeAttribute as CFString, val)
-                        }
+            // Move all windows of target application to Virtual Display via native AXUIElement IPC (Zero AppleScript)
+            let appRef = AXUIElementCreateApplication(pid)
+            AXUIElementSetMessagingTimeout(appRef, 0.25)
+
+            var windowsRef: CFTypeRef?
+            if AXUIElementCopyAttributeValue(appRef, kAXWindowsAttribute as CFString, &windowsRef) == .success,
+               let windows = windowsRef as? [AXUIElement] {
+                for win in windows {
+                    var pt = CGPoint(x: CGFloat(targetX1), y: CGFloat(targetY1))
+                    if let val = AXValueCreate(.cgPoint, &pt) {
+                        AXUIElementSetAttributeValue(win, kAXPositionAttribute as CFString, val)
                     }
-                    ClickyLogger.info("[VIRTUAL_DESKTOP]", "Moved \"\(appName)\" (\(windows.count) windows) via AXUIElement to (\(targetX1), \(targetY1))")
+                    let winW = CGFloat(max(Int(dW - 40), 100))
+                    let winH = CGFloat(max(Int(dH - 40), 100))
+                    var sz = CGSize(width: winW, height: winH)
+                    if let val = AXValueCreate(.cgSize, &sz) {
+                        AXUIElementSetAttributeValue(win, kAXSizeAttribute as CFString, val)
+                    }
+                }
+                ClickyLogger.info("[VIRTUAL_DESKTOP]", "Moved \"\(appName)\" (\(windows.count) windows) via native AXUIElement IPC to (\(targetX1), \(targetY1))")
+
+                if let topWin = windows.first {
+                    AXUIElementSetAttributeValue(topWin, kAXMainAttribute as CFString, kCFBooleanTrue)
+                    AXUIElementPerformAction(topWin, kAXRaiseAction as CFString)
+                    AXUIElementSetAttributeValue(topWin, kAXFocusedAttribute as CFString, kCFBooleanTrue)
                 }
             }
+        }
+
+        // 3. Complete Cycle: Unhide via NSRunningApplication.unhide (WITHOUT activate - does NOT steal focus, but makes windows visible to Virtual Display camera!)
+        if let app = targetAppRef {
+            app.unhide()
+            ClickyLogger.info("[VIRTUAL_DESKTOP]", "Hide-First Complete Cycle: Unhid \"\(appName)\" (PID \(app.processIdentifier)) onto Virtual Display without activation.")
         }
 
         // Ambil initial snapshot segera
         captureSnapshot()
         return true
+    }
+
+    /// Scans and relocates any newly created or displaced windows of appName onto the Virtual Display.
+    /// Zero Host Screen Intrusion: Guarantees that windows spawned mid-task (e.g. "New Message" compose sheets)
+    /// are immediately moved away from the host desktop into the isolated virtual workspace.
+    public func relocateAppWindowsToVirtualDesktop(appName: String) {
+        guard isVirtualDisplayActive, displayID > 0 else { return }
+
+        let originX = displayBounds.origin.x > 0 ? displayBounds.origin.x : 1512.0
+        let originY = max(displayBounds.origin.y, 0.0)
+        let dW = displayBounds.width > 0 ? displayBounds.width : 1920.0
+        let dH = displayBounds.height > 0 ? displayBounds.height : 1080.0
+        let targetX1 = Int(originX + 20)
+        let targetY1 = max(Int(originY + 20), 20)
+        // Move all application windows whose origin is on the host screen (x < originX - 100) to virtual display
+        // Native AXUIElement IPC - Zero AppleScript, Zero Activation, Zero Split Screen
+        if let pid = currentAppPid, pid > 0 {
+            let appRef = AXUIElementCreateApplication(pid)
+            AXUIElementSetMessagingTimeout(appRef, 0.20)
+            var windowsRef: CFTypeRef?
+            if AXUIElementCopyAttributeValue(appRef, kAXWindowsAttribute as CFString, &windowsRef) == .success,
+               let windows = windowsRef as? [AXUIElement] {
+                for win in windows {
+                    var posRef: CFTypeRef?
+                    if AXUIElementCopyAttributeValue(win, kAXPositionAttribute as CFString, &posRef) == .success,
+                       let val = posRef {
+                        var pt = CGPoint.zero
+                        if AXValueGetValue((val as! AXValue), .cgPoint, &pt), pt.x < (originX - 100) {
+                            var newPt = CGPoint(x: CGFloat(targetX1), y: CGFloat(targetY1))
+                            if let newPosVal = AXValueCreate(.cgPoint, &newPt) {
+                                AXUIElementSetAttributeValue(win, kAXPositionAttribute as CFString, newPosVal)
+                            }
+                            let winW = CGFloat(max(Int(dW - 40), 100))
+                            let winH = CGFloat(max(Int(dH - 40), 100))
+                            var sz = CGSize(width: winW, height: winH)
+                            if let newSzVal = AXValueCreate(.cgSize, &sz) {
+                                AXUIElementSetAttributeValue(win, kAXSizeAttribute as CFString, newSzVal)
+                            }
+                            ClickyLogger.info("[VIRTUAL_DESKTOP]", "Relocated host-stranded window of PID \(pid) to (\(targetX1), \(targetY1)) via AX")
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /// Startup Orphan Sweep (Invariant 39): Sweeps any workflow app windows left stranded on the host screen
+    /// due to previous app crashes or kills while on virtual desktop. Hides them immediately via NSWorkspace PID without activation.
+    public func sweepOrphanWindowsOnStartup() {
+        let workflowAppNames = ["Mail", "Safari", "Notes", "Terminal"]
+        let runningApps = NSWorkspace.shared.runningApplications
+
+        if let windowList = CGWindowListCopyWindowInfo([.optionOnScreenOnly, .excludeDesktopElements], kCGNullWindowID) as? [[String: Any]] {
+            for win in windowList {
+                let owner = win[kCGWindowOwnerName as String] as? String ?? ""
+                let boundsDict = win[kCGWindowBounds as String] as? [String: Any] ?? [:]
+                let x = boundsDict["X"] as? CGFloat ?? 0
+                let w = boundsDict["Width"] as? CGFloat ?? 0
+
+                // If a workflow app has windows on host screen (x < 1500)
+                if x < 1500 && w > 200, workflowAppNames.contains(where: { owner.localizedCaseInsensitiveContains($0) }) {
+                    if let app = runningApps.first(where: { $0.localizedName?.localizedCaseInsensitiveContains(owner) == true }) {
+                        app.hide()
+                        ClickyLogger.info("[ORPHAN_SWEEP]", "Swept and hid orphaned window '\(win[kCGWindowName as String] ?? "")' for app '\(owner)' on host display.")
+                    }
+                }
+            }
+        }
     }
 
     // MARK: - Frame Capture & Streaming
@@ -291,7 +355,7 @@ public final class MascotVirtualDesktopService: ObservableObject {
             return streamSnap
         }
 
-        // Method 1: Fast in-memory window capture (1-3ms, 0 process overhead)
+        // Method 1: Fast in-memory window capture (1-3ms, 0 process overhead) with screencapture fallback
         if let appName = currentAppName {
             let candidates = CompanionWindowStreamService.shared.findCandidateWindows(appName: appName)
             if let target = candidates.first {
@@ -305,7 +369,6 @@ public final class MascotVirtualDesktopService: ObservableObject {
                     self.activeSnapshotPath = targetFilePath
                     self.activeSnapshot = img
 
-                    // Write to disk in background queue so MainActor doesn't stall on PNG compression
                     DispatchQueue.global(qos: .utility).async {
                         let rep = NSBitmapImageRep(cgImage: cgImage)
                         if let pngData = rep.representation(using: .png, properties: [:]) {
@@ -332,31 +395,7 @@ public final class MascotVirtualDesktopService: ObservableObject {
             return img
         }
 
-        // Method 3: Background screencapture fallback (Non-blocking: protects MainActor & Event Tap)
-        if !isCapturingFallback {
-            isCapturingFallback = true
-            DispatchQueue.global(qos: .userInitiated).async { [weak self] in
-                defer {
-                    DispatchQueue.main.async {
-                        self?.isCapturingFallback = false
-                    }
-                }
-                let p = Process()
-                p.executableURL = URL(fileURLWithPath: "/usr/sbin/screencapture")
-                p.arguments = ["-x", "-D", "2", targetFilePath]
-                try? p.run()
-                p.waitUntilExit()
-
-                if p.terminationStatus == 0,
-                   FileManager.default.fileExists(atPath: targetFilePath),
-                   let img = NSImage(contentsOfFile: targetFilePath) {
-                    DispatchQueue.main.async {
-                        self?.activeSnapshotPath = targetFilePath
-                        self?.activeSnapshot = img
-                    }
-                }
-            }
-        }
+        // All captures handled cleanly via in-memory Quartz (CGWindowListCreateImage / CGDisplayCreateImage)
 
         return self.activeSnapshot
     }
@@ -390,16 +429,41 @@ public final class MascotVirtualDesktopService: ObservableObject {
     public func targetDisplayCoordinate(for normalizedPoint: CGPoint) -> CGPoint {
         let originX = displayBounds.origin.x > 0 ? displayBounds.origin.x : 1512.0
         let originY = displayBounds.origin.y
-        let win = currentWindowBounds ?? CGRect(x: originX + 40, y: originY + 40, width: 1260, height: 800)
-
+        let dW = displayBounds.width > 0 ? displayBounds.width : 1920.0
+        let dH = displayBounds.height > 0 ? displayBounds.height : 1080.0
+        let win = currentWindowBounds ?? CGRect(x: originX + 20, y: originY + 20, width: dW - 40, height: dH - 40)
         let targetX = win.origin.x + (normalizedPoint.x * win.width)
         let targetY = win.origin.y + (normalizedPoint.y * win.height)
         return CGPoint(x: targetX, y: targetY)
     }
 
+    /// Resolves the valid PID for workflow app, synchronizing currentAppPid thread-safely.
+    /// Zero Host Screen Intrusion: Never relies on ambient global desktop focus.
+    public func resolveEffectivePid(explicitPid: pid_t? = nil) -> pid_t? {
+        if let explicit = explicitPid, explicit > 0 {
+            self.currentAppPid = explicit
+            return explicit
+        }
+        if let cur = currentAppPid, cur > 0 {
+            return cur
+        }
+        let clean = (currentAppName ?? "Mail").lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+        if let app = NSWorkspace.shared.runningApplications.first(where: {
+            let name = $0.localizedName?.lowercased() ?? ""
+            return name == clean || name.hasPrefix(clean) || name.contains(clean)
+        }) {
+            let pid = app.processIdentifier
+            self.currentAppPid = pid
+            return pid
+        }
+        return nil
+    }
+
     /// Menggerakkan kursor maskot secara halus dengan lintasan kurva manusiawi (Human-like Kinematic Gliding)
+    /// Beroperasi secara murni pada layer visual kanvas SwiftUI tanpa menyentuh mouse fisik host (Zero Host Screen Intrusion).
     @MainActor
     public func glideReticleTo(target: CGPoint, duration: TimeInterval = 0.45, steps: Int = 18) async {
+        self.isReticleVisible = true
         let start = self.virtualReticle
         let dx = target.x - start.x
         let dy = target.y - start.y
@@ -433,94 +497,92 @@ public final class MascotVirtualDesktopService: ObservableObject {
             )
             
             self.virtualReticle = currentNorm
-            
-            // Post physical mouseMoved event to target PID
-            let screenPos = targetDisplayCoordinate(for: currentNorm)
-            if let pid = self.currentAppPid {
-                if let moveEvent = CGEvent(mouseEventSource: nil, mouseType: .mouseMoved, mouseCursorPosition: screenPos, mouseButton: .left) {
-                    moveEvent.postToPid(pid)
-                }
-            } else {
-                if let moveEvent = CGEvent(mouseEventSource: nil, mouseType: .mouseMoved, mouseCursorPosition: screenPos, mouseButton: .left) {
-                    moveEvent.post(tap: .cgSessionEventTap)
-                }
-            }
-            
             try? await Task.sleep(nanoseconds: stepDelay)
         }
         
         // Settle precisely at destination
         self.virtualReticle = target
-        let finalPos = targetDisplayCoordinate(for: target)
-        if let pid = self.currentAppPid {
-            if let moveEvent = CGEvent(mouseEventSource: nil, mouseType: .mouseMoved, mouseCursorPosition: finalPos, mouseButton: .left) {
-                moveEvent.postToPid(pid)
-            }
-        } else {
-            if let moveEvent = CGEvent(mouseEventSource: nil, mouseType: .mouseMoved, mouseCursorPosition: finalPos, mouseButton: .left) {
-                moveEvent.post(tap: .cgSessionEventTap)
-            }
-        }
         
         // Human dwell time before action (120ms pause)
         try? await Task.sleep(nanoseconds: 120_000_000)
     }
 
     /// Menggerakkan kursor maskot secara halus ke posisi target (Stay & Ready)
-    public func performCuaMove(normalizedPoint: CGPoint) {
+    public func performCuaMove(normalizedPoint: CGPoint, pid explicitPid: pid_t? = nil) {
         self.virtualReticle = normalizedPoint
+        self.isReticleVisible = true
         let clickPos = targetDisplayCoordinate(for: normalizedPoint)
-        let pid = self.currentAppPid
+        let pid = resolveEffectivePid(explicitPid: explicitPid)
 
-        DispatchQueue.global(qos: .userInitiated).async {
-            if let pid = pid {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) { [weak self] in
+            guard let self = self else { return }
+            if !self.isClickingReticle {
+                self.isReticleVisible = false
+            }
+        }
+
+        if let pid = pid, pid > 0 {
+            DispatchQueue.global(qos: .userInitiated).async {
                 if let move = CGEvent(mouseEventSource: nil, mouseType: .mouseMoved, mouseCursorPosition: clickPos, mouseButton: .left) {
                     move.postToPid(pid)
-                }
-            } else {
-                if let move = CGEvent(mouseEventSource: nil, mouseType: .mouseMoved, mouseCursorPosition: clickPos, mouseButton: .left) {
-                    move.post(tap: .cgSessionEventTap)
                 }
             }
         }
     }
 
     /// Klik kiri standar virtual dari maskot (titik ternormalisasi 0.0...1.0)
-    public func performCuaLeftClick(normalizedPoint: CGPoint) {
+    public func performCuaLeftClick(normalizedPoint: CGPoint, pid explicitPid: pid_t? = nil) {
         let clickPos = targetDisplayCoordinate(for: normalizedPoint)
-        let pid = self.currentAppPid
+        let pid = resolveEffectivePid(explicitPid: explicitPid)
 
         self.virtualReticle = normalizedPoint
+        self.isReticleVisible = true
         self.isClickingReticle = true
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) { [weak self] in
             self?.isClickingReticle = false
         }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
+            guard let self = self else { return }
+            if !self.isClickingReticle {
+                self.isReticleVisible = false
+            }
+        }
 
         DispatchQueue.global(qos: .userInitiated).async {
             let src = CGEventSource(stateID: .combinedSessionState)
-            if let pid = pid {
+            if let pid = pid, pid > 0 {
+                if let move = CGEvent(mouseEventSource: src, mouseType: .mouseMoved, mouseCursorPosition: clickPos, mouseButton: .left) {
+                    move.postToPid(pid)
+                }
+                usleep(20000)
                 if let down = CGEvent(mouseEventSource: src, mouseType: .leftMouseDown, mouseCursorPosition: clickPos, mouseButton: .left) {
                     down.setIntegerValueField(.mouseEventClickState, value: 1)
                     down.postToPid(pid)
                 }
-                usleep(25000)
+                usleep(65000)
                 if let up = CGEvent(mouseEventSource: src, mouseType: .leftMouseUp, mouseCursorPosition: clickPos, mouseButton: .left) {
                     up.setIntegerValueField(.mouseEventClickState, value: 1)
                     up.postToPid(pid)
                 }
+                // Dual-Layer IPC Trigger: Direct Accessibility action execution on buttons
+                let appRef = AXUIElementCreateApplication(pid)
+                var hitElemRef: AXUIElement?
+                if AXUIElementCopyElementAtPosition(appRef, Float(clickPos.x), Float(clickPos.y), &hitElemRef) == .success,
+                   let hitElem = hitElemRef {
+                    var roleRef: CFTypeRef?
+                    AXUIElementCopyAttributeValue(hitElem, kAXRoleAttribute as CFString, &roleRef)
+                    let role = (roleRef as? String) ?? ""
+                    if role == "AXButton" || role == "AXPopUpButton" || role == "AXRadioButton" || role == "AXCheckBox" || role == "AXMenuItem" {
+                        let pressRes = AXUIElementPerformAction(hitElem, kAXPressAction as CFString)
+                        if pressRes == .success {
+                            ClickyLogger.info("[VIRTUAL_DESKTOP]", "Triggered AXPressAction successfully via Accessibility IPC on \(role) at (\(Int(clickPos.x)), \(Int(clickPos.y)))")
+                        }
+                    }
+                }
             } else {
-                if let down = CGEvent(mouseEventSource: src, mouseType: .leftMouseDown, mouseCursorPosition: clickPos, mouseButton: .left) {
-                    down.setIntegerValueField(.mouseEventClickState, value: 1)
-                    down.post(tap: .cgSessionEventTap)
-                }
-                usleep(25000)
-                if let up = CGEvent(mouseEventSource: src, mouseType: .leftMouseUp, mouseCursorPosition: clickPos, mouseButton: .left) {
-                    up.setIntegerValueField(.mouseEventClickState, value: 1)
-                    up.post(tap: .cgSessionEventTap)
-                }
+                ClickyLogger.warning("[VIRTUAL_DESKTOP]", "performCuaLeftClick: target PID is nil, skipping physical click to protect host cursor.")
             }
         }
-
         ClickyLogger.info("[VIRTUAL_DESKTOP]", "Virtual CUA Left Click at (\(Int(clickPos.x)), \(Int(clickPos.y))) [Norm: (\(String(format: "%.3f", normalizedPoint.x)), \(String(format: "%.3f", normalizedPoint.y)))]")
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) { [weak self] in
@@ -534,18 +596,25 @@ public final class MascotVirtualDesktopService: ObservableObject {
     }
 
     /// Klik kanan virtual dari maskot (2-finger click di macOS)
-    public func performCuaRightClick(normalizedPoint: CGPoint) {
+    public func performCuaRightClick(normalizedPoint: CGPoint, pid explicitPid: pid_t? = nil) {
         let clickPos = targetDisplayCoordinate(for: normalizedPoint)
-        let pid = self.currentAppPid
+        let pid = resolveEffectivePid(explicitPid: explicitPid)
 
         self.virtualReticle = normalizedPoint
+        self.isReticleVisible = true
         self.isClickingReticle = true
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) { [weak self] in
             self?.isClickingReticle = false
         }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
+            guard let self = self else { return }
+            if !self.isClickingReticle {
+                self.isReticleVisible = false
+            }
+        }
 
-        DispatchQueue.global(qos: .userInitiated).async {
-            if let pid = pid {
+        if let pid = pid, pid > 0 {
+            DispatchQueue.global(qos: .userInitiated).async {
                 if let down = CGEvent(mouseEventSource: nil, mouseType: .rightMouseDown, mouseCursorPosition: clickPos, mouseButton: .right) {
                     down.postToPid(pid)
                 }
@@ -553,15 +622,9 @@ public final class MascotVirtualDesktopService: ObservableObject {
                 if let up = CGEvent(mouseEventSource: nil, mouseType: .rightMouseUp, mouseCursorPosition: clickPos, mouseButton: .right) {
                     up.postToPid(pid)
                 }
-            } else {
-                if let down = CGEvent(mouseEventSource: nil, mouseType: .rightMouseDown, mouseCursorPosition: clickPos, mouseButton: .right) {
-                    down.post(tap: .cgSessionEventTap)
-                }
-                usleep(25000)
-                if let up = CGEvent(mouseEventSource: nil, mouseType: .rightMouseUp, mouseCursorPosition: clickPos, mouseButton: .right) {
-                    up.post(tap: .cgSessionEventTap)
-                }
             }
+        } else {
+            ClickyLogger.warning("[VIRTUAL_DESKTOP]", "performCuaRightClick: target PID is nil, skipping physical click to protect host cursor.")
         }
 
         ClickyLogger.info("[VIRTUAL_DESKTOP]", "Virtual CUA Right Click at (\(Int(clickPos.x)), \(Int(clickPos.y))) [Norm: (\(String(format: "%.3f", normalizedPoint.x)), \(String(format: "%.3f", normalizedPoint.y)))]")
@@ -571,30 +634,40 @@ public final class MascotVirtualDesktopService: ObservableObject {
         }
     }
 
+    /// Menyembunyikan kursor efemeral setelah aksi selesai
+    public func hideReticle(afterDwell: Bool = true) {
+        if afterDwell {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
+                self?.isReticleVisible = false
+            }
+        } else {
+            self.isReticleVisible = false
+        }
+    }
+
     /// Scroll roda mouse / 2-finger swipe fisik pada posisi kursor (deltaY: positif ke atas, negatif ke bawah)
-    public func performCuaScroll(normalizedPoint: CGPoint, deltaY: Int32, deltaX: Int32 = 0) {
+    public func performCuaScroll(normalizedPoint: CGPoint, deltaY: Int32, deltaX: Int32 = 0, pid explicitPid: pid_t? = nil) {
         let scrollPos = targetDisplayCoordinate(for: normalizedPoint)
-        let pid = self.currentAppPid
+        let pid = resolveEffectivePid(explicitPid: explicitPid)
         self.virtualReticle = normalizedPoint
 
-        DispatchQueue.global(qos: .userInitiated).async {
-            let src = CGEventSource(stateID: .combinedSessionState)
-            let steps = 3
-            let stepDeltaY = deltaY / Int32(steps)
-            let stepDeltaX = deltaX / Int32(steps)
+        if let pid = pid, pid > 0 {
+            DispatchQueue.global(qos: .userInitiated).async {
+                let src = CGEventSource(stateID: .combinedSessionState)
+                let steps = 3
+                let stepDeltaY = deltaY / Int32(steps)
+                let stepDeltaX = deltaX / Int32(steps)
 
-            // Post pixel-based wheel scroll events to session, HID taps, and target PID
-            for _ in 0..<steps {
-                if let ev = CGEvent(scrollWheelEvent2Source: src, units: .pixel, wheelCount: 2, wheel1: stepDeltaY, wheel2: stepDeltaX, wheel3: 0) {
-                    ev.location = scrollPos
-                    if let pid = pid {
+                for _ in 0..<steps {
+                    if let ev = CGEvent(scrollWheelEvent2Source: src, units: .pixel, wheelCount: 2, wheel1: stepDeltaY, wheel2: stepDeltaX, wheel3: 0) {
+                        ev.location = scrollPos
                         ev.postToPid(pid)
                     }
-                    ev.post(tap: .cgSessionEventTap)
-                    ev.post(tap: .cghidEventTap)
+                    usleep(20000)
                 }
-                usleep(20000)
             }
+        } else {
+            ClickyLogger.warning("[VIRTUAL_DESKTOP]", "performCuaScroll: target PID is nil, skipping physical scroll to protect host screen.")
         }
 
         ClickyLogger.info("[VIRTUAL_DESKTOP]", "Virtual CUA Scroll (deltaY: \(deltaY), deltaX: \(deltaX)) at (\(Int(scrollPos.x)), \(Int(scrollPos.y))) [Target PID: \(pid ?? -1)]")
@@ -605,14 +678,14 @@ public final class MascotVirtualDesktopService: ObservableObject {
     }
 
     /// Tekan dan tahan (mouse down, delay, mouse up)
-    public func performCuaPressAndHold(normalizedPoint: CGPoint, durationMs: Int = 500) {
+    public func performCuaPressAndHold(normalizedPoint: CGPoint, durationMs: Int = 500, pid explicitPid: pid_t? = nil) {
         let pos = targetDisplayCoordinate(for: normalizedPoint)
-        let pid = self.currentAppPid
+        let pid = resolveEffectivePid(explicitPid: explicitPid)
         self.virtualReticle = normalizedPoint
         self.isClickingReticle = true
 
-        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
-            if let pid = pid {
+        if let pid = pid, pid > 0 {
+            DispatchQueue.global(qos: .userInitiated).async { [weak self] in
                 if let down = CGEvent(mouseEventSource: nil, mouseType: .leftMouseDown, mouseCursorPosition: pos, mouseButton: .left) {
                     down.postToPid(pid)
                 }
@@ -620,18 +693,12 @@ public final class MascotVirtualDesktopService: ObservableObject {
                 if let up = CGEvent(mouseEventSource: nil, mouseType: .leftMouseUp, mouseCursorPosition: pos, mouseButton: .left) {
                     up.postToPid(pid)
                 }
-            } else {
-                if let down = CGEvent(mouseEventSource: nil, mouseType: .leftMouseDown, mouseCursorPosition: pos, mouseButton: .left) {
-                    down.post(tap: .cgSessionEventTap)
-                }
-                usleep(useconds_t(durationMs * 1000))
-                if let up = CGEvent(mouseEventSource: nil, mouseType: .leftMouseUp, mouseCursorPosition: pos, mouseButton: .left) {
-                    up.post(tap: .cgSessionEventTap)
+                DispatchQueue.main.async {
+                    self?.isClickingReticle = false
                 }
             }
-            DispatchQueue.main.async {
-                self?.isClickingReticle = false
-            }
+        } else {
+            ClickyLogger.warning("[VIRTUAL_DESKTOP]", "performCuaPressAndHold: target PID is nil, skipping.")
         }
 
         ClickyLogger.info("[VIRTUAL_DESKTOP]", "Virtual CUA Press and Hold (\(durationMs)ms) at (\(Int(pos.x)), \(Int(pos.y)))")
@@ -641,44 +708,45 @@ public final class MascotVirtualDesktopService: ObservableObject {
     }
 
     /// Drag & Drop virtual (geser kursor dengan mouse down dari titik awal ke titik akhir)
-    public func performCuaDrag(from startNorm: CGPoint, to endNorm: CGPoint) {
+    public func performCuaDrag(from startNorm: CGPoint, to endNorm: CGPoint, pid explicitPid: pid_t? = nil) {
         let startPos = targetDisplayCoordinate(for: startNorm)
         let endPos = targetDisplayCoordinate(for: endNorm)
 
-        let pid = self.currentAppPid
+        let pid = resolveEffectivePid(explicitPid: explicitPid)
         self.virtualReticle = startNorm
         self.isClickingReticle = true
 
-        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
-            // 1. Mouse down at start
-            if let down = CGEvent(mouseEventSource: nil, mouseType: .leftMouseDown, mouseCursorPosition: startPos, mouseButton: .left) {
-                if let pid = pid { down.postToPid(pid) } else { down.post(tap: .cgSessionEventTap) }
-            }
-            usleep(30000)
-
-            // 2. Drag in 10 intermediate steps
-            let steps = 10
-            for i in 1...steps {
-                let frac = CGFloat(i) / CGFloat(steps)
-                let curX = startPos.x + (endPos.x - startPos.x) * frac
-                let curY = startPos.y + (endPos.y - startPos.y) * frac
-                let curPos = CGPoint(x: curX, y: curY)
-
-                if let drag = CGEvent(mouseEventSource: nil, mouseType: .leftMouseDragged, mouseCursorPosition: curPos, mouseButton: .left) {
-                    if let pid = pid { drag.postToPid(pid) } else { drag.post(tap: .cgSessionEventTap) }
+        if let pid = pid, pid > 0 {
+            DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+                if let down = CGEvent(mouseEventSource: nil, mouseType: .leftMouseDown, mouseCursorPosition: startPos, mouseButton: .left) {
+                    down.postToPid(pid)
                 }
-                usleep(20000)
-            }
+                usleep(30000)
 
-            // 3. Mouse up at end
-            if let up = CGEvent(mouseEventSource: nil, mouseType: .leftMouseUp, mouseCursorPosition: endPos, mouseButton: .left) {
-                if let pid = pid { up.postToPid(pid) } else { up.post(tap: .cgSessionEventTap) }
-            }
+                let steps = 10
+                for i in 1...steps {
+                    let frac = CGFloat(i) / CGFloat(steps)
+                    let curX = startPos.x + (endPos.x - startPos.x) * frac
+                    let curY = startPos.y + (endPos.y - startPos.y) * frac
+                    let curPos = CGPoint(x: curX, y: curY)
 
-            DispatchQueue.main.async {
-                self?.virtualReticle = endNorm
-                self?.isClickingReticle = false
+                    if let drag = CGEvent(mouseEventSource: nil, mouseType: .leftMouseDragged, mouseCursorPosition: curPos, mouseButton: .left) {
+                        drag.postToPid(pid)
+                    }
+                    usleep(20000)
+                }
+
+                if let up = CGEvent(mouseEventSource: nil, mouseType: .leftMouseUp, mouseCursorPosition: endPos, mouseButton: .left) {
+                    up.postToPid(pid)
+                }
+
+                DispatchQueue.main.async {
+                    self?.virtualReticle = endNorm
+                    self?.isClickingReticle = false
+                }
             }
+        } else {
+            ClickyLogger.warning("[VIRTUAL_DESKTOP]", "performCuaDrag: target PID is nil, skipping.")
         }
 
         ClickyLogger.info("[VIRTUAL_DESKTOP]", "Virtual CUA Dragged from \(startNorm) to \(endNorm)")
@@ -687,45 +755,126 @@ public final class MascotVirtualDesktopService: ObservableObject {
         }
     }
 
-    /// Mengetik teks virtual secara langsung ke jendela aplikasi di virtual desktop (non-blocking)
-    public func performCuaType(text: String) {
-        guard let pid = currentAppPid else {
-            ClickyLogger.warning("[VIRTUAL_DESKTOP]", "Cannot type: currentAppPid is nil.")
+    /// Mengetik teks virtual secara langsung ke jendela aplikasi di virtual desktop (awaited hingga seluruh karakter selesai)
+    public func performCuaType(text: String, pid explicitPid: pid_t? = nil) async {
+        guard let pid = resolveEffectivePid(explicitPid: explicitPid) else {
+            ClickyLogger.warning("[VIRTUAL_DESKTOP]", "Cannot type: process not found for \(currentAppName ?? "unknown app").")
+            return
+        }
+
+        await withCheckedContinuation { continuation in
+            DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+                for char in text {
+                    let utf16 = Array(String(char).utf16)
+                    if let keyEvent = CGEvent(keyboardEventSource: nil, virtualKey: 0, keyDown: true) {
+                        keyEvent.keyboardSetUnicodeString(stringLength: utf16.count, unicodeString: utf16)
+                        keyEvent.postToPid(pid)
+                    }
+                    usleep(15000)
+                    if let keyUp = CGEvent(keyboardEventSource: nil, virtualKey: 0, keyDown: false) {
+                        keyUp.postToPid(pid)
+                    }
+                    usleep(10000)
+                }
+
+                ClickyLogger.info("[VIRTUAL_DESKTOP]", "Virtual CUA typed \(text.count) characters into PID: \(pid)")
+
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                    self?.captureSnapshot()
+                    continuation.resume()
+                }
+            }
+        }
+    }
+
+    /// Mengirim penekanan tombol keyboard virtual (seperti Return 0x24 atau Tab 0x30) ke PID target
+    public func performCuaKey(keyCode: CGKeyCode, pid explicitPid: pid_t? = nil) {
+        guard let pid = resolveEffectivePid(explicitPid: explicitPid) else {
+            ClickyLogger.warning("[VIRTUAL_DESKTOP]", "Cannot send key: process not found for \(currentAppName ?? "unknown app").")
             return
         }
 
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
-            for char in text {
-                let utf16 = Array(String(char).utf16)
-                if let keyEvent = CGEvent(keyboardEventSource: nil, virtualKey: 0, keyDown: true) {
-                    keyEvent.keyboardSetUnicodeString(stringLength: utf16.count, unicodeString: utf16)
-                    keyEvent.postToPid(pid)
-                }
-                usleep(15000)
-                if let keyUp = CGEvent(keyboardEventSource: nil, virtualKey: 0, keyDown: false) {
-                    keyUp.postToPid(pid)
-                }
-                usleep(10000)
+            if let down = CGEvent(keyboardEventSource: nil, virtualKey: keyCode, keyDown: true) {
+                down.postToPid(pid)
             }
-
-            ClickyLogger.info("[VIRTUAL_DESKTOP]", "Virtual CUA typed \(text.count) characters into PID: \(pid)")
-
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            usleep(25000)
+            if let up = CGEvent(keyboardEventSource: nil, virtualKey: keyCode, keyDown: false) {
+                up.postToPid(pid)
+            }
+            ClickyLogger.info("[VIRTUAL_DESKTOP]", "Virtual CUA posted keyCode 0x\(String(keyCode, radix: 16)) to PID: \(pid)")
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
                 self?.captureSnapshot()
             }
         }
     }
 
+    /// Meng-commit chip token aktif pada token field (AXTokenField recipients / tags) via Return
+    public func commitTokenField(pid explicitPid: pid_t? = nil) {
+        performCuaKey(keyCode: 0x24, pid: explicitPid)
+    }
+
+    /// Memilih seluruh teks pada input field aktif (⌘A) dan opsional menghapusnya via Backspace (0x33)
+    public func performCuaSelectAll(clearAfter: Bool = false, pid explicitPid: pid_t? = nil) {
+        guard let pid = resolveEffectivePid(explicitPid: explicitPid) else { return }
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            // KeyCode 0x00 is 'A' (kVK_ANSI_A) with Command flag (.maskCommand)
+            if let down = CGEvent(keyboardEventSource: nil, virtualKey: 0x00, keyDown: true) {
+                down.flags = .maskCommand
+                down.postToPid(pid)
+            }
+            usleep(25000)
+            if let up = CGEvent(keyboardEventSource: nil, virtualKey: 0x00, keyDown: false) {
+                up.flags = .maskCommand
+                up.postToPid(pid)
+            }
+            usleep(25000)
+            if clearAfter {
+                // KeyCode 0x33 is Backspace / Delete (kVK_Delete)
+                if let delDown = CGEvent(keyboardEventSource: nil, virtualKey: 0x33, keyDown: true) {
+                    delDown.postToPid(pid)
+                }
+                usleep(20000)
+                if let delUp = CGEvent(keyboardEventSource: nil, virtualKey: 0x33, keyDown: false) {
+                    delUp.postToPid(pid)
+                }
+            }
+            ClickyLogger.info("[VIRTUAL_DESKTOP]", "Virtual CUA performed Select All (⌘A)\(clearAfter ? " + Backspace" : "") on PID: \(pid)")
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                self?.captureSnapshot()
+            }
+        }
+    }
+
+    /// Mengirim kombinasi tombol Command + KeyCode ke PID target (misal: ⌘D untuk Don't Save atau ⌘W untuk Close)
+    public func performCuaKeyWithCommand(keyCode: CGKeyCode, pid explicitPid: pid_t? = nil) {
+        guard let pid = resolveEffectivePid(explicitPid: explicitPid) else { return }
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            if let down = CGEvent(keyboardEventSource: nil, virtualKey: keyCode, keyDown: true) {
+                down.flags = .maskCommand
+                down.postToPid(pid)
+            }
+            usleep(25000)
+            if let up = CGEvent(keyboardEventSource: nil, virtualKey: keyCode, keyDown: false) {
+                up.flags = .maskCommand
+                up.postToPid(pid)
+            }
+            ClickyLogger.info("[VIRTUAL_DESKTOP]", "Virtual CUA posted Command+keyCode 0x\(String(keyCode, radix: 16)) to PID: \(pid)")
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                self?.captureSnapshot()
+            }
+        }
+    }
     // MARK: - Human-In-The-Loop Takeover
     /// Pengguna mengklik langsung pada viewport kanvas (Human Takeover)
     /// Beroperasi tanpa menyentuh virtualReticle AI agar kursor fisik pengguna berdaulat 100%.
     public func handleUserDirectClick(normalizedPoint: CGPoint) {
         let clickPos = targetDisplayCoordinate(for: normalizedPoint)
-        let pid = self.currentAppPid
+        let pid = resolveEffectivePid()
 
         DispatchQueue.global(qos: .userInitiated).async {
             let src = CGEventSource(stateID: .combinedSessionState)
-            if let pid = pid {
+            if let pid = pid, pid > 0 {
                 if let down = CGEvent(mouseEventSource: src, mouseType: .leftMouseDown, mouseCursorPosition: clickPos, mouseButton: .left) {
                     down.setIntegerValueField(.mouseEventClickState, value: 1)
                     down.postToPid(pid)
@@ -736,20 +885,12 @@ public final class MascotVirtualDesktopService: ObservableObject {
                     up.postToPid(pid)
                 }
             } else {
-                if let down = CGEvent(mouseEventSource: src, mouseType: .leftMouseDown, mouseCursorPosition: clickPos, mouseButton: .left) {
-                    down.setIntegerValueField(.mouseEventClickState, value: 1)
-                    down.post(tap: .cgSessionEventTap)
-                }
-                usleep(25000)
-                if let up = CGEvent(mouseEventSource: src, mouseType: .leftMouseUp, mouseCursorPosition: clickPos, mouseButton: .left) {
-                    up.setIntegerValueField(.mouseEventClickState, value: 1)
-                    up.post(tap: .cgSessionEventTap)
-                }
+                ClickyLogger.warning("[VIRTUAL_DESKTOP]", "handleUserDirectClick: target PID is nil, skipping to protect host cursor.")
             }
         }
 
         // Also trigger background accessibility click for direct user takeover click
-        if let pid = pid {
+        if let pid = pid, pid > 0 {
             Task {
                 await CUAClickActionTool.executeBackgroundAccessibilityClick(pid: pid, screenPoint: clickPos, targetHint: "")
             }
@@ -775,7 +916,9 @@ public final class MascotVirtualDesktopService: ObservableObject {
     /// Pengguna mengetik langsung pada viewport kanvas
     public func handleUserViewKey(character: String, keyCode: UInt16) {
         if !character.isEmpty {
-            performCuaType(text: character)
+            Task { [weak self] in
+                await self?.performCuaType(text: character)
+            }
         } else if let pid = currentAppPid {
             if let down = CGEvent(keyboardEventSource: nil, virtualKey: CGKeyCode(keyCode), keyDown: true) {
                 down.postToPid(pid)

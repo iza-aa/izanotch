@@ -518,6 +518,18 @@ extension CompanionManager {
     }
 
     public func executeMouseClick(at point: CGPoint) {
+        if MascotVirtualDesktopService.shared.isVirtualDisplayActive {
+            if let pid = MascotVirtualDesktopService.shared.currentAppPid {
+                let source = CGEventSource(stateID: .hidSystemState)
+                let downEvent = CGEvent(mouseEventSource: source, mouseType: .leftMouseDown, mouseCursorPosition: point, mouseButton: .left)
+                let upEvent = CGEvent(mouseEventSource: source, mouseType: .leftMouseUp, mouseCursorPosition: point, mouseButton: .left)
+                downEvent?.postToPid(pid)
+                usleep(30000)
+                upEvent?.postToPid(pid)
+            }
+            return
+        }
+
         let source = CGEventSource(stateID: .hidSystemState)
         let moveEvent = CGEvent(mouseEventSource: source, mouseType: .mouseMoved, mouseCursorPosition: point, mouseButton: .left)
         let downEvent = CGEvent(mouseEventSource: source, mouseType: .leftMouseDown, mouseCursorPosition: point, mouseButton: .left)
@@ -531,6 +543,20 @@ extension CompanionManager {
     }
 
     public func executeKeyCombo(key: CGKeyCode, flags: CGEventFlags) {
+        if MascotVirtualDesktopService.shared.isVirtualDisplayActive {
+            if let pid = MascotVirtualDesktopService.shared.currentAppPid {
+                let source = CGEventSource(stateID: .hidSystemState)
+                let keyDown = CGEvent(keyboardEventSource: source, virtualKey: key, keyDown: true)
+                keyDown?.flags = flags
+                let keyUp = CGEvent(keyboardEventSource: source, virtualKey: key, keyDown: false)
+                keyUp?.flags = flags
+                keyDown?.postToPid(pid)
+                usleep(30000)
+                keyUp?.postToPid(pid)
+            }
+            return
+        }
+
         let source = CGEventSource(stateID: .hidSystemState)
         let keyDown = CGEvent(keyboardEventSource: source, virtualKey: key, keyDown: true)
         keyDown?.flags = flags

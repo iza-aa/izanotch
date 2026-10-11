@@ -43,10 +43,7 @@
 git clone https://github.com/iza-aa/izanotch.git
 cd izanotch
 
-# Build Clicky modular package
-cd Packages/ClickyKit && swift build && swift test && cd ../..
-
-# Build Xcode project
+# Build Xcode project directly
 xcodebuild -project izaNotch.xcodeproj -scheme izaNotch -configuration Debug build
 ```
 

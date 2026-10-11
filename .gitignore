@@ -13,6 +13,7 @@ CHANGELOG.md
 docs/
 data/
 heyclicky-reference/
+github-reference/
 bin/
 scripts/
 
@@ -134,4 +135,6 @@ __pycache__/
 .idea/
 .cursor/
 .zed/
+.commandcode/
+.nodeterm/
 *.sublime-workspace

@@ -201,6 +201,9 @@
         }
       }
     },
+    "· %@" : {
+
+    },
     "'Now Playing' was the only option on previous versions and works with all media apps." : {
       "localizations" : {
         "ar" : {
@@ -400,6 +403,9 @@
           }
         }
       }
+    },
+    "#" : {
+
     },
     "%.0f seconds" : {
       "localizations" : {
@@ -701,6 +707,16 @@
         }
       }
     },
+    "%@  %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@  %2$@"
+          }
+        }
+      }
+    },
     "%@ (%@)" : {
       "localizations" : {
         "en" : {
@@ -710,6 +726,41 @@
           }
         }
       }
+    },
+    "%@ connects to %@ via background automation.\nLaunch or bring %@ to front to mirror live screen." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ connects to %2$@ via background automation.\nLaunch or bring %3$@ to front to mirror live screen."
+          }
+        }
+      }
+    },
+    "%@ is responding..." : {
+
+    },
+    "%@ Workspace" : {
+
+    },
+    "%@ Workspace Ready" : {
+
+    },
+    "%@:" : {
+
+    },
+    "%@: %lld commit%@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@: %2$lld commit%3$@"
+          }
+        }
+      }
+    },
+    "%@.md" : {
+
     },
     "%d%%" : {
       "localizations" : {
@@ -911,6 +962,28 @@
         }
       }
     },
+    "%lld (Local Bridge)" : {
+
+    },
+    "%lld contributions in last 7 weeks" : {
+
+    },
+    "%lld steps • %@s" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld steps • %2$@s"
+          }
+        }
+      }
+    },
+    "%lld steps completed" : {
+
+    },
+    "%lld,0" : {
+
+    },
     "%lld%@" : {
       "localizations" : {
         "en" : {
@@ -1020,6 +1093,12 @@
           }
         }
       }
+    },
+    "•" : {
+
+    },
+    "• %lld calls" : {
+
     },
     "• Bug fixes" : {
       "localizations" : {
@@ -1321,16 +1400,46 @@
         }
       }
     },
-    "👋" : {
+    "<50ms" : {
 
     },
-    "🥺" : {
+    "~/.izanotchy/companions/%@/workspace" : {
+
+    },
+    "⌥ Option  or  ⌃ Control + ⌥ Option" : {
+
+    },
+    "⚙️ Tool: %@" : {
+
+    },
+    "⚡ Antigravity AI Bridge" : {
+
+    },
+    "🔒 Isolated VM" : {
+
+    },
+    "0,0" : {
+
+    },
+    "1. CHARACTER" : {
 
     },
     "1m" : {
 
     },
+    "2. HARMONIOUS COLOR THEMES" : {
+
+    },
+    "3. INITIAL EXPRESSION" : {
+
+    },
     "5m" : {
+
+    },
+    "56 Native Computer Use Tools" : {
+
+    },
+    "56 Tools" : {
 
     },
     "About" : {
@@ -1733,6 +1842,40 @@
         }
       }
     },
+    "Accessibility Permission" : {
+
+    },
+    "Account Label" : {
+
+    },
+    "Account Pool (%lld)" : {
+
+    },
+    "Action Steps (%lld/%lld)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Action Steps (%1$lld/%2$lld)"
+          }
+        }
+      }
+    },
+    "Activation Shortcut" : {
+
+    },
+    "Active" : {
+
+    },
+    "Active Now" : {
+
+    },
+    "Active Routing: %@" : {
+
+    },
+    "Active Workspace Sandbox" : {
+
+    },
     "Add" : {
       "localizations" : {
         "ar" : {
@@ -1832,6 +1975,15 @@
           }
         }
       }
+    },
+    "Add Account" : {
+
+    },
+    "Add custom connector" : {
+
+    },
+    "Add Custom Connector" : {
+
     },
     "Add manually" : {
       "extractionState" : "stale",
@@ -2234,7 +2386,31 @@
         }
       }
     },
+    "AFM Status: %@" : {
+
+    },
+    "Agent folder" : {
+
+    },
+    "Agents" : {
+
+    },
+    "Agents can read and create files, inspect codebases, and run build commands within this directory." : {
+
+    },
     "AI Assistants" : {
+
+    },
+    "AI Intelligence Provider" : {
+
+    },
+    "AIzaSy... (Opsional)" : {
+
+    },
+    "Akun Aktif" : {
+
+    },
+    "All Companions" : {
 
     },
     "All-day" : {
@@ -2437,6 +2613,24 @@
         }
       }
     },
+    "Allow Clicky to use your mouse and keyboard without asking for confirmation every time." : {
+
+    },
+    "Allow once" : {
+
+    },
+    "Always allow" : {
+
+    },
+    "Always allow can be turned off in Settings → Agent" : {
+
+    },
+    "Always allow computer use" : {
+
+    },
+    "Always Allow Computer Use (Full Access)" : {
+
+    },
     "Always show full event titles" : {
       "localizations" : {
         "ar" : {
@@ -2637,10 +2831,16 @@
         }
       }
     },
+    "ANIMATION" : {
+
+    },
     "Antigravity" : {
 
     },
-    "Antigravity Accounts" : {
+    "Antigravity AI Bridge Proxy (:8080)" : {
+
+    },
+    "Antigravity Belum Terhubung" : {
 
     },
     "App icon" : {
@@ -2843,6 +3043,54 @@
         }
       }
     },
+    "Apple Foundation Models" : {
+
+    },
+    "Apple Foundation Models · On-Device · ~45ms" : {
+
+    },
+    "Apple Foundation Models (AFM)" : {
+
+    },
+    "Apple Intelligence" : {
+
+    },
+    "Apple Silicon" : {
+
+    },
+    "Apple Silicon NPU · Background AX" : {
+
+    },
+    "Apple Speech (On-Device / Offline)" : {
+
+    },
+    "ARTIFACTS" : {
+
+    },
+    "Authentication Required" : {
+
+    },
+    "Auto Collapse TradingView Sidebar" : {
+
+    },
+    "Auto Draw Fibonacci & Trade Plan Overlay" : {
+
+    },
+    "Auto-approve extra usage" : {
+
+    },
+    "Auto-Blink OFF" : {
+
+    },
+    "Auto-Blink ON (3.5–5s)" : {
+
+    },
+    "Auto-Blink Periodik (3.5–5.2s)" : {
+
+    },
+    "Auto-fill from ~/.codex/auth.json" : {
+
+    },
     "Auto-scroll to next event" : {
       "localizations" : {
         "ar" : {
@@ -2942,6 +3190,15 @@
           }
         }
       }
+    },
+    "Auto-start bersama iza-notch" : {
+
+    },
+    "Automatic fallback on 429 limit · Zero restart" : {
+
+    },
+    "Automatically approve usage charges over the included monthly limit to prevent agent tasks from pausing mid-execution." : {
+
     },
     "Automatically check for updates" : {
       "localizations" : {
@@ -3242,6 +3499,18 @@
           }
         }
       }
+    },
+    "Autonomy" : {
+
+    },
+    "AVAILABLE INTEGRATIONS" : {
+
+    },
+    "Back" : {
+
+    },
+    "Back to Chat" : {
+
     },
     "Battery" : {
       "localizations" : {
@@ -3643,6 +3912,27 @@
         }
       }
     },
+    "Bearer Token / Secret (Optional)" : {
+
+    },
+    "Belum ada akun cadangan" : {
+
+    },
+    "Belum ada profil tersimpan" : {
+
+    },
+    "Belum Terhubung" : {
+
+    },
+    "Bible Strong Avatar Lab • Character Inspector (Fitur F-01 & F-02)" : {
+
+    },
+    "Bible Strong Avatar Lab • Strobi 3D Engine" : {
+
+    },
+    "Blue Pointer" : {
+
+    },
     "Boost your productivity with Clipboard Manager" : {
       "localizations" : {
         "ar" : {
@@ -3743,205 +4033,27 @@
         }
       }
     },
-    "izaNotch" : {
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "izaNotch"
-          }
-        },
-        "cs" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "izaNotch"
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "izaNotch"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "izaNotch"
-          }
-        },
-        "en-GB" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "izaNotch"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "izaNotch"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "izaNotch"
-          }
-        },
-        "hu" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "izaNotch"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "izaNotch"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "izaNotch"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "izaNotch"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "izaNotch"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "izaNotch"
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "izaNotch"
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "izaNotch"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "izaNotch"
-          }
-        }
-      }
+    "Bridge Port" : {
+
     },
-    "izanotch" : {
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "izanotch"
-          }
-        },
-        "cs" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "izanotch"
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "izanotch"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "izanotch"
-          }
-        },
-        "en-GB" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "izanotch"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "izanotch"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "izanotch"
-          }
-        },
-        "hu" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "izanotch"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "izanotch"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "izanotch"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "izanotch"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "izanotch"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "izanotch"
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "izanotch"
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "izanotch"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "izanotch"
-          }
-        }
-      }
+    "Bring %@ to foreground to mirror live screen." : {
+
+    },
+    "Buddy Name" : {
+
+    },
+    "Buka aplikasi Antigravity untuk menyinkronkan akun & kuota secara langsung." : {
+
+
+    },
+    "Buka Log Bridge" : {
+
+    },
+    "Buka Log Clicky & Siri AI" : {
+
+    },
+    "Cadangan Terbaik" : {
+
     },
     "Calendar" : {
       "localizations" : {
@@ -4243,6 +4355,9 @@
         }
       }
     },
+    "Calibrated Strobi Expressions (Klik untuk Transisi Halus):" : {
+
+    },
     "Cancel" : {
       "localizations" : {
         "ar" : {
@@ -4443,6 +4558,12 @@
         }
       }
     },
+    "Change..." : {
+
+    },
+    "CHARACTER" : {
+
+    },
     "Charging" : {
       "localizations" : {
         "ar" : {
@@ -4642,6 +4763,15 @@
           }
         }
       }
+    },
+    "ChatGPT" : {
+
+    },
+    "ChatGPT Multi-Account Pool" : {
+
+    },
+    "ChatGPT Vision VM" : {
+
     },
     "Check for Updates…" : {
       "localizations" : {
@@ -5246,7 +5376,10 @@
     "Claude and GPT models" : {
 
     },
-    "Claude Code" : {
+    "Clear" : {
+
+    },
+    "Clear Chat" : {
 
     },
     "Clear slot" : {
@@ -5349,6 +5482,24 @@
         }
       }
     },
+    "Click Add Account to register" : {
+
+    },
+    "Click to dictate voice or hold Control + Option" : {
+
+    },
+    "Click to stop recording" : {
+
+    },
+    "Clicky Active (Click to turn off)" : {
+
+    },
+    "Clicky Cloud" : {
+
+    },
+    "Clicky Inactive (Click to turn on)" : {
+
+    },
     "Close" : {
       "localizations" : {
         "ar" : {
@@ -5448,6 +5599,12 @@
           }
         }
       }
+    },
+    "Close back to notch" : {
+
+    },
+    "Close character inspector" : {
+
     },
     "Close gesture" : {
       "localizations" : {
@@ -5648,6 +5805,12 @@
           }
         }
       }
+    },
+    "Collapse Workspace" : {
+
+    },
+    "COLOR" : {
+
     },
     "Color Presets" : {
       "localizations" : {
@@ -5949,6 +6112,51 @@
         }
       }
     },
+    "Companion Controls" : {
+
+    },
+    "COMPANION IDENTITY" : {
+
+    },
+    "Companion Lifecycle States (Status ➔ Auto-Expression):" : {
+
+    },
+    "Companion Live Preview" : {
+
+    },
+    "Companion Name" : {
+
+    },
+    "Connect" : {
+
+    },
+    "Connect & Save" : {
+
+    },
+    "Connect any OpenAPI REST service or Model Context Protocol (MCP) server directly into Izanotchy." : {
+
+    },
+    "Connect to %@" : {
+
+    },
+    "Connected" : {
+
+    },
+    "CONNECTED" : {
+
+    },
+    "Connected Applications" : {
+
+    },
+    "Connected Apps" : {
+
+    },
+    "Connecting to %@..." : {
+
+    },
+    "Connector Name" : {
+
+    },
     "Continue" : {
       "localizations" : {
         "ar" : {
@@ -6048,6 +6256,12 @@
           }
         }
       }
+    },
+    "Continue to Character Design" : {
+
+    },
+    "Cooldown (%lldm)" : {
+
     },
     "Copy items on drag" : {
       "localizations" : {
@@ -6149,6 +6363,9 @@
         }
       }
     },
+    "Copy Logs" : {
+
+    },
     "Corner radius scaling" : {
       "localizations" : {
         "ar" : {
@@ -6248,6 +6465,15 @@
           }
         }
       }
+    },
+    "Create a new Clicky companion" : {
+
+    },
+    "Cua Driver Hands" : {
+
+    },
+    "Cua Status: %@" : {
+
     },
     "Currently selected: %@" : {
       "localizations" : {
@@ -6349,7 +6575,7 @@
         }
       }
     },
-    "Cursor" : {
+    "Cursor assistant is currently sleeping. Click Notch button to activate." : {
 
     },
     "Custom" : {
@@ -6451,6 +6677,9 @@
           }
         }
       }
+    },
+    "Custom Gemini API Key (Opsional)" : {
+
     },
     "Custom height" : {
       "localizations" : {
@@ -6852,6 +7081,9 @@
         }
       }
     },
+    "Customize Character" : {
+
+    },
     "Customize in Settings" : {
       "localizations" : {
         "ar" : {
@@ -7051,6 +7283,7 @@
           }
         }
       }
+
     },
     "Default" : {
       "localizations" : {
@@ -7152,6 +7385,12 @@
         }
       }
     },
+    "Delete character" : {
+
+    },
+    "Delete Character" : {
+
+    },
     "Description" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -7252,6 +7491,12 @@
           }
         }
       }
+    },
+    "Diagnostics & Live Logs" : {
+
+    },
+    "Digs into companies, markets, and competitors and hands you a tidy report." : {
+
     },
     "Disable" : {
       "extractionState" : "stale",
@@ -7454,6 +7699,15 @@
           }
         }
       }
+    },
+    "Disconnect" : {
+
+    },
+    "Done" : {
+
+    },
+    "Double-click or right-click to edit character" : {
+
     },
     "Download" : {
       "localizations" : {
@@ -7956,6 +8210,15 @@
         }
       }
     },
+    "Dynamic Gaze (Ikuti Kursor Mouse)" : {
+
+    },
+    "e.g. Internal Jira Server" : {
+
+    },
+    "e.g. Personal Free / Secondary Work" : {
+
+    },
     "Easily copy, store, and manage your most-used content. Upgrade now for advanced features like multi-item storage and quick access!" : {
       "localizations" : {
         "ar" : {
@@ -8056,6 +8319,12 @@
         }
       }
     },
+    "Edit character" : {
+
+    },
+    "Edit Character" : {
+
+    },
     "Edit layout" : {
       "localizations" : {
         "ar" : {
@@ -8155,6 +8424,9 @@
           }
         }
       }
+    },
+    "Edit the persona, instructions, memory rules, and skills that define how this companion thinks and acts." : {
+
     },
     "Enable blur effect behind album art" : {
       "localizations" : {
@@ -8355,6 +8627,9 @@
           }
         }
       }
+    },
+    "Enable Clicky Assistant" : {
+
     },
     "Enable colored spectrograms" : {
       "extractionState" : "stale",
@@ -8957,6 +9232,15 @@
         }
       }
     },
+    "Endpoint: http://127.0.0.1:1976" : {
+
+    },
+    "Engine procedural vector Strobi 3D dengan dynamic eye rigging, auto-blinking, & smooth morphing mengadopsi Bible Strong Avatar Lab." : {
+
+    },
+    "Engine: OpenAI Codex CLI (Headless)" : {
+
+    },
     "Enhance your experience with HUDs" : {
       "localizations" : {
         "ar" : {
@@ -9157,6 +9441,9 @@
         }
       }
     },
+    "Expand Workspace" : {
+
+    },
     "Expanded drag detection area" : {
       "localizations" : {
         "ar" : {
@@ -9256,6 +9543,9 @@
           }
         }
       }
+    },
+    "EXPRESSION" : {
+
     },
     "Extend hover area" : {
       "localizations" : {
@@ -9457,6 +9747,15 @@
           }
         }
       }
+    },
+    "Failed" : {
+
+    },
+    "Fetch & Refresh Activity" : {
+
+    },
+    "Files & Folders" : {
+
     },
     "Files dropped on the shelf will be shared via this service" : {
       "localizations" : {
@@ -9661,6 +9960,18 @@
     "Five Hour Limit Remaining" : {
 
     },
+    "Floating Aqua-Glass Companion Sphere" : {
+
+    },
+    "Formulating the next helpful question for your Clicky..." : {
+
+    },
+    "Found New Companion..." : {
+
+    },
+    "Full Access" : {
+
+    },
     "Full Quota Available" : {
 
     },
@@ -9763,6 +10074,21 @@
           }
         }
       }
+    },
+    "Futures Scout & TradingView" : {
+
+    },
+    "Gemini 3.1 Pro (Deep Reasoning)" : {
+
+    },
+    "Gemini 3.7 Flash" : {
+
+    },
+    "Gemini 3.8 Flash (Cepat & Pintar — Rekomendasi)" : {
+
+    },
+    "Gemini Model" : {
+
     },
     "Gemini Models" : {
 
@@ -10067,6 +10393,9 @@
         }
       }
     },
+    "Get context-aware task suggestions based on what you're working on." : {
+
+    },
     "Get started" : {
       "localizations" : {
         "ar" : {
@@ -10167,7 +10496,11 @@
         }
       }
     },
+    "Get your credentials from %@ settings ↗" : {
+
+    },
     "GitHub" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -10266,6 +10599,21 @@
           }
         }
       }
+    },
+    "GitHub Activity" : {
+
+    },
+    "GitHub Commit Activity" : {
+
+    },
+    "GitHub Username" : {
+
+    },
+    "Google Gemini (Offline)" : {
+
+    },
+    "Google Gemini (Online)" : {
+
     },
     "Got it!" : {
       "localizations" : {
@@ -10367,6 +10715,9 @@
         }
       }
     },
+    "gpt-6-luna" : {
+
+    },
     "Gradient" : {
       "localizations" : {
         "ar" : {
@@ -10467,7 +10818,37 @@
         }
       }
     },
+    "Grant Access" : {
+
+    },
+    "Grant Permission" : {
+
+    },
+    "Granted" : {
+
+    },
+    "Grok Bot • White Edition (Klik untuk poke/ganggu)" : {
+
+    },
+    "Hapus %@" : {
+
+    },
+    "Hapus Profil" : {
+
+    },
+    "Hapus Semua Profil" : {
+
+    },
+    "Head Pitch (X): %lld°" : {
+
+    },
+    "Head Yaw (Y): %lld°" : {
+
+    },
     "Hello %@!" : {
+
+    },
+    "HEX" : {
 
     },
     "Hide all-day events" : {
@@ -10569,6 +10950,9 @@
           }
         }
       }
+    },
+    "Hide Clicky Cursor" : {
+
     },
     "Hide completed reminders" : {
       "localizations" : {
@@ -11270,6 +11654,18 @@
         }
       }
     },
+    "History" : {
+
+    },
+    "Hold ⌃⌥ to Talk" : {
+
+    },
+    "Hold Control + Option to answer" : {
+
+    },
+    "Hot-Failover Guard" : {
+
+    },
     "Hover delay" : {
       "localizations" : {
         "ar" : {
@@ -11370,6 +11766,9 @@
         }
       }
     },
+    "https://api.mycompany.com/v1" : {
+
+    },
     "https://github.com/pear-devs/pear-desktop" : {
       "localizations" : {
         "ar" : {
@@ -11469,6 +11868,9 @@
           }
         }
       }
+    },
+    "Hubungkan Ulang" : {
+
     },
     "HUD style" : {
       "localizations" : {
@@ -11670,6 +12072,9 @@
         }
       }
     },
+    "Human Takeover Active" : {
+
+    },
     "In progress" : {
       "localizations" : {
         "ar" : {
@@ -11769,6 +12174,9 @@
           }
         }
       }
+    },
+    "In Progress" : {
+
     },
     "Inline" : {
       "localizations" : {
@@ -11971,6 +12379,247 @@
         }
       }
     },
+    "Integrasi Klien (OpenAI API)" : {
+
+    },
+    "Integrations" : {
+
+    },
+    "Interview" : {
+
+    },
+    "Invalid: %@" : {
+
+    },
+    "Isolated sandbox for deliverables, snapshots, memory & browser sessions" : {
+
+    },
+    "IzaClicky AI" : {
+
+    },
+    "IzaClicky HomeSpace" : {
+
+    },
+    "izanotch" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "izanotch"
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "izanotch"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "izanotch"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "izanotch"
+          }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "izanotch"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "izanotch"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "izanotch"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "izanotch"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "izanotch"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "izanotch"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "izanotch"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "izanotch"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "izanotch"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "izanotch"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "izanotch"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "izanotch"
+          }
+        }
+      }
+    },
+    "izaNotch" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "izaNotch"
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "izaNotch"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "izaNotch"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "izaNotch"
+          }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "izaNotch"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "izaNotch"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "izaNotch"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "izaNotch"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "izaNotch"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "izaNotch"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "izaNotch"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "izaNotch"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "izaNotch"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "izaNotch"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "izaNotch"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "izaNotch"
+          }
+        }
+      }
+    },
+    "izanotchy" : {
+
+    },
+    "Izanotchy" : {
+
+    },
+    "Kontrol Engine" : {
+
+    },
+    "Kontrol Proxy" : {
+
+    },
+    "Kosongkan untuk otomatis memakai Akun Gemini Antigravity bawaan Notch tanpa kuota berbayar." : {
+
+    },
+    "Launch %@" : {
+
+    },
     "Layout Preview" : {
       "localizations" : {
         "ar" : {
@@ -12071,7 +12720,13 @@
         }
       }
     },
+    "Load older messages (%lld more)" : {
+
+    },
     "Loading lyrics…" : {
+
+    },
+    "Loading..." : {
 
     },
     "Lottie JSON URL" : {
@@ -12375,6 +13030,7 @@
       }
     },
     "Made with 🫶🏻 by not so boring not.people" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -12473,6 +13129,12 @@
           }
         }
       }
+    },
+    "Made with 🫶🏻 for Izanotchy" : {
+
+    },
+    "Mail • %@" : {
+
     },
     "Mark as complete" : {
       "localizations" : {
@@ -12673,6 +13335,9 @@
           }
         }
       }
+    },
+    "Markdown Editable" : {
+
     },
     "Match menu bar height" : {
       "localizations" : {
@@ -12974,6 +13639,9 @@
         }
       }
     },
+    "Matikan Bridge" : {
+
+    },
     "Max Capacity: %lld%%" : {
       "localizations" : {
         "ar" : {
@@ -13073,6 +13741,9 @@
           }
         }
       }
+    },
+    "Maximize Workspace" : {
+
     },
     "Media" : {
       "localizations" : {
@@ -13674,6 +14345,9 @@
         }
       }
     },
+    "Message %@..." : {
+
+    },
     "Mic %@" : {
       "localizations" : {
         "ar" : {
@@ -13773,6 +14447,9 @@
           }
         }
       }
+    },
+    "Microphone Permission" : {
+
     },
     "Mirror" : {
       "localizations" : {
@@ -13973,6 +14650,12 @@
           }
         }
       }
+    },
+    "Model: 6 Luna Medium" : {
+
+    },
+    "Model: AFM 3 Core (On-Device)" : {
+
     },
     "More" : {
       "localizations" : {
@@ -14474,6 +15157,18 @@
         }
       }
     },
+    "NAME" : {
+
+    },
+    "Needs a yes" : {
+
+    },
+    "Neural Engine" : {
+
+    },
+    "Neural Engine & Accessibility" : {
+
+    },
     "Never hide" : {
       "localizations" : {
         "ar" : {
@@ -14573,6 +15268,18 @@
           }
         }
       }
+    },
+    "New Clicky" : {
+
+    },
+    "No accounts in pool" : {
+
+    },
+    "No Active Account" : {
+
+    },
+    "No applications found" : {
+
     },
     "No custom animation available" : {
       "localizations" : {
@@ -15075,7 +15782,16 @@
         }
       }
     },
+    "No log entries yet. Press ⌥ Option or toggle Clicky to generate events." : {
+
+    },
     "No lyrics found" : {
+
+    },
+    "No routines yet. Ask this Clicky to do something \"every morning\", \"every few hours\", or \"every Monday\" and it will run here on repeat." : {
+
+    },
+    "Not now" : {
 
     },
     "Not Now" : {
@@ -15578,6 +16294,9 @@
         }
       }
     },
+    "Nyalakan Bridge (:8080)" : {
+
+    },
     "Open Calendar Settings" : {
       "localizations" : {
         "ar" : {
@@ -15677,6 +16396,27 @@
           }
         }
       }
+    },
+    "Open Chat" : {
+
+    },
+    "Open companion workspace folder in Finder" : {
+
+    },
+    "Open Home Space Canvas" : {
+
+    },
+    "Open in Finder" : {
+
+    },
+    "Open local file in default editor" : {
+
+    },
+    "Open Log File" : {
+
+    },
+    "Open markdown persona specification file" : {
+
     },
     "Open Notch" : {
       "localizations" : {
@@ -15978,6 +16718,9 @@
         }
       }
     },
+    "Open Screen Settings" : {
+
+    },
     "Open shelf by default if items are present" : {
       "localizations" : {
         "ar" : {
@@ -16077,6 +16820,9 @@
           }
         }
       }
+    },
+    "Open Workspace" : {
+
     },
     "Opening..." : {
 
@@ -16181,6 +16927,33 @@
         }
       }
     },
+    "or type your answer" : {
+
+    },
+    "Passive Background Market Watcher (Alert saat harga masuk GP)" : {
+
+    },
+    "PAT requires `read:user` scope to include private repository contributions. If left blank, public contributions will be fetched automatically." : {
+
+    },
+    "PDF • Open" : {
+
+    },
+    "Pengawasan pasar pasif di latar belakang berjalan melalui kuotasi BingX API tanpa capture layar. Maksimal 3 simbol terpantau dengan cooldown 15 menit." : {
+
+    },
+    "Permission Setup..." : {
+
+    },
+    "Permissions & Intelligence" : {
+
+    },
+    "PERSONA SPEC & RULES (.md)" : {
+
+    },
+    "Personal Access Token (optional)" : {
+
+    },
     "Pick a Color" : {
       "localizations" : {
         "ar" : {
@@ -16280,6 +17053,12 @@
           }
         }
       }
+    },
+    "Play" : {
+
+    },
+    "Play Sound Effects" : {
+
     },
     "Plugged In" : {
       "localizations" : {
@@ -16480,6 +17259,16 @@
           }
         }
       }
+    },
+    "Private Cloud Compute (E2EE)" : {
+
+    },
+    "Proactive Notch Suggestions (Auto-Context Pill)" : {
+
+
+    },
+    "Profil Tersimpan di Vault" : {
+
     },
     "Progress bar style" : {
       "localizations" : {
@@ -16782,6 +17571,7 @@
       }
     },
     "Quit" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -16981,7 +17771,34 @@
         }
       }
     },
+    "Quit Izanotchy" : {
+
+    },
+    "Rail 44pt" : {
+
+    },
+    "Read & Write" : {
+
+    },
+    "Ready" : {
+
+    },
+    "Ready Standby" : {
+
+    },
+    "Realtime diagnostic events streamed to ~/Library/Logs/Izanotchy/clicky.log" : {
+
+    },
+    "Recording... Click to finish" : {
+
+    },
     "Refreshes in %@" : {
+
+    },
+    "Register ChatGPT Account Session" : {
+
+    },
+    "Register or import an account below" : {
 
     },
     "Release name" : {
@@ -17784,6 +18601,9 @@
         }
       }
     },
+    "Rescan installed macOS applications" : {
+
+    },
     "Reset to Defaults" : {
       "localizations" : {
         "ar" : {
@@ -17985,7 +18805,11 @@
         }
       }
     },
+    "Restart Bridge (:8080)" : {
+
+    },
     "Restart izaNotch" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -18084,6 +18908,42 @@
           }
         }
       }
+    },
+    "Restart Izanotchy" : {
+
+    },
+    "Restart Siri AI & Cua Daemons" : {
+
+    },
+    "Resume Companion" : {
+
+    },
+    "Return to AI View" : {
+
+    },
+    "Return to chat workspace" : {
+
+    },
+    "Return to send • Shift Return for a new line" : {
+
+    },
+    "Review Companion Spec" : {
+
+    },
+    "Role" : {
+
+    },
+    "ROLE" : {
+
+    },
+    "Role Title" : {
+
+    },
+    "Router: Cua Driver Hands (56 Tools)" : {
+
+    },
+    "ROUTINES" : {
+
     },
     "Running" : {
       "extractionState" : "stale",
@@ -18185,6 +19045,39 @@
           }
         }
       }
+    },
+    "Safari VM" : {
+
+    },
+    "Salin Base URL (http://127.0.0.1:%lld/v1)" : {
+
+    },
+    "Salin Config OpenAI JSON" : {
+
+    },
+    "Save & Launch Companion" : {
+
+    },
+    "Save Character" : {
+
+    },
+    "Save Connector" : {
+
+    },
+    "Save to Pool" : {
+
+    },
+    "Screen Recording Permission" : {
+
+    },
+    "Search" : {
+
+    },
+    "Search installed Mac apps..." : {
+
+    },
+    "Search integrations..." : {
+
     },
     "Select the music source you want to use. You can change this later in the app settings." : {
       "localizations" : {
@@ -18485,6 +19378,12 @@
           }
         }
       }
+    },
+    "Server Endpoint (URL / Stdio Path)" : {
+
+    },
+    "Session Auth JSON (~/.codex/auth.json)" : {
+
     },
     "Settings" : {
       "localizations" : {
@@ -19086,6 +19985,9 @@
         }
       }
     },
+    "Show Clicky Cursor" : {
+
+    },
     "Show cool face animation while inactive" : {
       "localizations" : {
         "ar" : {
@@ -19385,6 +20287,9 @@
           }
         }
       }
+    },
+    "Show me" : {
+
     },
     "Show menu bar icon" : {
       "localizations" : {
@@ -20086,6 +20991,9 @@
         }
       }
     },
+    "Show Response Subtitles / Text Bubble" : {
+
+    },
     "Show settings icon in notch" : {
       "localizations" : {
         "ar" : {
@@ -20285,6 +21193,37 @@
           }
         }
       }
+    },
+    "Sign in to %@ so %@ can access your messages." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Sign in to %1$@ so %2$@ can access your messages."
+          }
+        }
+      }
+    },
+    "Simpan %@ ke Vault" : {
+
+    },
+    "Simpan profil tambahan di Vault" : {
+
+    },
+    "Siri AI" : {
+
+    },
+    "Siri AI & Cua Bridge" : {
+
+    },
+    "Siri AI & Cua Driver Daemon" : {
+
+    },
+    "Siri AI is Ready on this Mac" : {
+
+    },
+    "Skip to Spec" : {
+
     },
     "Slider color" : {
       "localizations" : {
@@ -20586,6 +21525,9 @@
         }
       }
     },
+    "Socket: %@" : {
+
+    },
     "Software updates" : {
       "localizations" : {
         "ar" : {
@@ -20685,6 +21627,15 @@
           }
         }
       }
+    },
+    "spacex_c...pshot.pdf" : {
+
+    },
+    "Spec" : {
+
+    },
+    "Speech Recognition Permission" : {
+
     },
     "Speed" : {
       "localizations" : {
@@ -20889,6 +21840,15 @@
     "Start" : {
 
     },
+    "Start Bridge" : {
+
+    },
+    "Status: %@" : {
+
+    },
+    "Stop" : {
+
+    },
     "Stopped" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -20989,6 +21949,12 @@
           }
         }
       }
+    },
+    "Studio 96pt (Gaze + Morph)" : {
+
+    },
+    "Suggest agent tasks" : {
+
     },
     "Support Us" : {
       "extractionState" : "stale",
@@ -21191,6 +22157,9 @@
         }
       }
     },
+    "System & Execution Integration" : {
+
+    },
     "System features" : {
       "localizations" : {
         "ar" : {
@@ -21290,6 +22259,30 @@
           }
         }
       }
+    },
+    "Tahan Tutup Mata Manual" : {
+
+    },
+    "Take Over" : {
+
+    },
+    "Take Over Screen" : {
+
+    },
+    "Takeover" : {
+
+    },
+    "Takeover Mode: Direct Mouse & Keyboard" : {
+
+    },
+    "Takeover Needed" : {
+
+    },
+    "Takeover Needed: Input Required" : {
+
+    },
+    "Thinking..." : {
+
     },
     "Time to Full Charge: %lld min" : {
       "localizations" : {
@@ -21494,6 +22487,12 @@
         }
       }
     },
+    "Tip: Jika Screen Recording di macOS System Settings sudah ON namun sistem meminta akses ulang setelah compile, matikan (OFF) lalu nyalakan kembali (ON) satu kali." : {
+
+    },
+    "Toggle Companion Rail" : {
+
+    },
     "Toggle Notch Open:" : {
       "localizations" : {
         "ar" : {
@@ -21594,6 +22593,9 @@
         }
       }
     },
+    "Toggle Sidebar" : {
+
+    },
     "Toggle Sneak Peek:" : {
       "localizations" : {
         "ar" : {
@@ -21693,6 +22695,21 @@
           }
         }
       }
+    },
+    "Toggle Task HUD" : {
+
+    },
+    "Token Quota & Execution" : {
+
+    },
+    "Token..." : {
+
+    },
+    "TradingView.app" : {
+
+    },
+    "Try again" : {
+
     },
     "Two-finger swipe up on notch to close, two-finger swipe down on notch to open when **Open notch on hover** option is disabled" : {
       "localizations" : {
@@ -21894,6 +22911,12 @@
           }
         }
       }
+    },
+    "Unlimited" : {
+
+    },
+    "Unlimited Local Inference · Zero API Cost" : {
+
     },
     "Unlock advanced features and improve your experience. Upgrade now for more customizations!" : {
       "localizations" : {
@@ -22195,6 +23218,9 @@
         }
       }
     },
+    "Update token %@" : {
+
+    },
     "Upgrade to Pro" : {
       "localizations" : {
         "ar" : {
@@ -22294,6 +23320,9 @@
           }
         }
       }
+    },
+    "Use" : {
+
     },
     "Use music visualizer spectrogram" : {
       "localizations" : {
@@ -22795,6 +23824,9 @@
         }
       }
     },
+    "View & edit character details" : {
+
+    },
     "View on GitHub: pear-devs/pear-desktop" : {
       "localizations" : {
         "ar" : {
@@ -22894,6 +23926,21 @@
           }
         }
       }
+    },
+    "Viewing Mode: AI Operating Autonomously" : {
+
+    },
+    "Voice Engine" : {
+
+    },
+    "Voice Push-to-Talk Input (⌃ Control + ⌥ Option)" : {
+
+    },
+    "Voice Response (Speak Answers Aloud)" : {
+
+    },
+    "Watching your screen in real time. Ready to guide, point, and execute tasks." : {
+
     },
     "Weekly Limit Remaining" : {
 
@@ -23098,6 +24145,9 @@
         }
       }
     },
+    "When 'Always Allow Computer Use' is OFF (Ask Mode), companions ask for permission before clicking or typing. Proactive Notch displays quick actions for GitHub, Linear, Docs & Code." : {
+
+    },
     "Window Appearance" : {
       "localizations" : {
         "ar" : {
@@ -23298,6 +24348,21 @@
         }
       }
     },
+    "WORK" : {
+
+    },
+    "Working" : {
+
+    },
+    "WORKSPACE & SANDBOX" : {
+
+    },
+    "You" : {
+
+    },
+    "You are directly controlling the VM. Click Resume when signed in." : {
+
+    },
     "You can now enjoy the app. If you want to tweak things further, you can always visit the settings." : {
       "localizations" : {
         "ar" : {
@@ -23397,6 +24462,9 @@
           }
         }
       }
+    },
+    "You:" : {
+
     },
     "You're All Set!" : {
       "localizations" : {

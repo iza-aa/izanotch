@@ -19,6 +19,7 @@ public struct VMWebViewRepresentable: NSViewRepresentable {
         let container = NSView()
         container.wantsLayer = true
         container.layer?.backgroundColor = NSColor(calibratedRed: 0.07, green: 0.07, blue: 0.08, alpha: 1.0).cgColor
+        controller.viewportContainer = container
 
         if let wv = controller.webView {
             wv.translatesAutoresizingMaskIntoConstraints = false
@@ -34,15 +35,30 @@ public struct VMWebViewRepresentable: NSViewRepresentable {
     }
 
     public func updateNSView(_ nsView: NSView, context: Context) {
-        if let wv = controller.webView, wv.superview == nil {
-            wv.translatesAutoresizingMaskIntoConstraints = false
-            nsView.addSubview(wv)
-            NSLayoutConstraint.activate([
-                wv.leadingAnchor.constraint(equalTo: nsView.leadingAnchor),
-                wv.trailingAnchor.constraint(equalTo: nsView.trailingAnchor),
-                wv.topAnchor.constraint(equalTo: nsView.topAnchor),
-                wv.bottomAnchor.constraint(equalTo: nsView.bottomAnchor)
-            ])
+        controller.viewportContainer = nsView
+        if let wv = controller.webView {
+            if wv.superview == nil {
+                wv.translatesAutoresizingMaskIntoConstraints = false
+                nsView.addSubview(wv)
+                NSLayoutConstraint.activate([
+                    wv.leadingAnchor.constraint(equalTo: nsView.leadingAnchor),
+                    wv.trailingAnchor.constraint(equalTo: nsView.trailingAnchor),
+                    wv.topAnchor.constraint(equalTo: nsView.topAnchor),
+                    wv.bottomAnchor.constraint(equalTo: nsView.bottomAnchor)
+                ])
+            }
+            if nsView.bounds.width > 50 {
+                controller.updateViewportLayout(width: nsView.bounds.width, height: nsView.bounds.height, isModal: false)
+            }
+            if controller.isTakeoverActive {
+                DispatchQueue.main.async {
+                    if let win = wv.window ?? nsView.window {
+                        win.makeKeyAndOrderFront(nil)
+                        let shifted = win.makeFirstResponder(wv)
+                        ClickyLogger.info("[TAKEOVER]", "First responder shifted to WKWebView: success=\(shifted), window='\(win.title)'")
+                    }
+                }
+            }
         }
     }
 }
@@ -86,7 +102,7 @@ public struct CompanionVMViewportView: View {
                 }
             }
         }
-        .frame(maxWidth: 700, maxHeight: 390)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color(hex: "#111215"))
         .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
         .overlay(
@@ -110,24 +126,21 @@ public struct CompanionVMViewportView: View {
                 Circle().fill(Color(hex: "#10B981")).frame(width: 9, height: 9)
             }
 
-            // App Icon
-            AppSystemIconView(appName: controller.currentApp == "mail" ? "Mail" : "Safari", size: 16)
+            // App Icon & Name dynamically derived from active site adapter (Zero Hardcoding)
+            let currentAdapter = WebSiteAdapterRegistry.shared.adapter(for: controller.webView?.url)
+            AppSystemIconView(appName: currentAdapter.name, size: 16)
 
-            // App Name / Title
-            Text(controller.currentApp == "mail" ? "Mail • \(controller.mailProvider.capitalized)" : "Safari VM")
+            Text(currentAdapter.name)
                 .font(.system(size: 11.5, weight: .bold))
                 .foregroundColor(.white.opacity(0.90))
 
-            // Mail Provider Switcher Chips (When App is Mail)
-            if controller.currentApp == "mail" {
-                HStack(spacing: 4) {
-                    providerChip(id: "icloud", label: "iCloud")
-                    providerChip(id: "gmail", label: "Gmail")
-                    providerChip(id: "outlook", label: "Outlook")
+            // Provider Switcher Chips dynamically rendered from registered adapters
+            HStack(spacing: 4) {
+                ForEach(WebSiteAdapterRegistry.shared.adapters, id: \.id) { ad in
+                    providerChip(id: ad.id, label: ad.name)
                 }
-                .padding(.leading, 6)
             }
-
+            .padding(.leading, 6)
             Spacer()
 
             // Status Badge
@@ -135,7 +148,7 @@ public struct CompanionVMViewportView: View {
                 Circle()
                     .fill(Color(hex: "#10B981"))
                     .frame(width: 6, height: 6)
-                Text("🔒 Isolated VM")
+                Text("Isolated Workspace")
                     .font(.system(size: 10, weight: .bold, design: .monospaced))
                     .foregroundColor(Color(hex: "#34D399"))
             }
@@ -204,29 +217,16 @@ public struct CompanionVMViewportView: View {
     }
 
     // MARK: - Takeover Notification Banner
+    // MARK: - Takeover Notification Banner (Consolidated TakeoverStatusView)
     public var takeoverNotificationBanner: some View {
-        HStack(spacing: 12) {
-            HStack(spacing: 8) {
-                Image(systemName: "exclamationmark.shield.fill")
-                    .font(.system(size: 14, weight: .bold))
-                    .foregroundColor(Color(hex: "#F59E0B"))
-
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(controller.isTakeoverActive ? "Human Takeover Active" : "Authentication Required")
-                        .font(.system(size: 12, weight: .bold))
-                        .foregroundColor(.white)
-
-                    Text(controller.isTakeoverActive
-                         ? "You are directly controlling the VM. Click Resume when signed in."
-                         : "Sign in to \(controller.mailProvider.capitalized) so \(companion.activeBuddy.name) can access your messages.")
-                        .font(.system(size: 11, weight: .regular))
-                        .foregroundColor(.white.opacity(0.85))
-                }
-            }
-
-            Spacer()
-
-            Button(action: {
+        let currentAdapter = WebSiteAdapterRegistry.shared.adapter(for: controller.webView?.url)
+        return TakeoverStatusView(
+            isTakeoverActive: controller.isTakeoverActive,
+            title: controller.isTakeoverActive ? "Human Takeover Active" : "Authentication Required",
+            subtitle: controller.isTakeoverActive
+                ? "You are directly controlling the VM. Click Resume when signed in."
+                : "Sign in to \(currentAdapter.name) so \(companion.activeBuddy.name) can access your messages.",
+            onToggleTakeover: {
                 withAnimation(.spring(response: 0.25)) {
                     controller.isTakeoverActive.toggle()
                     if !controller.isTakeoverActive {
@@ -236,33 +236,7 @@ public struct CompanionVMViewportView: View {
                         }
                     }
                 }
-            }) {
-                HStack(spacing: 5) {
-                    Image(systemName: controller.isTakeoverActive ? "play.fill" : "hand.raised.fill")
-                    Text(controller.isTakeoverActive ? "Resume Companion" : "Take Over Screen")
-                }
-                .font(.system(size: 11.5, weight: .bold))
-                .foregroundColor(.black)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 6)
-                .background(
-                    Capsule()
-                        .fill(Color(hex: controller.isTakeoverActive ? "#10B981" : "#FBBF24"))
-                )
-                .shadow(radius: 4)
             }
-            .buttonStyle(.plain)
-        }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 8)
-        .background(
-            RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .fill(Color(hex: "#1E1F24"))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 10, style: .continuous)
-                        .stroke(Color(hex: "#F59E0B").opacity(0.4), lineWidth: 0.8)
-                )
         )
-        .shadow(color: Color.black.opacity(0.5), radius: 8, x: 0, y: 4)
     }
 }

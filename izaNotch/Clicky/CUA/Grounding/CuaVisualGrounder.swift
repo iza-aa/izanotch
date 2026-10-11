@@ -39,15 +39,12 @@ public enum CuaVisualGrounder {
         windowBounds: CGRect,
         cropNorm: CGRect = CGRect(x: 0, y: 0, width: 1.0, height: 1.0)
     ) -> [GroundedUIElement] {
-        let tempPath = "/tmp/cuadrive_ground_\(windowId).png"
-        let proc = Process()
-        proc.executableURL = URL(fileURLWithPath: "/usr/sbin/screencapture")
-        proc.arguments = ["-x", "-l", "\(windowId)", tempPath]
-        try? proc.run()
-        proc.waitUntilExit()
-
-        guard let imgSource = CGImageSourceCreateWithURL(URL(fileURLWithPath: tempPath) as CFURL, nil),
-              let cgImage = CGImageSourceCreateImageAtIndex(imgSource, 0, nil) else {
+        guard let cgImage = CGWindowListCreateImage(
+            .null,
+            .optionIncludingWindow,
+            windowId,
+            [.boundsIgnoreFraming, .bestResolution]
+        ) else {
             return []
         }
 

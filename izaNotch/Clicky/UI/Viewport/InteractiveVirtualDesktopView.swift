@@ -51,14 +51,14 @@ public struct InteractiveVirtualDesktopView: View {
                     )
                     .frame(width: geo.size.width, height: geo.size.height)
                 } else {
-                    // Safe View-Only Mode: Pure SwiftUI, 0 Hit-Testing, 0 Event Interception
+                    // Safe View-Only Mode: Pure SwiftUI, 0 Hit-Testing, Aspect-Fit Proportional
                     ZStack {
-                        Color(hex: "#0F1115")
+                        Color(hex: "#18191B")
                         if let img = customSnapshot ?? vdService.activeSnapshot {
                             Image(nsImage: img)
                                 .resizable()
                                 .aspectRatio(contentMode: .fit)
-                                .frame(maxWidth: geo.size.width, maxHeight: geo.size.height)
+                                .frame(width: geo.size.width, height: geo.size.height)
                         }
                     }
                     .frame(width: geo.size.width, height: geo.size.height)
@@ -75,74 +75,76 @@ public struct InteractiveVirtualDesktopView: View {
                 if !isInteractive {
                     let reticle = vdService.virtualReticle
 
-                    // Project cursor accurately to aspect-fit rendered image rect
-                    let img = customSnapshot ?? vdService.activeSnapshot
-                    let imgSize = img?.size ?? CGSize(width: 1260, height: 800)
                     let viewW = geo.size.width
                     let viewH = geo.size.height
 
-                    let scale = min(viewW / max(imgSize.width, 1), viewH / max(imgSize.height, 1))
-                    let drawWidth = imgSize.width * scale
-                    let drawHeight = imgSize.height * scale
-                    let drawX = (viewW - drawWidth) / 2.0
-                    let drawY = (viewH - drawHeight) / 2.0
+                    let activeImg = customSnapshot ?? vdService.activeSnapshot
+                    let imgW = activeImg?.size.width ?? viewW
+                    let imgH = activeImg?.size.height ?? viewH
 
-                    let rx = drawX + (reticle.x * drawWidth)
-                    let ry = drawY + (reticle.y * drawHeight)
+                    let (canvasW, canvasH, offsetX, offsetY): (CGFloat, CGFloat, CGFloat, CGFloat) = {
+                        guard imgW > 0, imgH > 0, viewW > 0, viewH > 0 else {
+                            return (viewW, viewH, 0, 0)
+                        }
+                        let scale = min(viewW / imgW, viewH / imgH)
+                        let dw = imgW * scale
+                        let dh = imgH * scale
+                        let ox = (viewW - dw) / 2.0
+                        let oy = (viewH - dh) / 2.0
+                        return (dw, dh, ox, oy)
+                    }()
+
+                    let rx = offsetX + (reticle.x * canvasW)
+                    let ry = offsetY + (reticle.y * canvasH)
 
                     ZStack(alignment: .topLeading) {
-                        // Subtle ripple pulse on click in buddy color
+                        // Subtle ripple pulse on click in crisp white
                         if vdService.isClickingReticle {
                             Circle()
-                                .stroke(buddyThemeColor.opacity(0.85), lineWidth: 1.2)
+                                .stroke(Color.white.opacity(0.85), lineWidth: 1.2)
                                 .frame(width: 14, height: 14)
                                 .scaleEffect(1.4)
                                 .offset(x: -7, y: -7)
                                 .transition(.scale.combined(with: .opacity))
                         }
 
-                        // Compact macOS-style arrow pointer with luminous buddy accent
+                        // Precision tailless cursor in active buddy theme color (Foto 2 & Foto 3)
                         MascotAgentCursorView(isClicking: vdService.isClickingReticle, accentColor: buddyThemeColor)
-                            .offset(x: 4.5, y: 6.0)
+                            .offset(x: 6.0, y: 8.0)
                     }
                     .position(x: rx, y: ry)
+                    .opacity(vdService.isReticleVisible ? 1.0 : 0.0)
+                    .animation(.easeInOut(duration: 0.25), value: vdService.isReticleVisible)
                     .allowsHitTesting(false)
                 }
 
-                // 4. Header Bar / Mode Badge
-                HStack(spacing: 6) {
-                    HStack(spacing: 5) {
-                        Circle()
-                            .fill(isInteractive ? Color(hex: "#10B981") : buddyThemeColor)
-                            .frame(width: 6, height: 6)
+                // 4. Header Bar / Mode Badge (Strictly shown during Human Takeover mode)
+                if isInteractive {
+                    HStack(spacing: 6) {
+                        HStack(spacing: 5) {
+                            Circle()
+                                .fill(Color(hex: "#10B981"))
+                                .frame(width: 6, height: 6)
 
-                        Text(isInteractive ? "Human Takeover Active" : "AI Autonomous View")
-                            .font(.system(size: 10, weight: .bold, design: .rounded))
-                            .foregroundColor(.white.opacity(0.90))
+                            Text("Human Takeover Active")
+                                .font(.system(size: 10, weight: .bold, design: .rounded))
+                                .foregroundColor(.white.opacity(0.95))
+                        }
+                        .padding(.horizontal, 9)
+                        .padding(.vertical, 4)
+                        .background(
+                            Capsule()
+                                .fill(Color.black.opacity(0.75))
+                                .overlay(
+                                    Capsule().stroke(Color.white.opacity(0.20), lineWidth: 0.6)
+                                )
+                        )
+
+                        Spacer()
                     }
-                    .padding(.horizontal, 9)
-                    .padding(.vertical, 4)
-                    .background(
-                        Capsule()
-                            .fill(Color.black.opacity(0.65))
-                            .overlay(
-                                Capsule().stroke(Color.white.opacity(0.15), lineWidth: 0.6)
-                            )
-                    )
-
-                    Spacer()
-
-                    if isHovering {
-                        Text(isInteractive ? "Click and type directly in \(targetAppName)" : "View Mode • Click 'Take Over Screen' to interact")
-                            .font(.system(size: 9.5, weight: .medium))
-                            .foregroundColor(.white.opacity(0.75))
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 3)
-                            .background(Capsule().fill(Color.black.opacity(0.5)))
-                    }
+                    .padding(10)
+                    .allowsHitTesting(false)
                 }
-                .padding(10)
-                .allowsHitTesting(false)
             }
             .contentShape(Rectangle())
             .onHover { hovering in
@@ -160,19 +162,32 @@ public struct InteractiveVirtualDesktopView: View {
 
     private func placeholderView(size: CGSize) -> some View {
         ZStack {
-            Color(hex: "#0F1115")
+            // Foto 1 Clean White Canvas with Subtle Dot Grid
+            Color.white
+
+            GeometryReader { geo in
+                Path { path in
+                    let spacing: CGFloat = 16
+                    stride(from: 8, through: geo.size.width, by: spacing).forEach { x in
+                        stride(from: 8, through: geo.size.height, by: spacing).forEach { y in
+                            path.addEllipse(in: CGRect(x: x, y: y, width: 1.2, height: 1.2))
+                        }
+                    }
+                }
+                .fill(Color(hex: "#94A3B8").opacity(0.22))
+            }
 
             VStack(spacing: 12) {
                 AppSystemIconView(appName: targetAppName, size: 48)
 
                 VStack(spacing: 4) {
-                    Text("\(targetAppName) Isolated Workspace")
+                    Text("\(targetAppName) Workspace")
                         .font(.system(size: 14, weight: .bold))
-                        .foregroundColor(.white)
+                        .foregroundColor(Color(hex: "#0F172A"))
 
-                    Text("Initializing virtual desktop space...")
-                        .font(.system(size: 11))
-                        .foregroundColor(Color.white.opacity(0.60))
+                    Text("Connecting to \(targetAppName)...")
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundColor(Color(hex: "#64748B"))
                 }
             }
         }
@@ -281,7 +296,7 @@ final class InteractiveCanvasView: NSView {
     }
 }
 
-// MARK: - Autonomous Mascot Agent Cursor View (F-08: Animated CUA Gliding Cursor)
+// MARK: - Autonomous Mascot Agent Cursor View (Precision Tailless Arrow - Foto 2 & Foto 3)
 public struct MascotAgentCursorView: View {
     public let isClicking: Bool
     public var accentColor: Color
@@ -298,53 +313,40 @@ public struct MascotAgentCursorView: View {
 
     public var body: some View {
         ZStack(alignment: .topLeading) {
-            // Neon accent glow shadow in buddy color
+            // 1. Soft dark drop shadow for high contrast (Foto 2 & Foto 3)
             CursorArrowShape()
-                .fill(accentColor.opacity(0.60))
-                .frame(width: 9.5, height: 12.5)
-                .blur(radius: 2.0)
-                .offset(x: 0.5, y: 0.5)
+                .fill(Color.black.opacity(0.35))
+                .frame(width: 12, height: 16)
+                .offset(x: 0.5, y: 1.0)
 
-            // Outer crisp border
+            // 2. Thick crisp white outline (Foto 2 & Foto 3)
             CursorArrowShape()
-                .stroke(Color.white.opacity(0.95), lineWidth: 1.0)
-                .frame(width: 9, height: 12)
+                .stroke(Color.white, lineWidth: 1.5)
+                .frame(width: 12, height: 16)
 
-            // Dynamic buddy-colored fill
+            // 3. Solid fill with active buddy theme color (Foto 2 & Foto 3)
             CursorArrowShape()
-                .fill(
-                    LinearGradient(
-                        colors: [accentColor, accentColor.opacity(0.85)],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-                .frame(width: 9, height: 12)
-
-            // Subtle dark center core accent
-            CursorArrowShape()
-                .fill(Color(hex: "#0F172A").opacity(0.35))
-                .frame(width: 4.5, height: 6.5)
-                .offset(x: 2.0, y: 2.5)
+                .fill(accentColor)
+                .frame(width: 12, height: 16)
         }
-        .scaleEffect(isClicking ? 0.82 : 1.0)
-        .animation(.spring(response: 0.18, dampingFraction: 0.65), value: isClicking)
+        .scaleEffect(isClicking ? 0.85 : 1.0)
+        .animation(.spring(response: 0.18, dampingFraction: 0.7), value: isClicking)
     }
 }
 
-struct CursorArrowShape: Shape {
-    func path(in rect: CGRect) -> Path {
+public struct CursorArrowShape: Shape {
+    public init() {}
+
+    public func path(in rect: CGRect) -> Path {
         var path = Path()
         let w = rect.width
         let h = rect.height
 
+        // Precision tailless arrowhead pointer (CuaDriver / Foto 2)
         path.move(to: CGPoint(x: 0, y: 0))
         path.addLine(to: CGPoint(x: 0, y: h))
-        path.addLine(to: CGPoint(x: w * 0.32, y: h * 0.72))
-        path.addLine(to: CGPoint(x: w * 0.65, y: h))
-        path.addLine(to: CGPoint(x: w * 0.82, y: h * 0.85))
-        path.addLine(to: CGPoint(x: w * 0.50, y: h * 0.58))
-        path.addLine(to: CGPoint(x: w, y: h * 0.58))
+        path.addLine(to: CGPoint(x: w * 0.38, y: h * 0.68))
+        path.addLine(to: CGPoint(x: w, y: h * 0.55))
         path.closeSubpath()
 
         return path

@@ -40,9 +40,6 @@ public final class CompanionInterviewEngine: ObservableObject {
     @Published public var selectedTemplateId: String = "strobi"
     @Published public var selectedAvatarLabExpression: String = "neutral"
 
-    private lazy var geminiClient: GeminiBridgeClient = {
-        GeminiBridgeClient()
-    }()
 
     private init() {
         reset()
@@ -107,7 +104,7 @@ public final class CompanionInterviewEngine: ObservableObject {
             )
 
             do {
-                let (responseText, _) = try await geminiClient.analyzeImageStreaming(
+                let (responseText, _) = try await SiriAIEngine.shared.analyzeImageStreaming(
                     images: [],
                     systemPrompt: CompanionInterviewPolicy.systemPrompt,
                     conversationHistory: history,

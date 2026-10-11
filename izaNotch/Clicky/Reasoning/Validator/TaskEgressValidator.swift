@@ -60,6 +60,47 @@ public final class TaskEgressValidator: @unchecked Sendable {
             )
         }
 
+        // Deterministic Failure Guard:
+        // 1. If the most recent action failed to execute or could not be grounded, the task cannot be complete.
+        if let lastStep = performedSteps.last?.lowercased(),
+           lastStep.contains("failed to execute") || lastStep.contains("not visible") || lastStep.contains("ungrounded") {
+            ClickyLogger.info("[TASK_VALIDATOR]", "Deterministic short-circuit: last step was ungrounded/failed. isDone=false.")
+            return TaskStateEvaluation(
+                isDone: false,
+                requiresTakeover: false,
+                systemState: "Target element not visible or ungrounded",
+                extractedData: ""
+            )
+        }
+
+        // 2. If any step failed and no subsequent step succeeded, the task cannot be complete.
+        if let lastFailureIdx = performedSteps.lastIndex(where: {
+            let s = $0.lowercased()
+            return s.contains("failed to execute") || s.contains("not visible") || s.contains("ungrounded")
+        }) {
+            let subsequentSuccess = performedSteps[(lastFailureIdx + 1)...].contains(where: {
+                let s = $0.lowercased()
+                return !s.contains("failed") && (
+                    s.contains("done") ||
+                    s.contains("typed") ||
+                    s.contains("type") ||
+                    s.contains("clicked") ||
+                    s.contains("click") ||
+                    s.contains("scroll") ||
+                    s.contains("executed")
+                )
+            })
+            if !subsequentSuccess {
+                ClickyLogger.info("[TASK_VALIDATOR]", "Deterministic short-circuit: unrecovered failure in performed steps. isDone=false.")
+                return TaskStateEvaluation(
+                    isDone: false,
+                    requiresTakeover: false,
+                    systemState: "Unrecovered failure during execution",
+                    extractedData: ""
+                )
+            }
+        }
+
         let policy = ValidationPolicyRegistry.policy(for: intentType)
         let instructions = policy.buildInstructions(
             appName: appName,
@@ -100,6 +141,8 @@ public final class TaskEgressValidator: @unchecked Sendable {
                 let turnRes = try await SiriAIEngine.shared.analyzeMessagesWithToolsStreaming(
                     messages: [["role": "user", "content": prompt]],
                     systemPrompt: instructions,
+                    tools: [],
+                    maxTokens: 180,
                     onTextChunk: { _ in }
                 )
                 if let parsed = parseStateEvaluationJSON(from: turnRes.text) {
@@ -111,23 +154,6 @@ public final class TaskEgressValidator: @unchecked Sendable {
             }
         }
 
-        // Tier 3: Model reasoning fallback via GeminiBridgeClient
-        do {
-            let client = GeminiBridgeClient()
-            let turnRes = try await client.analyzeMessagesWithToolsStreaming(
-                messages: [["role": "user", "content": prompt]],
-                systemPrompt: instructions,
-                tools: [],
-                maxTokens: 512,
-                onTextChunk: { _ in }
-            )
-            if let parsed = parseStateEvaluationJSON(from: turnRes.text) {
-                ClickyLogger.info("[TASK_VALIDATOR]", "Gemini evaluated state: isDone=\(parsed.isDone), takeover=\(parsed.requiresTakeover), state='\(parsed.systemState)'")
-                return parsed
-            }
-        } catch {
-            ClickyLogger.warning("[TASK_VALIDATOR]", "Gemini state evaluation error: \(error.localizedDescription)")
-        }
 
         return TaskStateEvaluation(
             isDone: false,
@@ -152,15 +178,27 @@ public final class TaskEgressValidator: @unchecked Sendable {
         Under NO circumstances should response be in English if \(langName) is not English.
         NEVER output generic process status like 'proses inspeksi selesai' or internal self-evaluations like 'tujuan belum tercapai'.
         If target item or data was found, summarize the factual findings directly (e.g. sender name, subject, date/time, or content).
+        Do NOT filter by personal pronouns like 'saya' or 'my'. Deliver the extracted findings directly.
         Output ONLY plain text in \(langName) with no JSON, quotes, or markdown.
         """
 
-        let prompt = """
-        Goal: "\(goalText)"
-        State: "\(systemState)"
-        Findings: "\(extractedData)"
-        Synthesize direct, factual response in \(langName):
-        """
+        let prompt: String
+        let hasFindings = !extractedData.isEmpty && extractedData.lowercased() != "none"
+        if hasFindings {
+            prompt = """
+            Context: The requested item was successfully opened and retrieved from the user's \(appName).
+            Extracted Content:
+            "\(extractedData)"
+
+            Directly summarize the above extracted content for the user in \(langName):
+            """
+        } else {
+            prompt = """
+            Goal: "\(goalText)"
+            State: "\(systemState)"
+            Synthesize direct, factual response in \(langName):
+            """
+        }
 
         #if canImport(FoundationModels)
         if #available(macOS 26.0, *) {
@@ -183,19 +221,6 @@ public final class TaskEgressValidator: @unchecked Sendable {
             }
         }
 
-        // Tier 3: Model reasoning fallback via GeminiBridgeClient
-        do {
-            let client = GeminiBridgeClient()
-            let turnRes = try await client.analyzeMessagesWithToolsStreaming(
-                messages: [["role": "user", "content": prompt]],
-                systemPrompt: instructions,
-                tools: [],
-                maxTokens: 256,
-                onTextChunk: { _ in }
-            )
-            let txt = turnRes.text.trimmingCharacters(in: .whitespacesAndNewlines)
-            if !txt.isEmpty { return txt }
-        } catch {}
 
         return extractedData.isEmpty ? systemState : extractedData
     }
@@ -241,7 +266,8 @@ public final class TaskEgressValidator: @unchecked Sendable {
             rawResponseToUser: responseToUser,
             appName: appName,
             taskContract: taskContract,
-            lang: lang
+            lang: lang,
+            latestObservation: latestObservation
         )
     }
 
@@ -283,53 +309,54 @@ public final class TaskEgressValidator: @unchecked Sendable {
             }
         }
 
-        // Tier 3: Model reasoning fallback via GeminiBridgeClient
-        do {
-            let client = GeminiBridgeClient()
-            let turnRes = try await client.analyzeMessagesWithToolsStreaming(
-                messages: [["role": "user", "content": prompt]],
-                systemPrompt: instructions,
-                tools: [],
-                maxTokens: 128,
-                onTextChunk: { _ in }
-            )
-            let txt = turnRes.text.trimmingCharacters(in: .whitespacesAndNewlines)
-            if !txt.isEmpty { return txt }
-        } catch {}
 
         // Graceful universal fallback
         return noticeSummary
     }
 
     private func parseStateEvaluationJSON(from rawText: String) -> TaskStateEvaluation? {
-        guard let data = extractJSONData(from: rawText),
-              let dict = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-              let isDone = (dict["isDone"] as? Bool) ?? (dict["is_done"] as? Bool) ?? (dict["done"] as? Bool) else {
-            return nil
+        if let data = extractJSONData(from: rawText),
+           let dict = try? JSONSerialization.jsonObject(with: data, options: [.fragmentsAllowed]) as? [String: Any] {
+            let isDoneBool = (dict["isDone"] as? Bool) ?? (dict["is_done"] as? Bool) ?? (dict["done"] as? Bool)
+            let isDoneStr = (dict["isDone"] as? String) ?? (dict["is_done"] as? String) ?? (dict["done"] as? String)
+            let isDone = isDoneBool ?? (isDoneStr?.lowercased() == "true") ?? false
+
+            let systemState = (dict["systemState"] as? String)
+                ?? (dict["system_state"] as? String)
+                ?? (dict["summary"] as? String)
+                ?? (dict["state"] as? String)
+                ?? (isDone ? "Task accomplished" : "In progress")
+
+            let extractedData = (dict["extractedData"] as? String)
+                ?? (dict["extracted_data"] as? String)
+                ?? (dict["data"] as? String)
+                ?? ""
+
+            let requiresTakeoverBool = (dict["requiresTakeover"] as? Bool) ?? (dict["requires_takeover"] as? Bool)
+            let requiresTakeoverStr = (dict["requiresTakeover"] as? String) ?? (dict["requires_takeover"] as? String)
+            let requiresTakeover = requiresTakeoverBool ?? (requiresTakeoverStr?.lowercased() == "true") ?? false
+
+            return TaskStateEvaluation(
+                isDone: isDone,
+                requiresTakeover: requiresTakeover,
+                systemState: systemState,
+                extractedData: extractedData
+            )
         }
-        let systemState = (dict["systemState"] as? String)
-            ?? (dict["system_state"] as? String)
-            ?? (dict["summary"] as? String)
-            ?? (dict["state"] as? String)
-            ?? (isDone ? "Task accomplished" : "In progress")
 
-        let extractedData = (dict["extractedData"] as? String)
-            ?? (dict["extracted_data"] as? String)
-            ?? (dict["data"] as? String)
-            ?? ""
+        let lower = rawText.lowercased()
+        if lower.contains("\"isdone\": true") || lower.contains("\"is_done\": true") || lower.contains("\"isdone\":\"true\"") || lower.contains("\"isdone\":true") {
+            let takeover = lower.contains("\"requirestakeover\": true") || lower.contains("\"requires_takeover\": true")
+            return TaskStateEvaluation(
+                isDone: true,
+                requiresTakeover: takeover,
+                systemState: "Form composition completed",
+                extractedData: ""
+            )
+        }
 
-        let requiresTakeover = (dict["requiresTakeover"] as? Bool)
-            ?? (dict["requires_takeover"] as? Bool)
-            ?? false
-
-        return TaskStateEvaluation(
-            isDone: isDone,
-            requiresTakeover: requiresTakeover,
-            systemState: systemState,
-            extractedData: extractedData
-        )
+        return nil
     }
-
     private func postProcessValidation(
         isDone: Bool,
         requiresTakeover: Bool,
@@ -338,95 +365,179 @@ public final class TaskEgressValidator: @unchecked Sendable {
         rawResponseToUser: String,
         appName: String,
         taskContract: AFMTaskDecomposition? = nil,
-        lang: String
+        lang: String,
+        latestObservation: String = ""
     ) -> AFMValidationResult {
         var responseToUser = rawResponseToUser
 
-        // 1. Strip literal prompt artifacts like <answer in Bahasa Indonesia> or any bracketed placeholders
+        // 0. Anti-Parroting Post-Check (Mandate 1):
+        let templateGarbage = [
+            "brief state summary", "factual data extracted", "<factual_state_summary>",
+            "<extracted_content_summary>", "brief state", "state summary", "brief summary", "brief state summary."
+        ]
+        var cleanSystemState = systemState
+        let isParroted = templateGarbage.contains { cleanSystemState.localizedCaseInsensitiveContains($0) }
+        var effectiveIsDone = isDone
+
+        if isParroted || cleanSystemState.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            ClickyLogger.warning("[TASK_VALIDATOR]", "Anti-Parroting Guard: Rejected parroted template text in systemState: '\(cleanSystemState)'. Synthesizing factual state from observation.")
+            if !latestObservation.isEmpty && latestObservation != "{}" {
+                cleanSystemState = Self.synthesizeFactualStateFromObservation(latestObservation)
+            } else {
+                cleanSystemState = "Awaiting factual screen verification"
+                effectiveIsDone = false
+            }
+        }
+
+        // 1. Strip literal prompt artifacts like bracketed placeholders
         responseToUser = responseToUser.replacingOccurrences(of: #"^<[^>]+>\s*"#, with: "", options: .regularExpression)
         responseToUser = responseToUser.replacingOccurrences(of: #"<[^>]+>"#, with: "", options: .regularExpression).trimmingCharacters(in: .whitespacesAndNewlines)
 
-        // 1b. Absolute Non-Empty Response Fallback:
-        // If model output empty responseToUser but provided a rich systemState or extractedData, use it!
+        // 2. Structural Non-Empty Response Fallback:
         if responseToUser.isEmpty {
-            if !systemState.isEmpty && systemState != "Task accomplished" && systemState != "In progress" {
-                responseToUser = systemState
-            } else if !extractedData.isEmpty && extractedData.lowercased() != "none" {
-                responseToUser = extractedData
-            }
-        }
-
-        // 1c. Factual Content Delivery:
-        // If responseToUser is merely a terse meta-label/status header (e.g. "hasil analisis email pertama")
-        // while extractedData contains rich factual findings (e.g. sender, subject, date, body),
-        // ensure the user receives the actual extracted content in the response!
-        let hasRichExtraction = !extractedData.isEmpty && extractedData.lowercased() != "none" && extractedData.count > 25
-        let isMetaLabelOnly = responseToUser.count <= 45 && (
-            responseToUser.lowercased().contains("analisis") ||
-            responseToUser.lowercased().contains("pemeriksaan") ||
-            responseToUser.lowercased().contains("inspeksi") ||
-            responseToUser.lowercased().contains("selesai") ||
-            responseToUser.lowercased().contains("status")
-        )
-        if hasRichExtraction {
-            if isMetaLabelOnly {
-                responseToUser = "\(responseToUser): \(extractedData)"
-            } else if !responseToUser.lowercased().contains(extractedData.prefix(15).lowercased()) && !responseToUser.contains(":") {
-                responseToUser = "\(responseToUser)\n\n\(extractedData)"
-            }
-        }
-
-        // 2. Anti-hallucination guard: ensure responseToUser provides factual status rather than generic commands
-        if responseToUser.lowercased().hasPrefix("silakan") || responseToUser.lowercased().hasPrefix("lakukan") {
             if !extractedData.isEmpty && extractedData.lowercased() != "none" {
                 responseToUser = extractedData
+            } else if !cleanSystemState.isEmpty && cleanSystemState != "Task accomplished" && cleanSystemState != "In progress" {
+                responseToUser = cleanSystemState
             }
         }
 
-        // 3. Tone Guard: If responseToUser contains internal negative self-critique but factual data exists
-        let negativeCritiquePhrases = ["belum tercapai", "tidak tercapai", "belum ada indikasi", "belum dibaca sepenuhnya", "tidak ada indikasi"]
-        let hasNegativeCritique = negativeCritiquePhrases.contains { responseToUser.lowercased().contains($0) }
-        let hasFactualData = !extractedData.isEmpty && extractedData.lowercased() != "none" && !extractedData.lowercased().contains("tidak ada")
-
-        if hasNegativeCritique && hasFactualData {
-            responseToUser = extractedData
+        // 3. Factual Content Delivery:
+        // If response is extremely brief while rich extracted findings exist, attach findings
+        let hasRichExtraction = !extractedData.isEmpty && extractedData.lowercased() != "none" && extractedData.count > 20
+        if hasRichExtraction && responseToUser.count < 30 && !responseToUser.contains(extractedData.prefix(15)) {
+            responseToUser = "\(responseToUser): \(extractedData)"
         }
 
-        // 4. Send / Submission Goal Invariant: If goal requires human confirmation on completion
+        // 4. Send / Submission Goal Invariant: Only actual external mutations enforce takeover
         let isSendGoal = (taskContract?.requiresTakeoverOnCompletion == true)
         let effectiveRequiresTakeover = requiresTakeover || (isSendGoal && isDone)
 
-        // 5. Language Consistency Guard: If user prompt is not English, ensure response does not leak English
-        if lang != "en" {
-            let lowerResp = responseToUser.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
-            let isEnglishStart = lowerResp.hasPrefix("the ") || lowerResp.hasPrefix("here is") || lowerResp.hasPrefix("we have") || lowerResp.hasPrefix("in your")
-            if isEnglishStart {
-                if !extractedData.isEmpty && extractedData.lowercased() != "none" {
-                    responseToUser = extractedData
-                } else if let targetIdx = taskContract?.targetIndex {
-                    responseToUser = "Item #\(targetIdx) (\(appName))"
-                } else {
-                    responseToUser = systemState
-                }
+        effectiveIsDone = isDone
+        if effectiveRequiresTakeover {
+            effectiveIsDone = false
+        } else if hasRichExtraction {
+            // Check intent type: ONLY inspect / read goals can be deemed done merely due to rich extraction.
+            // Action, composition, and send goals (compose, send, interact, create)
+            // MUST faithfully respect isDone evaluated by the model, NEVER fake-completed by reading pane text.
+            let isActionGoal = isSendGoal || ["compose", "send", "interact", "create", "write"].contains(taskContract?.intentType.lowercased() ?? "")
+            if !isActionGoal {
+                effectiveIsDone = true
             }
         }
 
-        var effectiveIsDone = isDone
-        if effectiveRequiresTakeover {
-            effectiveIsDone = false
-        } else if hasFactualData && !hasNegativeCritique {
-            effectiveIsDone = true
+        // Factual Reading Verification for Inspect/Read Intents (Zero Fake Completion):
+        let isInspectOrRead = ["inspect", "read"].contains(taskContract?.intentType.lowercased() ?? "")
+        if isInspectOrRead {
+            // An inspect/reading task can ONLY be done if latestObservation actually contains
+            // substantive content in previewPane, reading pane summary, general content, or rich extracted data.
+            let hasValidReadingContent: Bool = {
+                // 1. JSON observation with previewPane
+                if latestObservation.contains("\"previewPane\":"),
+                   let data = latestObservation.data(using: .utf8),
+                   let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+                   let previewItems = json["previewPane"] as? [String] {
+                    let combined = previewItems.joined(separator: " ").trimmingCharacters(in: .whitespacesAndNewlines)
+                    if !previewItems.isEmpty && combined.count > 5 { return true }
+                }
+
+                // 2. Targeted observation string with Reading Pane summary
+                if latestObservation.contains("Reading Pane: '") {
+                    let parts = latestObservation.components(separatedBy: "Reading Pane: '")
+                    if let textPart = parts.dropFirst().first {
+                        let content = textPart.prefix(while: { $0 != "'" }).trimmingCharacters(in: .whitespacesAndNewlines)
+                        if content.count > 5 { return true }
+                    }
+                }
+
+                // 3. JSON observation with general content (single-pane apps like Notes, Safari, Terminal)
+                if latestObservation.contains("\"content\":"),
+                   let data = latestObservation.data(using: .utf8),
+                   let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+                   let contentItems = json["content"] as? [String] {
+                    let combined = contentItems.joined(separator: " ").trimmingCharacters(in: .whitespacesAndNewlines)
+                    if !contentItems.isEmpty && combined.count > 5 { return true }
+                }
+
+                // 4. Substantive factual extraction per ERR-030 (e.g. list row details or document content)
+                let isModalSheetText = extractedData.lowercased().contains("save this message") ||
+                                       extractedData.lowercased().contains("unsaved changes") ||
+                                       extractedData.lowercased().contains("don't save")
+                if hasRichExtraction && !isModalSheetText { return true }
+                return false
+            }()
+
+            if !hasValidReadingContent {
+                effectiveIsDone = false
+            }
+        }
+
+        // 5. Anti-Hallucination Integrity Guard:
+        // If task is not completed (effectiveIsDone == false), responseToUser must NEVER falsely claim success or delivery
+        if !effectiveIsDone {
+            let forbiddenSuccessPhrases = [
+                "email was sent", "email has been sent", "email telah dikirim", "email sudah dikirim",
+                "message was sent", "message has been sent", "pesan telah dikirim", "pesan sudah dikirim",
+                "successfully sent", "berhasil dikirim", "has been created and sent", "telah dibuat dan dikirim",
+                "email terbaru adalah", "email terbaru dari", "pesan terbaru adalah", "pesan terbaru dari",
+                "the latest email is", "the newest email is", "the latest message is"
+            ]
+            let lower = responseToUser.lowercased()
+            if forbiddenSuccessPhrases.contains(where: { lower.contains($0) }) {
+                let fallbackNotice: String
+                if isInspectOrRead {
+                    fallbackNotice = lang == "id"
+                        ? "Daftar atau konten item belum berhasil dibuka di panel pratinjau."
+                        : "The item or content has not been opened in the preview pane yet."
+                } else {
+                    fallbackNotice = lang == "id"
+                        ? "Tindakan belum selesai. Formulir atau bidang input belum sepenuhnya terisi atau dikirimkan."
+                        : "The action was not completed. Input fields were not fully submitted."
+                }
+                responseToUser = fallbackNotice
+            }
+        }
+
+        // Zero Hardcoded Linguistic Checks:
+        // If the model response is empty despite rich factual extraction, deliver the factual findings directly.
+        let hasFactualData = !extractedData.isEmpty && extractedData.lowercased() != "none"
+        if hasFactualData && responseToUser.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            responseToUser = extractedData
         }
 
         return AFMValidationResult(
             isDone: effectiveIsDone,
-            systemState: systemState,
+            systemState: cleanSystemState,
             extractedData: extractedData,
             responseToUser: responseToUser,
             requiresTakeover: effectiveRequiresTakeover
         )
     }
 
+    private static func synthesizeFactualStateFromObservation(_ obs: String) -> String {
+        guard let data = obs.data(using: .utf8),
+              let dict = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+            return "Screen content verified"
+        }
+        var parts: [String] = []
+        if let fields = dict["formFields"] as? [String: String], !fields.isEmpty {
+            let filled = fields.filter { $0.value != "[empty]" && !$0.value.isEmpty }
+            if !filled.isEmpty {
+                let desc = filled.map { "\($0.key): \($0.value)" }.joined(separator: ", ")
+                parts.append("Form fields populated: \(desc)")
+            }
+        }
+        if let items = dict["listItems"] as? [[String: Any]], let first = items.first {
+            let title = first["headline"] as? String ?? first["content"] as? String ?? ""
+            if !title.isEmpty {
+                parts.append("List item: \(title)")
+            }
+        }
+        if let preview = dict["previewPane"] as? String, !preview.isEmpty {
+            parts.append("Reading pane: \(preview.prefix(80))")
+        }
+        return parts.isEmpty ? "Factual screen content verified" : parts.joined(separator: "; ")
+    }
 
     private func extractJSONData(from text: String) -> Data? {
         var str = text

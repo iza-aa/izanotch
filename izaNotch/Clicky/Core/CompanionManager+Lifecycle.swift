@@ -82,6 +82,7 @@ extension CompanionManager {
             }
         }
         SiriAIEngine.shared.warmUp()
+        LayaDecisionEngine.shared.warmUp()
 
         // If the user already completed onboarding AND all permissions are
         // still granted, show the cursor overlay immediately. If permissions

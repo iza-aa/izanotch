@@ -98,15 +98,12 @@ public enum TradingViewInputSupport {
 
     /// Captures a target window crop and extracts visible text lines using Apple Vision Fast OCR (10-20ms, 100% offline).
     public nonisolated static func extractTextsFromWindowCrop(windowId: CGWindowID, normalizedCropRect: CGRect) -> [String] {
-        let tempPath = "/tmp/tv_vision_probe_\(windowId).png"
-        let proc = Process()
-        proc.executableURL = URL(fileURLWithPath: "/usr/sbin/screencapture")
-        proc.arguments = ["-x", "-l", "\(windowId)", tempPath]
-        try? proc.run()
-        proc.waitUntilExit()
-
-        guard let imgSource = CGImageSourceCreateWithURL(URL(fileURLWithPath: tempPath) as CFURL, nil),
-              let cgImage = CGImageSourceCreateImageAtIndex(imgSource, 0, nil) else {
+        guard let cgImage = CGWindowListCreateImage(
+            .null,
+            .optionIncludingWindow,
+            windowId,
+            [.boundsIgnoreFraming, .bestResolution]
+        ) else {
             return []
         }
 

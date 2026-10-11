@@ -16,6 +16,8 @@ public struct AFMTaskDecomposition: Codable, Sendable {
     public let actionScope: String
     public let intentType: String
     public let targetEntity: String
+    public let targetContainer: String?
+    public let targetSection: String?
     public let targetIndex: Int?
     public let searchQuery: String?
     public let normalizedGoal: String
@@ -36,6 +38,8 @@ public struct AFMTaskDecomposition: Codable, Sendable {
         requiresCUA: Bool = true,
         intentType: String = "inspect",
         targetEntity: String = "main_window",
+        targetContainer: String? = nil,
+        targetSection: String? = nil,
         targetIndex: Int? = nil,
         searchQuery: String? = nil,
         normalizedGoal: String = "",
@@ -49,6 +53,8 @@ public struct AFMTaskDecomposition: Codable, Sendable {
         self.requiresCUA = requiresCUA
         self.intentType = intentType
         self.targetEntity = targetEntity
+        self.targetContainer = targetContainer
+        self.targetSection = targetSection
         self.targetIndex = targetIndex
         self.searchQuery = searchQuery
         self.normalizedGoal = normalizedGoal.isEmpty ? userIntent : normalizedGoal
@@ -66,6 +72,8 @@ public struct AFMTaskDecomposition: Codable, Sendable {
         self.requiresCUA = rawRequiresCUA ?? (!targetAppName.isEmpty && targetAppName.lowercased() != "none")
         self.intentType = try container.decodeIfPresent(String.self, forKey: .intentType) ?? "inspect"
         self.targetEntity = try container.decodeIfPresent(String.self, forKey: .targetEntity) ?? "main_window"
+        self.targetContainer = try container.decodeIfPresent(String.self, forKey: .targetContainer)
+        self.targetSection = try container.decodeIfPresent(String.self, forKey: .targetSection)
         self.targetIndex = try container.decodeIfPresent(Int.self, forKey: .targetIndex)
         self.searchQuery = try container.decodeIfPresent(String.self, forKey: .searchQuery)
         let norm = try container.decodeIfPresent(String.self, forKey: .normalizedGoal) ?? ""

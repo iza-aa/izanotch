@@ -117,14 +117,23 @@ public struct HomeSpaceComputerCardView: View {
                         .fixedSize(horizontal: false, vertical: true)
                 }
 
-                // 3. Desktop Canvas Frame (Scenic Nature Wallpaper + Floating App Windows)
+                // 3. Desktop Canvas Frame (Foto 2: Thick Gray Border & Proportional Scaling)
                 canvasFrame
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 290)
-                    .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                    .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
                     .overlay(
-                        RoundedRectangle(cornerRadius: 16, style: .continuous)
-                            .stroke(Color.white.opacity(0.12), lineWidth: 0.8)
+                        RoundedRectangle(cornerRadius: 14, style: .continuous)
+                            .stroke(
+                                payload.status == .working
+                                    ? Color(hex: "#9CA3AF")
+                                    : Color(hex: "#4B5563"),
+                                lineWidth: 2.5
+                            )
+                    )
+                    .shadow(
+                        color: Color.black.opacity(0.35),
+                        radius: 8,
+                        x: 0,
+                        y: 3
                     )
 
                 // 4. Action Steps Directly Underneath Computer Screen ("terus stepnya itu tetap dibawah computernya")
@@ -408,35 +417,47 @@ public struct HomeSpaceComputerCardView: View {
         )
     }
 
-    // MARK: - Canvas Frame (Live Snapshot & Precision Grounder)
+    // MARK: - Canvas Frame (Foto 2 Style: Clean Canvas + Proportional Scaling)
     @ViewBuilder
     private var canvasFrame: some View {
+        let screenWidth = NSScreen.main?.frame.width ?? 1512.0
+        let screenHeight = NSScreen.main?.frame.height ?? 982.0
+        let screenRatio = max(screenWidth / max(screenHeight, 1.0), 1.33)
+
+        let customImg = streamService.activeSnapshot ?? (payload.snapshotImagePath.flatMap { NSImage(contentsOfFile: $0) }) ?? MascotVirtualDesktopService.shared.activeSnapshot
+
+        let contentRatio: CGFloat = {
+            if let img = customImg, img.size.height > 0 {
+                let ratio = img.size.width / img.size.height
+                return max(min(ratio, 2.4), 0.75)
+            }
+            return screenRatio
+        }()
+
+        let target = payload.targetAppName ?? CompanionManager.shared.activeBuddy.workflowAppNames.first ?? "Workspace"
+        let activeSlug = CompanionManager.shared.activeBuddy.slug
+
         ZStack {
-            Color(hex: "#0F1115")
+            Color(hex: "#18191B")
 
-            let customImg = streamService.activeSnapshot ?? (payload.snapshotImagePath.flatMap { NSImage(contentsOfFile: $0) }) ?? MascotVirtualDesktopService.shared.activeSnapshot
-
-            let target = payload.targetAppName ?? CompanionManager.shared.activeBuddy.workflowAppNames.first ?? "Workspace"
-            let activeSlug = CompanionManager.shared.activeBuddy.slug
-
-            InteractiveVirtualDesktopView(
-                targetAppName: target,
-                slug: activeSlug,
-                customSnapshot: customImg,
-                isInteractive: false
-            )
-            .scaledToFit()
-            .allowsHitTesting(false)
-
-            // Hybrid Precision Grounder (Grid + Coordinate Ruler + Crosshair)
-            precisionGroundingOverlay
+            if customImg != nil {
+                InteractiveVirtualDesktopView(
+                    targetAppName: target,
+                    slug: activeSlug,
+                    customSnapshot: customImg,
+                    isInteractive: false
+                )
+                .allowsHitTesting(false)
+            } else {
+                workspaceConnectionPlaceholder
+            }
         }
+        .aspectRatio(contentRatio, contentMode: .fit)
     }
 
     // MARK: - Workspace Connection Placeholder
     private var workspaceConnectionPlaceholder: some View {
         let appName = payload.activeWorkflowApp ?? payload.targetAppName ?? CompanionManager.shared.activeBuddy.workflowAppNames.first ?? "Workspace"
-        let isSafari = appName.lowercased().contains("safari")
 
         return ZStack {
             Color(hex: "#0F1115")
@@ -830,5 +851,4 @@ public struct HomeSpaceComputerStepsView: View {
         }
     }
 }
-
 

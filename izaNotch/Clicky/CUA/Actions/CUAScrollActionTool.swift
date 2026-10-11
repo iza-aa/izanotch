@@ -99,7 +99,7 @@ public final class CUAScrollActionTool: CUAPhysicalActionTool, @unchecked Sendab
             if AXUIElementCopyAttributeValue(appElement, kAXWindowsAttribute as CFString, &windowListRef) == .success,
                let windows = windowListRef as? [AXUIElement] {
                 for win in windows {
-                    if let found = findFirstScrollArea(in: win, depth: 0, maxDepth: 4) {
+                    if let found = findScrollAreaForList(in: win) ?? findFirstScrollArea(in: win, depth: 0, maxDepth: 4) {
                         targetScrollArea = found
                         break
                     }
@@ -240,6 +240,77 @@ public final class CUAScrollActionTool: CUAPhysicalActionTool, @unchecked Sendab
         return nil
     }
 
+    private static func collectScrollAreas(in element: AXUIElement, depth: Int, maxDepth: Int, results: inout [AXUIElement]) {
+        guard depth <= maxDepth else { return }
+        var roleRef: CFTypeRef?
+        AXUIElementCopyAttributeValue(element, kAXRoleAttribute as CFString, &roleRef)
+        let role = (roleRef as? String) ?? ""
+        if role == "AXScrollArea" {
+            results.append(element)
+        }
+        var childrenRef: CFTypeRef?
+        if AXUIElementCopyAttributeValue(element, kAXChildrenAttribute as CFString, &childrenRef) == .success,
+           let children = childrenRef as? [AXUIElement] {
+            for child in children.prefix(20) {
+                collectScrollAreas(in: child, depth: depth + 1, maxDepth: maxDepth, results: &results)
+            }
+        }
+    }
+
+    /// Finds the scroll area corresponding to the primary data collection (table/list) rather than sidebars
+    public static func findScrollAreaForList(in window: AXUIElement) -> AXUIElement? {
+        var scrollAreas: [AXUIElement] = []
+        collectScrollAreas(in: window, depth: 0, maxDepth: 5, results: &scrollAreas)
+        guard !scrollAreas.isEmpty else { return nil }
+
+        // Priority 1: A scroll area containing an AXTable or AXList (the primary data collection)
+        for sa in scrollAreas {
+            if let table = findFirstTableOrOutline(in: sa, depth: 0, maxDepth: 3) {
+                var roleRef: CFTypeRef?
+                AXUIElementCopyAttributeValue(table, kAXRoleAttribute as CFString, &roleRef)
+                let role = (roleRef as? String) ?? ""
+                if role == "AXTable" || role == "AXList" {
+                    return sa
+                }
+            }
+        }
+
+        // Priority 2: A scroll area positioned in the middle column (relative X between 0.15 and 0.65 of window)
+        var winPosRef: CFTypeRef?
+        var winSizeRef: CFTypeRef?
+        if AXUIElementCopyAttributeValue(window, kAXPositionAttribute as CFString, &winPosRef) == .success,
+           AXUIElementCopyAttributeValue(window, kAXSizeAttribute as CFString, &winSizeRef) == .success {
+            var winPos = CGPoint.zero
+            var winSize = CGSize.zero
+            AXValueGetValue(winPosRef as! AXValue, .cgPoint, &winPos)
+            AXValueGetValue(winSizeRef as! AXValue, .cgSize, &winSize)
+
+            if winSize.width > 0 {
+                for sa in scrollAreas {
+                    var saPosRef: CFTypeRef?
+                    if AXUIElementCopyAttributeValue(sa, kAXPositionAttribute as CFString, &saPosRef) == .success {
+                        var saPos = CGPoint.zero
+                        AXValueGetValue(saPosRef as! AXValue, .cgPoint, &saPos)
+                        let relX = (saPos.x - winPos.x) / winSize.width
+                        if relX >= 0.15 && relX <= 0.65 {
+                            return sa
+                        }
+                    }
+                }
+            }
+        }
+
+        // Fallback: A scroll area that actually has an AXVerticalScrollBar
+        for sa in scrollAreas {
+            var vBarRef: CFTypeRef?
+            if AXUIElementCopyAttributeValue(sa, "AXVerticalScrollBar" as CFString, &vBarRef) == .success, vBarRef != nil {
+                return sa
+            }
+        }
+
+        return scrollAreas.first
+    }
+
     private static func findFirstScrollArea(in element: AXUIElement, depth: Int, maxDepth: Int) -> AXUIElement? {
         guard depth <= maxDepth else { return nil }
         var roleRef: CFTypeRef?
@@ -260,6 +331,37 @@ public final class CUAScrollActionTool: CUAPhysicalActionTool, @unchecked Sendab
         return nil
     }
 
+    /// Retrieves current vertical scroll telemetry via Accessibility IPC
+    public static func getScrollState(pid: pid_t) -> CUAScrollState {
+        let appElement = AXUIElementCreateApplication(pid)
+        AXUIElementSetMessagingTimeout(appElement, 0.25)
+        var windowListRef: CFTypeRef?
+        guard AXUIElementCopyAttributeValue(appElement, kAXWindowsAttribute as CFString, &windowListRef) == .success,
+              let windows = windowListRef as? [AXUIElement] else {
+            return CUAScrollState(isAtTop: true, scrollValue: 0.0)
+        }
+        for win in windows {
+            if let sa = findScrollAreaForList(in: win) ?? findFirstScrollArea(in: win, depth: 0, maxDepth: 4) {
+                var vBarRef: CFTypeRef?
+                if AXUIElementCopyAttributeValue(sa, "AXVerticalScrollBar" as CFString, &vBarRef) == .success,
+                   let vb = vBarRef {
+                    var valRef: CFTypeRef?
+                    if AXUIElementCopyAttributeValue((vb as! AXUIElement), kAXValueAttribute as CFString, &valRef) == .success,
+                       let val = valRef {
+                        var floatVal: Float = 0.0
+                        if CFNumberGetValue((val as! CFNumber), .floatType, &floatVal) {
+                            // Strict Threshold: <= 0.0001 (accounting for float rounding) represents true top.
+                            // In massive collections (e.g. 20,000+ items), a 2-row shift is ~0.0001; 0.05 falsely treated 1,000 scrolled rows as top!
+                            let isTop = floatVal <= 0.0001
+                            return CUAScrollState(isAtTop: isTop, scrollValue: floatVal)
+                        }
+                    }
+                }
+            }
+        }
+        return CUAScrollState(isAtTop: true, scrollValue: 0.0)
+    }
+
     /// Resets scroll bar to top (0.0) to ensure a clean workspace anchor for new inspection tasks
     public static func resetScrollToTop(pid: pid_t) {
         let appElement = AXUIElementCreateApplication(pid)
@@ -268,7 +370,7 @@ public final class CUAScrollActionTool: CUAPhysicalActionTool, @unchecked Sendab
         guard AXUIElementCopyAttributeValue(appElement, kAXWindowsAttribute as CFString, &windowListRef) == .success,
               let windows = windowListRef as? [AXUIElement] else { return }
         for win in windows {
-            if let sa = findFirstScrollArea(in: win, depth: 0, maxDepth: 4) {
+            if let sa = findScrollAreaForList(in: win) ?? findFirstScrollArea(in: win, depth: 0, maxDepth: 4) {
                 var vBarRef: CFTypeRef?
                 if AXUIElementCopyAttributeValue(sa, "AXVerticalScrollBar" as CFString, &vBarRef) == .success,
                    let vb = vBarRef {
@@ -282,3 +384,14 @@ public final class CUAScrollActionTool: CUAPhysicalActionTool, @unchecked Sendab
         }
     }
 }
+
+public struct CUAScrollState: Sendable {
+    public let isAtTop: Bool
+    public let scrollValue: Float?
+
+    public init(isAtTop: Bool, scrollValue: Float? = nil) {
+        self.isAtTop = isAtTop
+        self.scrollValue = scrollValue
+    }
+}
+

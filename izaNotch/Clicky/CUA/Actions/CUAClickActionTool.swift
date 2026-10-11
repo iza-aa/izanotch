@@ -31,8 +31,7 @@ public final class CUAClickActionTool: CUAPhysicalActionTool, @unchecked Sendabl
             return CUAPhysicalActionResult(observationResult: "Executed drag to '\(context.targetElement)'")
         } else {
             // Default left click: trigger physical cursor ripple on virtual canvas
-            MascotVirtualDesktopService.shared.performCuaLeftClick(normalizedPoint: context.normalizedPoint)
-
+            MascotVirtualDesktopService.shared.performCuaLeftClick(normalizedPoint: context.normalizedPoint, pid: context.targetPID)
             // Execute deterministic background element selection/press via Accessibility IPC
             if let pid = context.targetPID ?? MascotVirtualDesktopService.shared.currentAppPid {
                 let screenPoint = MascotVirtualDesktopService.shared.targetDisplayCoordinate(for: context.normalizedPoint)
@@ -75,6 +74,83 @@ public final class CUAClickActionTool: CUAPhysicalActionTool, @unchecked Sendabl
         }.value
     }
 
+    /// Focuses an input field at coordinates via Accessibility IPC and detects if it has subrole AXTokenField
+    public static func executeBackgroundAccessibilityFocus(pid: pid_t, screenPoint: CGPoint) async -> (focused: Bool, isTokenField: Bool, focusedRole: String) {
+        await Task.detached(priority: .userInitiated) {
+            let appRef = AXUIElementCreateApplication(pid)
+            AXUIElementSetMessagingTimeout(appRef, 0.25)
+
+            var elementRef: AXUIElement?
+            let copyStatus = AXUIElementCopyElementAtPosition(appRef, Float(screenPoint.x), Float(screenPoint.y), &elementRef)
+
+            var isToken = false
+            var focused = false
+            var matchedRole = ""
+            if copyStatus == .success, let el = elementRef {
+                var current: AXUIElement? = el
+                for _ in 0..<5 {
+                    guard let curr = current else { break }
+
+                    var subroleRef: CFTypeRef?
+                    if AXUIElementCopyAttributeValue(curr, kAXSubroleAttribute as CFString, &subroleRef) == .success,
+                       let subrole = subroleRef as? String,
+                       subrole.lowercased().contains("token") {
+                        isToken = true
+                    }
+
+                    var roleRef: CFTypeRef?
+                    AXUIElementCopyAttributeValue(curr, kAXRoleAttribute as CFString, &roleRef)
+                    let role = ((roleRef as? String) ?? "").lowercased()
+
+                    if role == "axtextfield" || role == "axtextarea" || role == "axsearchfield" || role == "axcombobox" {
+                        let status = AXUIElementSetAttributeValue(curr, kAXFocusedAttribute as CFString, kCFBooleanTrue)
+                        if status == .success {
+                            focused = true
+                            matchedRole = role
+                            ClickyLogger.info("[CUA_CLICK_TOOL]", "Explicitly focused '\(role)' on PID \(pid) at (\(Int(screenPoint.x)), \(Int(screenPoint.y))) [token: \(isToken)]")
+                            break
+                        }
+                    } else if role == "axwebarea" {
+                        var editableChild: AXUIElement? = nil
+                        var childrenRef: CFTypeRef?
+                        if AXUIElementCopyAttributeValue(curr, kAXChildrenAttribute as CFString, &childrenRef) == .success,
+                           let kids = childrenRef as? [AXUIElement] {
+                            for kid in kids.prefix(15) {
+                                var kRoleRef: CFTypeRef?
+                                AXUIElementCopyAttributeValue(kid, kAXRoleAttribute as CFString, &kRoleRef)
+                                let kRole = ((kRoleRef as? String) ?? "").lowercased()
+                                if kRole == "axtextarea" || kRole == "axtextfield" || kRole.contains("text") {
+                                    editableChild = kid
+                                    break
+                                }
+                            }
+                        }
+                        if let child = editableChild {
+                            let status = AXUIElementSetAttributeValue(child, kAXFocusedAttribute as CFString, kCFBooleanTrue)
+                            if status == .success {
+                                focused = true
+                                matchedRole = "axwebarea_editable"
+                                ClickyLogger.info("[CUA_CLICK_TOOL]", "Explicitly focused editable child of axwebarea on PID \(pid)")
+                                break
+                            }
+                        }
+                        matchedRole = "axwebarea"
+                        focused = true
+                        break
+                    }
+
+                    var parentRef: CFTypeRef?
+                    if AXUIElementCopyAttributeValue(curr, kAXParentAttribute as CFString, &parentRef) == .success,
+                       let parent = parentRef {
+                        current = (parent as! AXUIElement)
+                    } else {
+                        break
+                    }
+                }
+            }
+            return (focused, isToken, matchedRole)
+        }.value
+    }
     private static func triggerActionOrSelection(on element: AXUIElement, pid: pid_t, screenPoint: CGPoint) -> Bool {
         var current: AXUIElement? = element
         for _ in 0..<5 {
@@ -83,31 +159,50 @@ public final class CUAClickActionTool: CUAPhysicalActionTool, @unchecked Sendabl
             var roleRef: CFTypeRef?
             AXUIElementCopyAttributeValue(curr, kAXRoleAttribute as CFString, &roleRef)
             let role = (roleRef as? String) ?? ""
+            let lowerRole = role.lowercased()
 
             // 1. Table row selection (AppKit NSTableView / NSOutlineView)
             if role == "AXRow" || role == (kAXRowRole as String) {
                 let selStatus = AXUIElementSetAttributeValue(curr, kAXSelectedAttribute as CFString, kCFBooleanTrue)
-                let pressStatus = AXUIElementPerformAction(curr, kAXPressAction as CFString)
-                ClickyLogger.info("[CUA_CLICK_TOOL]", "Triggered AXRow selection on PID \(pid) at (\(Int(screenPoint.x)), \(Int(screenPoint.y))) [selected: \(selStatus.rawValue), pressed: \(pressStatus.rawValue)]")
+                var parentRef: CFTypeRef?
+                if AXUIElementCopyAttributeValue(curr, kAXParentAttribute as CFString, &parentRef) == .success,
+                   let parent = parentRef, CFGetTypeID(parent) == AXUIElementGetTypeID() {
+                    let parentTable = parent as! AXUIElement
+                    let rowsArray = [curr] as CFArray
+                    let tableSelStatus = AXUIElementSetAttributeValue(parentTable, "AXSelectedRows" as CFString, rowsArray)
+                    ClickyLogger.info("[CUA_CLICK_TOOL]", "Triggered AXSelectedRows on parent table on PID \(pid) [status: \(tableSelStatus.rawValue)]")
+                }
+                ClickyLogger.info("[CUA_CLICK_TOOL]", "Triggered AXRow selection on PID \(pid) at (\(Int(screenPoint.x)), \(Int(screenPoint.y))) [selected: \(selStatus.rawValue)]")
                 return true
             }
 
             // 2. Standard press or pick action (Button, Tab, MenuItem, Checkbox, Link)
-            var actionsRef: CFArray?
-            if AXUIElementCopyActionNames(curr, &actionsRef) == .success, let actions = actionsRef as? [String] {
-                if actions.contains(kAXPressAction as String) {
-                    let actStatus = AXUIElementPerformAction(curr, kAXPressAction as CFString)
-                    ClickyLogger.info("[CUA_CLICK_TOOL]", "Triggered kAXPressAction on role '\(role)' on PID \(pid) [status: \(actStatus.rawValue)]")
-                    return true
-                }
-                if actions.contains(kAXPickAction as String) {
-                    let actStatus = AXUIElementPerformAction(curr, kAXPickAction as CFString)
-                    ClickyLogger.info("[CUA_CLICK_TOOL]", "Triggered kAXPickAction on role '\(role)' on PID \(pid) [status: \(actStatus.rawValue)]")
-                    return true
+            // Skip raw static text or image labels so action triggers on the enclosing parent button!
+            let isLabelOnly = lowerRole == "axstatictext" || lowerRole == "aximage"
+            if !isLabelOnly {
+                var actionsRef: CFArray?
+                if AXUIElementCopyActionNames(curr, &actionsRef) == .success, let actions = actionsRef as? [String] {
+                    if actions.contains(kAXPressAction as String) {
+                        let actStatus = AXUIElementPerformAction(curr, kAXPressAction as CFString)
+                        ClickyLogger.info("[CUA_CLICK_TOOL]", "Triggered kAXPressAction on role '\(role)' on PID \(pid) [status: \(actStatus.rawValue)]")
+                        return true
+                    }
+                    if actions.contains(kAXPickAction as String) {
+                        let actStatus = AXUIElementPerformAction(curr, kAXPickAction as CFString)
+                        ClickyLogger.info("[CUA_CLICK_TOOL]", "Triggered kAXPickAction on role '\(role)' on PID \(pid) [status: \(actStatus.rawValue)]")
+                        return true
+                    }
                 }
             }
+            // 3. Input field keyboard focus (AppKit NSTextField / NSTextView / NSSearchField / NSComboBox)
+            // DILARANG set fokus pada axwebarea container karena akan meng-blur caret!
+            if lowerRole == "axtextfield" || lowerRole == "axtextarea" || lowerRole == "axsearchfield" || lowerRole == "axcombobox" {
+                let focusStatus = AXUIElementSetAttributeValue(curr, kAXFocusedAttribute as CFString, kCFBooleanTrue)
+                ClickyLogger.info("[CUA_CLICK_TOOL]", "Set kAXFocusedAttribute on role '\(role)' on PID \(pid) at (\(Int(screenPoint.x)), \(Int(screenPoint.y))) [status: \(focusStatus.rawValue)]")
+                return true
+            }
 
-            // 3. Parent traversal
+            // 4. Parent traversal
             var parentRef: CFTypeRef?
             if AXUIElementCopyAttributeValue(curr, kAXParentAttribute as CFString, &parentRef) == .success,
                let parent = parentRef {

@@ -77,7 +77,15 @@ public final class CompanionVMAgentLoop: ObservableObject {
 
     @Published public private(set) var isRunning: Bool = false
     @Published public private(set) var currentActionDescription: String = ""
-    private var sessionObservedListItems: [(index: Int, content: String)] = []
+    private var sessionObservedListItems: [(index: Int, content: String)] {
+        ClickyUIObservationService.shared.observedListItems
+    }
+    private var sessionObservedCardBoxes: [Int: CGRect] {
+        ClickyUIObservationService.shared.observedCardBoxes
+    }
+    private var sessionObservedElements: [(text: String, box: CGRect)] {
+        ClickyUIObservationService.shared.observedElements
+    }
 
     private init() {}
 
@@ -151,7 +159,7 @@ public final class CompanionVMAgentLoop: ObservableObject {
         onProgress: (@MainActor (ComputerCardPayload) -> Void)? = nil
     ) async throws -> ComputerCardPayload {
         isRunning = true
-        sessionObservedListItems.removeAll()
+        ClickyUIObservationService.shared.resetSession()
         currentActionDescription = "Reading persona.md and connecting to \(appName)..."
         defer {
             isRunning = false
@@ -204,10 +212,11 @@ public final class CompanionVMAgentLoop: ObservableObject {
         }
 
         // 2. Launch / Connect to Real Native macOS App & Assign to Virtual Desktop Space
-        CompanionWindowStreamService.shared.ensureWorkflowAppRunning(appName: appName)
+        // Zero Host Screen Intrusion: Ensure virtual display is ready FIRST so windows never flash on host desktop
         MascotVirtualDesktopService.shared.ensureVirtualDisplay(slug: slug)
         CompanionWindowStreamService.shared.activeIntentType = taskPlan?.intentType
         CompanionWindowStreamService.shared.activeTargetEntity = taskPlan?.targetEntity
+        CompanionWindowStreamService.shared.ensureWorkflowAppRunning(appName: appName)
         MascotVirtualDesktopService.shared.assignAppToVirtualDesktop(appName: appName, slug: slug, intentType: taskPlan?.intentType)
         CompanionWindowStreamService.shared.startStreaming(appName: appName, slug: slug, interval: 0.8)
 
@@ -215,46 +224,29 @@ public final class CompanionVMAgentLoop: ObservableObject {
         let initialSnapPath = await CompanionWindowStreamService.shared.captureTargetWindowAsync(appName: appName, slug: slug) ??
             (MascotVirtualDesktopService.shared.captureSnapshot() != nil ? MascotVirtualDesktopService.shared.activeSnapshotPath : nil)
 
-        // 2b. Human Takeover Check: Only if a blocking system dialog / sheet is detected
+        // 2b. Initial Visual Snapshot & Workspace Telemetry Ready
         let userLang = taskPlan?.userLanguage ?? TaskIngressGateway.resolveLanguage(prompt: prompt)
-        if let blockingDialog = CompanionWindowStreamService.shared.detectBlockingDialog(appName: appName) {
-            let reason = await TaskEgressValidator.shared.synthesizeNotice(
-                noticeSummary: "System dialog detected on \(appName) (\"\(blockingDialog)\"). Manual takeover required.",
-                appName: appName,
-                userGoal: prompt,
-                userLanguage: userLang
-            )
-            queueItems.append(ComputerCardQueueItem(name: "Human Intervention Required", statusBadge: "Takeover Needed", isChecked: false))
-            let takeoverPayload = finishTask(
-                summary: reason,
-                slug: slug,
-                taskPrompt: prompt,
-                appName: appName,
-                auditTrail: auditTrail,
-                queueItems: queueItems,
-                isSuccess: true,
-                status: .takeoverNeeded
-            )
-            onProgress?(takeoverPayload)
-            return takeoverPayload
-        }
 
         // 3. Hierarchical Autonomous CUA ReAct Loop (AFM ⇄ Luna)
         // AFM (Apple Foundation Models, On-Device / Cloud Fallback): Task Planner, Reasoner & Validator
         // Luna (6 Luna Medium / gpt-6-luna): High-Resolution Visual Perception & Element Grounder
         
-        let candidateWindows = CompanionWindowStreamService.shared.findCandidateWindows(appName: appName)
-        let targetPID = candidateWindows.first?.pid ?? NSWorkspace.shared.runningApplications.first(where: {
+        var candidateWindows = CompanionWindowStreamService.shared.findCandidateWindows(appName: appName)
+        var targetPID = candidateWindows.first?.pid ?? NSWorkspace.shared.runningApplications.first(where: {
             $0.localizedName?.localizedCaseInsensitiveContains(appName) == true
         })?.processIdentifier
         
-        // Reset scroll position to top (0.0) if inspecting latest item / general inbox (Clean Workspace Anchor)
-        let effectiveTargetIdx = taskPlan?.targetIndex ?? (taskPlan?.intentType == "inspect" || taskPlan?.intentType == "read" ? 1 : nil)
+        // Ensure Laya System 1 Decision daemon is ready in background
+        LayaDecisionEngine.shared.ensureDaemonRunning()
+        
+        // Reset scroll position to top (0.0) if inspecting latest item / general list without custom container (Clean Workspace Anchor)
+        let effectiveTargetIdx = taskPlan?.targetIndex ?? ((taskPlan?.intentType == "inspect" || taskPlan?.intentType == "read") && taskPlan?.targetContainer == nil ? 1 : nil)
         if let pid = targetPID, pid > 0, effectiveTargetIdx == 1 {
             CUAScrollActionTool.resetScrollToTop(pid: pid)
         }
 
-        let maxSteps = 6
+        let isComposeTask = ["compose", "send", "create", "write"].contains(taskPlan?.intentType ?? "")
+        let maxSteps = isComposeTask ? 8 : 6
         var historySummary: [String] = []
         var finalSystemState = "Task in progress"
         var finalResponseToUser = ""
@@ -263,68 +255,258 @@ public final class CompanionVMAgentLoop: ObservableObject {
         
         for stepIndex in 1...maxSteps {
             if Task.isCancelled { break }
+            ClickyLogger.info("[HEARTBEAT]", "Step \(stepIndex)/\(maxSteps): Starting cycle for '\(appName)' (PID: \(targetPID ?? 0))")
+            
+            // Refresh candidate windows on every step iteration so active window bounds and newly opened windows are tracked
+            let activeWindows = CompanionWindowStreamService.shared.findCandidateWindows(appName: appName)
+            if !activeWindows.isEmpty {
+                candidateWindows = activeWindows
+                if let freshPid = activeWindows.first?.pid, freshPid > 0 {
+                    targetPID = freshPid
+                }
+            }
             
             // Step 1: Capture active frame from isolated workspace
             let currentSnap = await CompanionWindowStreamService.shared.captureTargetWindowAsync(appName: appName, slug: slug) ??
                 MascotVirtualDesktopService.shared.activeSnapshotPath ?? initialSnapPath
                 
-            // Check Human Takeover condition if system dialog blocked
-            if let blockingDialog = CompanionWindowStreamService.shared.detectBlockingDialog(appName: appName) {
-                let reason = await TaskEgressValidator.shared.synthesizeNotice(
-                    noticeSummary: "System dialog detected on \(appName) (\"\(blockingDialog)\"). Manual takeover required.",
-                    appName: appName,
-                    userGoal: prompt,
-                    userLanguage: userLang
-                )
-                queueItems.append(ComputerCardQueueItem(name: "Human Intervention Required", statusBadge: "Takeover Needed", isChecked: false))
-                let takeoverPayload = finishTask(
-                    summary: reason,
-                    responseToUser: reason,
-                    slug: slug,
-                    taskPrompt: prompt,
-                    appName: appName,
-                    auditTrail: auditTrail,
-                    queueItems: queueItems,
-                    isSuccess: true,
-                    status: .takeoverNeeded
-                )
-                onProgress?(takeoverPayload)
-                return takeoverPayload
+            // Step 1b: Zero Host Screen Intrusion - Continuously relocate displaced/new windows (in background)
+            Task.detached(priority: .userInitiated) {
+                await MascotVirtualDesktopService.shared.relocateAppWindowsToVirtualDesktop(appName: appName)
             }
             
             // SEE (Prinsip See ➔ Plan ➔ Act): Amati kondisi layar nyata saat ini dari snapshot terkini
-            let rawObs = await readStructuredObservation(appName: appName, pid: targetPID, snapshotPath: currentSnap)
-            let currentObservation = rawObs.isEmpty ? "App is open in isolated workspace" : rawObs
-
-            // Step 2: AFM Task Planner determines the next atomic sub-goal
-            let decision = await AFMLunaCoordinationBridge.shared.planNextStepWithAFM(
-                userGoal: prompt,
-                currentStep: stepIndex,
+            let rawObs = await readStructuredObservation(
                 appName: appName,
-                lastObservation: currentObservation,
-                historySummary: historySummary,
-                taskContract: taskPlan
+                pid: targetPID,
+                snapshotPath: currentSnap,
+                targetSection: taskPlan?.targetSection,
+                intentType: taskPlan?.intentType
             )
+            let currentObservation = rawObs.isEmpty ? "App is open in isolated workspace" : rawObs
+            ClickyLogger.info("[HEARTBEAT]", "Step \(stepIndex): Structured observation parsed (\(currentObservation.count) bytes)")
+            let currentScrollState = targetPID != nil ? CUAScrollActionTool.getScrollState(pid: targetPID!) : CUAScrollState(isAtTop: true)
             
-            var activeDecision = decision
-            
-            // Anti-Spurious Scroll Guard: If target item is already visible in listItems, do not scroll!
-            if (activeDecision.actionType == "scroll_down" || activeDecision.actionType == "scroll_up"),
-               let tIdx = effectiveTargetIdx,
-               sessionObservedListItems.contains(where: { $0.index == tIdx }) {
-                ClickyLogger.info("[VM_AGENT_LOOP]", "Prevented spurious scroll: target item index \(tIdx) is already visible on screen! Switching directly to click.")
-                let ordinalDesc = tIdx == 1 ? "first item in list" : "item with index \(tIdx) in list"
-                activeDecision = AFMStepDecision(
-                    thought: "Target item index \(tIdx) is already visible on screen. Opening it directly.",
-                    subGoal: "Open \(ordinalDesc) for inspection",
-                    targetElement: ordinalDesc,
-                    actionType: "click",
-                    textToType: nil,
-                    isFinished: false
+            // Step 2a: System 1 Non-Autoregressive Decision Engine (Laya Multilingual ~20ms)
+            var candidateDecision: AFMStepDecision? = nil
+            if LayaDecisionEngine.shared.isDaemonRunning {
+                let winTitle = candidateWindows.first?.title ?? appName
+                let intent = taskPlan?.intentType.lowercased() ?? ""
+                let obsService = ClickyUIObservationService.shared
+                let isCollectionList = obsService.latestWindowType == "collection_list"
+                let isComposeIntent = ["compose", "send", "create", "write"].contains(intent)
+                let isFormActive = isComposeIntent && (!isCollectionList || obsService.latestWindowType == "draft_composer")
+                if obsService.latestHasModalOrError {
+                    // Priority 1: Dismiss active modal dialog / alert before taking any further actions!
+                    let alertBtn: String
+                    if let primaryConfirm = obsService.observedElements.first(where: {
+                        let t = $0.text.lowercased()
+                        return t.contains("ok") || t.contains("don't save") || t.contains("dont save") || t.contains("close") || t.contains("discard")
+                    }) {
+                        alertBtn = primaryConfirm.text
+                    } else if let cancelBtn = obsService.observedElements.first(where: {
+                        let t = $0.text.lowercased()
+                        return t.contains("cancel") || t.contains("batal") || t.contains("dismiss")
+                    }) {
+                        alertBtn = cancelBtn.text
+                    } else {
+                        alertBtn = "OK"
+                    }
+                    candidateDecision = AFMStepDecision(
+                        thought: "Active modal alert detected on screen: dismissing via '\(alertBtn)' before proceeding.",
+                        subGoal: "Dismiss active modal dialog",
+                        targetElement: alertBtn,
+                        actionType: "click",
+                        textToType: nil,
+                        isFinished: false
+                    )
+                } else if isCollectionList && isComposeIntent {
+                    // Window is still at collection list; click toolbar compose/new action button to open editor
+                    let topBarCandidate = obsService.latestTopBarItems.first(where: {
+                        let l = $0.lowercased()
+                        return l.contains("new") || l.contains("compose") || l.contains("create")
+                    }) ?? "New Message"
+                    candidateDecision = AFMStepDecision(
+                        thought: "Active window is collection list for a compose/send intent. Click create action on toolbar to open draft editor.",
+                        subGoal: "Click create action on toolbar",
+                        targetElement: topBarCandidate,
+                        actionType: "click",
+                        textToType: nil,
+                        isFinished: false
+                    )
+                } else if let layaRes = await LayaDecisionEngine.shared.decideStep(
+                    userGoal: prompt,
+                    activeContainer: winTitle,
+                    targetContainer: taskPlan?.targetContainer,
+                    isAtTop: currentScrollState.isAtTop,
+                    scrollOffset: currentScrollState.scrollValue,
+                    visibleItemCount: sessionObservedListItems.count,
+                    targetIndex: effectiveTargetIdx,
+                    hasActiveForm: isFormActive,
+                    formFields: obsService.latestFormFields,
+                    hasModalOrError: obsService.latestHasModalOrError
+                ), layaRes.confidence >= 0.20 {
+                    switch layaRes.action {
+                    case "scroll_up":
+                        if !currentScrollState.isAtTop {
+                            candidateDecision = AFMStepDecision(
+                                thought: "Laya decided scroll_up in \(Int(layaRes.latencyMs))ms: list is scrolled down.",
+                                subGoal: "Scroll up to reach top of list",
+                                targetElement: "item list",
+                                actionType: "scroll_up",
+                                textToType: nil,
+                                isFinished: false
+                            )
+                        }
+                    case "scroll_down":
+                        candidateDecision = AFMStepDecision(
+                            thought: "Laya decided scroll_down in \(Int(layaRes.latencyMs))ms: target beyond visible items.",
+                            subGoal: "Scroll down to reveal target item",
+                            targetElement: "item list",
+                            actionType: "scroll_down",
+                            textToType: nil,
+                            isFinished: false
+                        )
+                    case "click_item":
+                        if let tIdx = effectiveTargetIdx,
+                           sessionObservedListItems.contains(where: { $0.index == tIdx }) {
+                            let matchContent = sessionObservedListItems.first(where: { $0.index == tIdx })?.content ?? "item \(tIdx)"
+                            candidateDecision = AFMStepDecision(
+                                thought: "Laya decided click_item for item #\(tIdx) in \(Int(layaRes.latencyMs))ms.",
+                                subGoal: "Open item #\(tIdx) for inspection",
+                                targetElement: matchContent,
+                                actionType: "click",
+                                textToType: nil,
+                                isFinished: false
+                            )
+                        }
+                    case "handle_alert":
+                        let alertBtn: String
+                        if let primaryConfirm = obsService.observedElements.first(where: {
+                            let t = $0.text.lowercased()
+                            return t.contains("ok") || t.contains("don't save") || t.contains("dont save") || t.contains("close") || t.contains("discard")
+                        }) {
+                            alertBtn = primaryConfirm.text
+                        } else if let cancelBtn = obsService.observedElements.first(where: {
+                            let t = $0.text.lowercased()
+                            return t.contains("cancel") || t.contains("batal") || t.contains("dismiss")
+                        }) {
+                            alertBtn = cancelBtn.text
+                        } else {
+                            alertBtn = "OK"
+                        }
+                        candidateDecision = AFMStepDecision(
+                            thought: "Laya detected modal alert in \(Int(layaRes.latencyMs))ms: dismissing via '\(alertBtn)'.",
+                            subGoal: "Acknowledge or dismiss alert dialog",
+                            targetElement: alertBtn,
+                            actionType: "click",
+                            textToType: nil,
+                            isFinished: false
+                        )
+                    case "verify_and_send":
+                        candidateDecision = AFMStepDecision(
+                            thought: "Laya decided verify_and_send in \(Int(layaRes.latencyMs))ms: all fields populated.",
+                            subGoal: "Send completed message",
+                            targetElement: "Send",
+                            actionType: "click",
+                            textToType: nil,
+                            isFinished: false
+                        )
+                    case "done", "read_pane", "conclude_task":
+                        if historySummary.contains(where: { $0.lowercased().contains("click") }) {
+                            candidateDecision = AFMStepDecision(
+                                thought: "Laya decided conclusion in \(Int(layaRes.latencyMs))ms.",
+                                subGoal: "Conclude task",
+                                targetElement: "preview",
+                                actionType: "done",
+                                textToType: nil,
+                                isFinished: true
+                            )
+                        }
+                    default:
+                        // For type_field and click_control, delegate element-level planning to System 2 AFM Task Planner
+                        break
+                    }
+                }
+            }
+
+            // Step 2b: Fallback to System 2 AFM Task Planner if Laya did not decide
+            var decision: AFMStepDecision
+            if let candidate = candidateDecision {
+                decision = candidate
+            } else {
+                decision = await AFMLunaCoordinationBridge.shared.planNextStepWithAFM(
+                    userGoal: prompt,
+                    currentStep: stepIndex,
+                    appName: appName,
+                    lastObservation: currentObservation,
+                    historySummary: historySummary,
+                    taskContract: taskPlan
                 )
             }
 
-            if activeDecision.isFinished || activeDecision.actionType == "done" {
+            // Filled-Field Re-Target Guard (P5 Mandate):
+            let obsService = ClickyUIObservationService.shared
+            let isFormActive = obsService.latestWindowType == "draft_composer" || ["compose", "send", "create", "write"].contains(taskPlan?.intentType.lowercased() ?? "")
+            if isFormActive, (decision.actionType == "type" || decision.actionType == "click") {
+                let targetLower = decision.targetElement.lowercased()
+                let currentFields = obsService.latestFormFields
+                let fieldVal = currentFields.first(where: { $0.key.lowercased() == targetLower || targetLower.contains($0.key.lowercased()) })?.value ?? ""
+                let isAlreadyFilled = !fieldVal.isEmpty && fieldVal != "[empty]"
+
+                if isAlreadyFilled {
+                    let requiredOrder = ["to", "subject", "body"]
+                    if let nextEmptyKey = requiredOrder.first(where: { req in
+                        let val = currentFields.first(where: { $0.key.lowercased() == req })?.value ?? "[empty]"
+                        return val == "[empty]" || val.isEmpty
+                    }) {
+                        let capitalKey = nextEmptyKey == "to" ? "To" : (nextEmptyKey == "subject" ? "Subject" : "Body")
+                        ClickyLogger.info("[VM_AGENT_LOOP]", "Filled-Field Re-Target Guard: Field '\(decision.targetElement)' is already populated ('\(fieldVal)'). Redirecting to empty required field '\(capitalKey)'.")
+                        decision = AFMStepDecision(
+                            thought: "Field \(decision.targetElement) is already populated. Redirecting focus to empty field \(capitalKey).",
+                            subGoal: "Type text into \(capitalKey) field",
+                            targetElement: capitalKey,
+                            actionType: "type",
+                            textToType: decision.textToType,
+                            isFinished: false
+                        )
+                    }
+                }
+            }
+
+            // Anti-Spurious Scroll Guard: If target item is already visible in listItems, do not scroll!
+            // Exemption: If planner explicitly requests "scroll_up" because viewport is not at the top (!isAtTop), allow autonomous upward recovery!
+            if (decision.actionType == "scroll_down" || (decision.actionType == "scroll_up" && currentScrollState.isAtTop)),
+               let tIdx = effectiveTargetIdx,
+               sessionObservedListItems.contains(where: { $0.index == tIdx }) {
+                let hasAlreadyClickedTarget = historySummary.contains(where: {
+                    $0.lowercased().contains("click") && ($0.contains("\(tIdx)") || $0.lowercased().contains("item \(tIdx)"))
+                })
+                if hasAlreadyClickedTarget {
+                    ClickyLogger.info("[VM_AGENT_LOOP]", "Target item index \(tIdx) was already clicked and opened. Concluding step to validation.")
+                    decision = AFMStepDecision(
+                        thought: "Target item index \(tIdx) has already been clicked and preview pane is loaded.",
+                        subGoal: "Conclude inspection of target item",
+                        targetElement: "preview",
+                        actionType: "done",
+                        textToType: nil,
+                        isFinished: true
+                    )
+                } else {
+                    ClickyLogger.info("[VM_AGENT_LOOP]", "Prevented spurious scroll: target item index \(tIdx) is already visible on screen! Switching directly to click.")
+                    let matchSnippet = sessionObservedListItems.first(where: { $0.index == tIdx })?.content ?? (tIdx == 1 ? "first item in list" : "item with index \(tIdx) in list")
+                    decision = AFMStepDecision(
+                        thought: "Target item index \(tIdx) is already visible on screen. Opening it directly.",
+                        subGoal: "Open item #\(tIdx) for inspection",
+                        targetElement: matchSnippet,
+                        actionType: "click",
+                        textToType: nil,
+                        isFinished: false
+                    )
+                }
+            }
+
+            if decision.isFinished || decision.actionType == "done" {
                 ClickyLogger.info("[AUTONOMOUS_LOOP]", "AFM concluded execution at step \(stepIndex). Validating outcome...")
                 let validation = await AFMLunaCoordinationBridge.shared.validateWithAFM(
                     userGoal: prompt,
@@ -334,24 +516,30 @@ public final class CompanionVMAgentLoop: ObservableObject {
                     taskContract: taskPlan
                 )
                 let hasValidExtraction = !validation.extractedData.isEmpty && validation.extractedData.lowercased() != "none" && validation.extractedData.count > 3
-                isTaskSuccessful = validation.isDone || (hasValidExtraction && !validation.requiresTakeover)
+                let isActionTask = taskPlan?.intentType == "compose" || taskPlan?.intentType == "send" || taskPlan?.intentType == "interact"
+                if isActionTask {
+                    isTaskSuccessful = validation.isDone && !validation.requiresTakeover
+                } else {
+                    isTaskSuccessful = validation.isDone || (hasValidExtraction && !validation.requiresTakeover)
+                }
                 finalSystemState = validation.systemState
                 finalResponseToUser = validation.responseToUser
                 lastValidationResult = validation
                 break
             }
-            
-            currentActionDescription = "\(activeDecision.subGoal)..."
+            currentActionDescription = "\(decision.subGoal)..."
+            ClickyLogger.info("[HEARTBEAT]", "Step \(stepIndex): Plan determined: [\(decision.actionType)] -> '\(decision.targetElement)' (subGoal: '\(decision.subGoal)')")
             
             // Step 3: Luna Vision & AX Perception grounds the UI element coordinate
             let perception = await AFMLunaCoordinationBridge.shared.perceiveElementWithLuna(
                 snapshotPath: currentSnap ?? "",
-                targetElement: activeDecision.targetElement,
-                subGoal: activeDecision.subGoal,
-                pid: targetPID
+                targetElement: decision.targetElement,
+                subGoal: decision.subGoal,
+                pid: targetPID,
+                actionType: decision.actionType
             )
             
-            let targetPoint: CGPoint
+            let targetPoint: CGPoint?
             let groundingMethod: String
             
             let vBounds = MascotVirtualDesktopService.shared.displayBounds
@@ -360,7 +548,66 @@ public final class CompanionVMAgentLoop: ObservableObject {
             let vWidth = vBounds.width > 0 ? vBounds.width : 1920.0
             let vHeight = vBounds.height > 0 ? vBounds.height : 1080.0
 
-            if let perception = perception {
+            guard let primaryWin = candidateWindows.first else {
+                ClickyLogger.warning("[VM_AGENT_LOOP]", "No candidate windows found for '\(appName)'. Suppressing blind interaction.")
+                continue
+            }
+            let targetWinBounds = primaryWin.bounds
+            MascotVirtualDesktopService.shared.currentWindowBounds = targetWinBounds
+
+            var snapWidth = targetWinBounds.width > 0 ? targetWinBounds.width : vWidth
+            var snapHeight = targetWinBounds.height > 0 ? targetWinBounds.height : vHeight
+            if let snapPath = currentSnap, let img = NSImage(contentsOfFile: snapPath), img.size.width > 0 && img.size.height > 0 {
+                snapWidth = img.size.width
+                snapHeight = img.size.height
+            }
+
+            let targetLower = decision.targetElement.lowercased()
+            let subGoalLower = decision.subGoal.lowercased()
+            let isInspectIntent = taskPlan?.intentType == "inspect" || taskPlan?.intentType == "read"
+            
+            // Item selection is dynamic: only active when target index is designated AND the target matches an item in observed list
+            let isTargetInListItems = sessionObservedListItems.contains { item in
+                let itemLower = item.content.lowercased()
+                return itemLower.contains(targetLower) || targetLower.contains(itemLower.prefix(20))
+            }
+            let isButtonControl = targetLower.contains("button") || targetLower.contains("save") || targetLower.contains("cancel") || targetLower.contains("close") || targetLower.contains("ok") || targetLower.contains("dismiss")
+            let isItemClick = (decision.actionType == "click_item" || (decision.actionType == "click" && isTargetInListItems && !isButtonControl)) &&
+                              isInspectIntent &&
+                              effectiveTargetIdx != nil &&
+                              !subGoalLower.contains("navigation") &&
+                              !subGoalLower.contains("folder")
+            if isItemClick, let tIdx = effectiveTargetIdx, let box = sessionObservedCardBoxes[tIdx] {
+                let winOrigin = candidateWindows.first?.bounds.origin ?? CGPoint(x: vOriginX + 40, y: vOriginY + 40)
+                let visualRelX = box.midX * snapWidth
+                let visualRelY = (1.0 - box.midY) * snapHeight
+                targetPoint = CGPoint(x: winOrigin.x + visualRelX, y: winOrigin.y + visualRelY)
+                groundingMethod = "Visual OCR Card"
+                ClickyLogger.info("[VM_AGENT_LOOP]", "Grounded target item \(tIdx) directly via Visual OCR Card at (\(Int(targetPoint?.x ?? 0)), \(Int(targetPoint?.y ?? 0)))")
+            } else if isInspectIntent, effectiveTargetIdx != nil, !isTargetInListItems,
+                      (decision.actionType == "click" || decision.actionType == "click_item"),
+                      taskPlan?.targetSection?.lowercased() != "sidebar",
+                      !subGoalLower.contains("navigation"),
+                      !subGoalLower.contains("sidebar"),
+                      !subGoalLower.contains("folder") {
+                // Strict Item Target Guard (Universal & Zero Hardcoding):
+                // When an inspect task targets an item ordinal (e.g. item 1), NEVER blindly click arbitrary
+                // controls or popups outside the collection list if the item is not visible.
+                targetPoint = nil
+                groundingMethod = "Ungrounded (Strict Item Target Guard)"
+                ClickyLogger.warning("[VM_AGENT_LOOP]", "Strict Item Target Guard: Suppressed clicking arbitrary element '\(decision.targetElement)' because target item index \(effectiveTargetIdx ?? 0) is not visible in collection list items.")
+            } else if isFormActive, let fieldBox = obsService.latestFormFieldBoxes.first(where: {
+                let k = $0.key.lowercased()
+                let t = targetLower
+                return k == t || t.contains(k) || k.contains(t)
+            })?.value {
+                let winOrigin = candidateWindows.first?.bounds.origin ?? CGPoint(x: vOriginX + 40, y: vOriginY + 40)
+                let visualRelX = fieldBox.midX * snapWidth
+                let visualRelY = (1.0 - fieldBox.midY) * snapHeight
+                targetPoint = CGPoint(x: winOrigin.x + visualRelX, y: winOrigin.y + visualRelY)
+                groundingMethod = "Form Field Box"
+                ClickyLogger.info("[VM_AGENT_LOOP]", "Grounded target '\(decision.targetElement)' via Form Field Box at (\(Int(targetPoint?.x ?? 0)), \(Int(targetPoint?.y ?? 0)))")
+            } else if let perception = perception {
                 targetPoint = perception.coordinate
                 groundingMethod = perception.sourceMethod
             } else {
@@ -368,49 +615,78 @@ public final class CompanionVMAgentLoop: ObservableObject {
                 let fallbackGround = await ClickyHybridGroundingEngine.shared.resolveElementCoordinate(
                     targetPrompt: decision.targetElement,
                     pid: targetPID,
-                    snapshotPath: currentSnap
+                    snapshotPath: currentSnap,
+                    actionType: decision.actionType
                 )
-                let defaultCenter: CGPoint
-                if let winBounds = candidateWindows.first?.bounds {
-                    defaultCenter = CGPoint(x: winBounds.midX, y: winBounds.midY)
+                if let fallback = fallbackGround {
+                    targetPoint = fallback.coordinate
+                    groundingMethod = fallback.method.rawValue
+                } else if let ocrMatch = await findMatchingOcrElement(query: decision.targetElement) {
+                    let winOrigin = candidateWindows.first?.bounds.origin ?? CGPoint(x: vOriginX + 40, y: vOriginY + 40)
+                    let visualRelX = ocrMatch.box.midX * snapWidth
+                    let visualRelY = (1.0 - ocrMatch.box.midY) * snapHeight
+                    targetPoint = CGPoint(x: winOrigin.x + visualRelX, y: winOrigin.y + visualRelY)
+                    groundingMethod = "Visual OCR Token"
+                    ClickyLogger.info("[VM_AGENT_LOOP]", "Grounded target '\(decision.targetElement)' via Visual OCR Token '\(ocrMatch.text)' at (\(Int(targetPoint?.x ?? 0)), \(Int(targetPoint?.y ?? 0)))")
                 } else {
-                    defaultCenter = CGPoint(x: vOriginX + (vWidth / 2.0), y: vOriginY + (vHeight / 2.0))
+                    targetPoint = nil
+                    groundingMethod = "Ungrounded"
+                    ClickyLogger.warning("[VM_AGENT_LOOP]", "Target '\(decision.targetElement)' could not be grounded in any visible UI element. Blind center click suppressed to preserve screen state.")
                 }
-                targetPoint = fallbackGround?.coordinate ?? defaultCenter
-                groundingMethod = fallbackGround?.method.rawValue ?? GroundedTargetResult.GroundingMethod.axUIElement.rawValue
-            }
-            
-            let targetWinBounds = candidateWindows.first?.bounds ?? CGRect(x: vOriginX + 40, y: vOriginY + 40, width: 1260, height: 800)
-            MascotVirtualDesktopService.shared.currentWindowBounds = targetWinBounds
-
-            var snapWidth = targetWinBounds.width > 0 ? targetWinBounds.width : 1260.0
-            var snapHeight = targetWinBounds.height > 0 ? targetWinBounds.height : 800.0
-            if let snapPath = currentSnap, let img = NSImage(contentsOfFile: snapPath), img.size.width > 0 && img.size.height > 0 {
-                snapWidth = img.size.width
-                snapHeight = img.size.height
             }
 
             let normX: Double
             let normY: Double
-            if groundingMethod == GroundedTargetResult.GroundingMethod.axUIElement.rawValue {
-                let rawX = Double(targetPoint.x)
-                let relX = rawX >= targetWinBounds.origin.x ? (rawX - targetWinBounds.origin.x) : rawX
-                let rawY = Double(targetPoint.y)
-                let relY = rawY >= targetWinBounds.origin.y ? (rawY - targetWinBounds.origin.y) : rawY
-                normX = min(max(relX / snapWidth, 0.02), 0.98)
-                normY = min(max(relY / snapHeight, 0.02), 0.98)
+            if let tp = targetPoint {
+                var effectiveWinBounds = targetWinBounds
+                if effectiveWinBounds.origin.x < (vOriginX - 100) || effectiveWinBounds.width < 100 {
+                    if let freshWin = candidateWindows.first(where: { $0.bounds.origin.x >= (vOriginX - 100) }) {
+                        effectiveWinBounds = freshWin.bounds
+                        ClickyLogger.info("[CUA_NORM]", "Re-resolved targetWinBounds to active virtual window bounds: \(effectiveWinBounds)")
+                    } else {
+                        effectiveWinBounds = CGRect(x: vOriginX + 40, y: vOriginY + 40, width: snapWidth, height: snapHeight)
+                    }
+                }
+
+                let isScreenSpace = groundingMethod.contains("AX") ||
+                                    groundingMethod.contains("Fast-Path") ||
+                                    groundingMethod.contains("Form Field Box") ||
+                                    groundingMethod == GroundedTargetResult.GroundingMethod.axUIElement.rawValue ||
+                                    groundingMethod == "AXUIElement" ||
+                                    groundingMethod == "Visual OCR Card" ||
+                                    groundingMethod == "Visual OCR Token" ||
+                                    groundingMethod == "Toolbar Action Heuristic"
+
+                let rawX = Double(tp.x)
+                let rawY = Double(tp.y)
+                let winX = Double(effectiveWinBounds.origin.x)
+                let winY = Double(effectiveWinBounds.origin.y)
+
+                if isScreenSpace {
+                    let relX = rawX - winX
+                    let relY = rawY - winY
+                    normX = min(max(relX / snapWidth, 0.02), 0.98)
+                    normY = min(max(relY / snapHeight, 0.02), 0.98)
+                } else {
+                    normX = min(max(rawX / snapWidth, 0.02), 0.98)
+                    normY = min(max(rawY / snapHeight, 0.02), 0.98)
+                }
+
+                let clickPos = MascotVirtualDesktopService.shared.targetDisplayCoordinate(for: CGPoint(x: normX, y: normY))
+                let deltaX = Int(clickPos.x) - Int(rawX)
+                let deltaY = Int(clickPos.y) - Int(rawY)
+                ClickyLogger.info("[CUA_NORM]", "raw=(\(Int(rawX)), \(Int(rawY))), origin=(\(Int(winX)), \(Int(winY))), snap=(\(Int(snapWidth)), \(Int(snapHeight))) -> norm=(\(String(format: "%.3f", normX)), \(String(format: "%.3f", normY))) -> clickPos=(\(Int(clickPos.x)), \(Int(clickPos.y))) [delta: (\(deltaX), \(deltaY))]")
+                ClickyLogger.info("[HEARTBEAT]", "Step \(stepIndex): Normalized coordinate resolved: (\(String(format: "%.3f", normX)), \(String(format: "%.3f", normY))) via [\(groundingMethod)]")
             } else {
-                // Luna Vision coordinates are already relative to the window snapshot image
-                normX = min(max(Double(targetPoint.x) / snapWidth, 0.02), 0.98)
-                normY = min(max(Double(targetPoint.y) / snapHeight, 0.02), 0.98)
+                normX = 0.5
+                normY = 0.5
             }
-            
             // Step 4: Dispatch in-chat interactive card progress
             var currentQueue = queueItems
             let activeIdx = stepIndex - 1
             if currentQueue.indices.contains(activeIdx) {
                 currentQueue[activeIdx] = ComputerCardQueueItem(
-                    name: activeDecision.subGoal.isEmpty ? currentQueue[activeIdx].name : activeDecision.subGoal,
+                    name: decision.subGoal.isEmpty ? currentQueue[activeIdx].name : decision.subGoal,
                     statusBadge: "Active (\(groundingMethod))",
                     isChecked: false
                 )
@@ -423,7 +699,7 @@ public final class CompanionVMAgentLoop: ObservableObject {
                 }
             } else {
                 currentQueue.append(ComputerCardQueueItem(
-                    name: activeDecision.subGoal,
+                    name: decision.subGoal,
                     statusBadge: "Active (\(groundingMethod))",
                     isChecked: false
                 ))
@@ -440,31 +716,101 @@ public final class CompanionVMAgentLoop: ObservableObject {
                 queueItems: currentQueue,
                 targetCoordinateX: normX,
                 targetCoordinateY: normY,
-                currentActionLabel: "\(stepIndex). \(activeDecision.subGoal) [\(groundingMethod)]"
+                currentActionLabel: "\(stepIndex). \(decision.subGoal) [\(groundingMethod)]"
             )
             onProgress?(stepPayload)
             
-            // Step 5: Execute Virtual CUA Action via Pure Physical Mouse Hands (0 Host Screen Intrusion)
-            // Visually glide AI cursor smoothly to target element coordinate with human kinematics
-            await MascotVirtualDesktopService.shared.glideReticleTo(target: CGPoint(x: normX, y: normY))
-            
-            // Delegate physical action execution to specialized modular CUA tool
-            let actionResult = await CUAPhysicalActionDispatcher.shared.dispatchAction(
-                decision: activeDecision,
-                normalizedPoint: CGPoint(x: normX, y: normY),
-                appName: appName,
-                targetPID: targetPID,
-                snapshotPath: currentSnap
+            // Pre-Terminal Vision Gate (Luna Truth Vision)
+            // Before clicking irreversible external mutation actions ("Send", "Submit", "Kirim"),
+            // verify holistic visual reality of the screen via Luna Truth Vision (gpt-6-luna)
+            let isSendClick = decision.actionType == "click" && (
+                targetLower.contains("send") || targetLower.contains("submit") || targetLower.contains("kirim")
             )
-            var actionObsResult = actionResult.observationResult
+            if isSendClick, let snapPath = currentSnap, FileManager.default.fileExists(atPath: snapPath) {
+                ClickyLogger.info("[VM_AGENT_LOOP]", "Pre-Terminal Vision Gate: Verifying holistic screen truth before executing '\(decision.targetElement)'...")
+                if let truth = try? await ChatGPTCodexVisionService.shared.queryScreenState(imagePath: snapPath, appName: appName) {
+                    ClickyLogger.info("[VM_AGENT_LOOP]", "Luna Truth Vision: windowType=\(truth.windowType), hasModalOrError=\(truth.hasModalOrError), summary='\(truth.visualSummary)'")
+                    if truth.hasModalOrError {
+                        let alertText = truth.errorOrAlertMessage ?? "Active alert dialog detected"
+                        ClickyLogger.warning("[VM_AGENT_LOOP]", "Pre-Terminal Vision Gate BLOCKED '\(decision.targetElement)': Active modal alert/error detected: '\(alertText)'")
+                        decision = AFMStepDecision(
+                            thought: "Luna Truth Vision detected an active alert/error: '\(alertText)'. Dismissing or acknowledging it first.",
+                            subGoal: "Acknowledge or dismiss alert dialog",
+                            targetElement: "OK",
+                            actionType: "click",
+                            textToType: nil,
+                            isFinished: false
+                        )
+                    } else {
+                        let emptyRequired = truth.formFields.filter { (k, v) in
+                            let lowerKey = k.lowercased()
+                            let isEmptyVal = v.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || v == "[empty]"
+                            return isEmptyVal && (lowerKey.contains("subject") || lowerKey.contains("subjek") || lowerKey.contains("to") || lowerKey.contains("penerima"))
+                        }
+                        if !emptyRequired.isEmpty {
+                            let missingName = emptyRequired.keys.first ?? "Subject"
+                            ClickyLogger.warning("[VM_AGENT_LOOP]", "Pre-Terminal Vision Gate BLOCKED '\(decision.targetElement)': Required field '\(missingName)' is visually empty on screen.")
+                            decision = AFMStepDecision(
+                                thought: "Luna Truth Vision verified that '\(missingName)' is visually empty. Focusing and typing into \(missingName) field before sending.",
+                                subGoal: "Type text into \(missingName) field",
+                                targetElement: "\(missingName) field",
+                                actionType: "type",
+                                textToType: prompt,
+                                isFinished: false
+                            )
+                        }
+                    }
+                }
+            }
+            var actionObsResult: String
+            if targetPoint != nil {
+                // Step 5: Execute Virtual CUA Action via Pure Physical Mouse Hands (0 Host Screen Intrusion)
+                // Visually glide AI cursor smoothly to target element coordinate with human kinematics
+                await MascotVirtualDesktopService.shared.glideReticleTo(target: CGPoint(x: normX, y: normY))
+
+                if decision.actionType == "type" && (decision.textToType == nil || decision.textToType?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == true) {
+                    let targetEl = decision.targetElement.lowercased()
+                    let extracted = CUATypeActionTool.extractPayloadFromPrompt(prompt)
+                    let text = !extracted.isEmpty ? extracted : (targetEl.contains("to") ? (taskPlan?.searchQuery ?? prompt) : prompt)
+                    decision = AFMStepDecision(
+                        thought: decision.thought,
+                        subGoal: decision.subGoal,
+                        targetElement: decision.targetElement,
+                        actionType: decision.actionType,
+                        textToType: text,
+                        isFinished: decision.isFinished
+                    )
+                    ClickyLogger.info("[VM_AGENT_LOOP]", "Populated missing textToType dynamically for '\(decision.targetElement)': '\(text)'")
+                }
+
+                // Delegate physical action execution to specialized modular CUA tool
+                let actionResult = await CUAPhysicalActionDispatcher.shared.dispatchAction(
+                    decision: decision,
+                    normalizedPoint: CGPoint(x: normX, y: normY),
+                    appName: appName,
+                    targetPID: targetPID,
+                    snapshotPath: currentSnap
+                )
+                actionObsResult = actionResult.observationResult
+                ClickyLogger.info("[HEARTBEAT]", "Step \(stepIndex): Dispatched action [\(decision.actionType)] -> '\(decision.targetElement)' successfully.")
+            } else {
+                ClickyLogger.warning("[VM_AGENT_LOOP]", "Suppressed blind interaction: target '\(decision.targetElement)' was not grounded.")
+                actionObsResult = "Target '\(decision.targetElement)' not visible on screen. Re-observing..."
+            }
             
-            try? await Task.sleep(nanoseconds: 600_000_000)
-            
+            if decision.actionType == "click" && (decision.targetElement.lowercased().contains("new") || decision.targetElement.lowercased().contains("compose") || decision.targetElement.lowercased().contains("create")) {
+                try? await Task.sleep(nanoseconds: 800_000_000)
+            } else {
+                try? await Task.sleep(nanoseconds: 400_000_000)
+            }
+            // Zero Host Screen Intrusion: Immediately pull any newly spawned windows (e.g. "New Message") into Virtual Display (in background)
+            Task.detached(priority: .userInitiated) {
+                await MascotVirtualDesktopService.shared.relocateAppWindowsToVirtualDesktop(appName: appName)
+            }
             // Capture updated frame
             let updatedSnap = await CompanionWindowStreamService.shared.captureTargetWindowAsync(appName: appName, slug: slug)
-            
-            // Refresh observation after click/type action so AFM validator & subsequent planner see targeted state delta
-            if activeDecision.actionType != "read" && activeDecision.actionType != "inspect" {
+            ClickyLogger.info("[HEARTBEAT]", "Step \(stepIndex): Post-action frame capture completed: \(updatedSnap ?? "none")")
+            if decision.actionType != "read" && decision.actionType != "inspect" {
                 let afterActionObs = await readStructuredObservation(
                     appName: appName,
                     pid: targetPID,
@@ -472,8 +818,8 @@ public final class CompanionVMAgentLoop: ObservableObject {
                 )
                 if !afterActionObs.isEmpty && afterActionObs != "{}" {
                     let targetedSummary = summarizeTargetedObservation(
-                        actionType: activeDecision.actionType,
-                        targetElement: activeDecision.targetElement,
+                        actionType: decision.actionType,
+                        targetElement: decision.targetElement,
                         observationJSON: afterActionObs,
                         targetIndex: effectiveTargetIdx
                     )
@@ -486,29 +832,46 @@ public final class CompanionVMAgentLoop: ObservableObject {
             // Record audit trail and queue item
             let stepRecord = VMAgentStepRecord(
                 stepNumber: stepIndex,
-                actionName: "\(activeDecision.actionType):\(activeDecision.targetElement)",
-                targetDescription: activeDecision.subGoal,
+                actionName: "\(decision.actionType):\(decision.targetElement)",
+                targetDescription: decision.subGoal,
                 groundingMethod: groundingMethod,
-                coordinateX: Int(targetPoint.x),
-                coordinateY: Int(targetPoint.y),
+                coordinateX: Int(targetPoint?.x ?? 0),
+                coordinateY: Int(targetPoint?.y ?? 0),
                 observationResult: actionObsResult
             )
             auditTrail.append(stepRecord)
             let stepIdx = stepIndex - 1
-            if queueItems.indices.contains(stepIdx) {
-                queueItems[stepIdx] = ComputerCardQueueItem(
-                    name: activeDecision.subGoal.isEmpty ? queueItems[stepIdx].name : activeDecision.subGoal,
-                    statusBadge: "Done",
-                    isChecked: true
-                )
+            if targetPoint != nil {
+                if queueItems.indices.contains(stepIdx) {
+                    queueItems[stepIdx] = ComputerCardQueueItem(
+                        name: decision.subGoal.isEmpty ? queueItems[stepIdx].name : decision.subGoal,
+                        statusBadge: "Done",
+                        isChecked: true
+                    )
+                } else {
+                    queueItems.append(ComputerCardQueueItem(
+                        name: decision.subGoal,
+                        statusBadge: "Done",
+                        isChecked: true
+                    ))
+                }
+                historySummary.append("\(decision.subGoal): \(actionObsResult)")
             } else {
-                queueItems.append(ComputerCardQueueItem(
-                    name: activeDecision.subGoal,
-                    statusBadge: "Done",
-                    isChecked: true
-                ))
+                if queueItems.indices.contains(stepIdx) {
+                    queueItems[stepIdx] = ComputerCardQueueItem(
+                        name: decision.subGoal.isEmpty ? queueItems[stepIdx].name : decision.subGoal,
+                        statusBadge: "Failed",
+                        isChecked: false
+                    )
+                } else {
+                    queueItems.append(ComputerCardQueueItem(
+                        name: decision.subGoal,
+                        statusBadge: "Failed",
+                        isChecked: false
+                    ))
+                }
+                historySummary.append("Failed to execute \(decision.subGoal): \(actionObsResult)")
             }
-            historySummary.append("\(activeDecision.subGoal): \(actionObsResult)")
             
             // Step 6: AFM Validates state transition
             let validation = await AFMLunaCoordinationBridge.shared.validateWithAFM(
@@ -518,9 +881,8 @@ public final class CompanionVMAgentLoop: ObservableObject {
                 latestObservation: actionObsResult,
                 taskContract: taskPlan
             )
-            
             lastValidationResult = validation
-
+            ClickyLogger.info("[HEARTBEAT]", "Step \(stepIndex): Egress evaluation completed: isDone=\(validation.isDone), takeover=\(validation.requiresTakeover), state='\(validation.systemState)'")
             // If validation requires human confirmation / takeover to proceed (e.g. review & send draft)
             if validation.requiresTakeover {
                 ClickyLogger.info("[AUTONOMOUS_LOOP]", "AFM requested human takeover: \(validation.systemState)")
@@ -537,6 +899,7 @@ public final class CompanionVMAgentLoop: ObservableObject {
                     status: .takeoverNeeded
                 )
                 onProgress?(takeoverPayload)
+                MascotVirtualDesktopService.shared.hideReticle(afterDwell: false)
                 reportFinding(message: validation.responseToUser, slug: slug)
                 return takeoverPayload
             }
@@ -557,18 +920,34 @@ public final class CompanionVMAgentLoop: ObservableObject {
 
             let effectiveResp = validation.responseToUser.isEmpty ? validation.systemState : validation.responseToUser
             let hasValidExtraction = !validation.extractedData.isEmpty && validation.extractedData.lowercased() != "none" && validation.extractedData.count > 3
-            if !isScrollStep && !draftNotSentYet && !targetIndexNotReached && (validation.isDone || (hasValidExtraction && !validation.requiresTakeover)) && !effectiveResp.isEmpty {
-                isTaskSuccessful = true
-                finalSystemState = validation.systemState
-                finalResponseToUser = effectiveResp
-                ClickyLogger.info("[AUTONOMOUS_LOOP]", "AFM confirmed task completion with extracted data: \(validation.extractedData)")
-                break
+            let isActionTask = taskPlan?.intentType == "compose" || taskPlan?.intentType == "send" || taskPlan?.intentType == "interact"
+
+            if isActionTask {
+                // Action/Composition tasks MUST have validation.isDone == true to complete!
+                // Factual extraction alone NEVER bypasses completion for an action task.
+                if !isScrollStep && validation.isDone && !effectiveResp.isEmpty {
+                    isTaskSuccessful = true
+                    finalSystemState = validation.systemState
+                    finalResponseToUser = effectiveResp
+                    ClickyLogger.info("[AUTONOMOUS_LOOP]", "AFM confirmed action task completion: \(validation.systemState)")
+                    break
+                }
+            } else {
+                if !isScrollStep && !draftNotSentYet && !targetIndexNotReached && (validation.isDone || (hasValidExtraction && !validation.requiresTakeover)) && !effectiveResp.isEmpty {
+                    isTaskSuccessful = true
+                    finalSystemState = validation.systemState
+                    finalResponseToUser = effectiveResp
+                    ClickyLogger.info("[AUTONOMOUS_LOOP]", "AFM confirmed task completion with extracted data: \(validation.extractedData)")
+                    break
+                }
             }
         }
         
         // Anti-Fake Check: If loop terminated without isTaskSuccessful flag, check if last validation had factual extraction
         if !isTaskSuccessful {
-            if let lastVal = lastValidationResult,
+            let isActionTask = taskPlan?.intentType == "compose" || taskPlan?.intentType == "send" || taskPlan?.intentType == "interact"
+            if !isActionTask,
+               let lastVal = lastValidationResult,
                !lastVal.extractedData.isEmpty,
                lastVal.extractedData.lowercased() != "none",
                lastVal.isDone,
@@ -587,19 +966,25 @@ public final class CompanionVMAgentLoop: ObservableObject {
                 let conclusionVal = await TaskEgressValidator.shared.validate(
                     userGoal: prompt,
                     appName: appName,
-                    performedSteps: historySummary,
-                    latestObservation: "Execution step limit reached (\(maxSteps) steps). Current screen observation: \(currentObs)",
+                    performedSteps: historySummary + ["Execution step limit reached (\(maxSteps) steps)"],
+                    latestObservation: currentObs,
                     taskContract: taskPlan
                 )
                 finalResponseToUser = conclusionVal.responseToUser
                 finalSystemState = conclusionVal.systemState
-                ClickyLogger.warning("[AUTONOMOUS_LOOP]", "Task concluded at step limit, synthesized response: \(finalResponseToUser)")
+                if conclusionVal.isDone && (!conclusionVal.requiresTakeover || taskPlan?.requiresTakeoverOnCompletion == true) {
+                    isTaskSuccessful = true
+                    ClickyLogger.info("[AUTONOMOUS_LOOP]", "Conclusion validation confirmed task success: \(conclusionVal.systemState)")
+                } else {
+                    ClickyLogger.warning("[AUTONOMOUS_LOOP]", "Conclusion validation indicated task not accomplished: \(conclusionVal.systemState)")
+                }
             }
         }
         
         try? await Task.sleep(nanoseconds: 300_000_000)
         _ = await CompanionWindowStreamService.shared.captureTargetWindowAsync(appName: appName, slug: slug)
         CompanionWindowStreamService.shared.stopStreaming()
+        MascotVirtualDesktopService.shared.hideReticle(afterDwell: true)
         finalResponseToUser = finalResponseToUser
             .replacingOccurrences(of: #"^<[^>]+>\s*"#, with: "", options: .regularExpression)
             .replacingOccurrences(of: #"<[^>]+>"#, with: "", options: .regularExpression)
@@ -629,8 +1014,8 @@ public final class CompanionVMAgentLoop: ObservableObject {
         let snapshot = await CompanionWindowStreamService.shared.captureTargetWindowAsync(appName: appName, slug: slug)
         var detectedElements: [String] = []
 
-        if let axApp = findTargetAXApplication(appName: appName) {
-            detectedElements = extractAXElementTitles(from: axApp)
+        if let axApp = ClickyUIObservationService.shared.findTargetAXApplication(appName: appName) {
+            detectedElements = ClickyUIObservationService.shared.extractAXElementTitles(from: axApp)
         }
 
         return (snapshot, detectedElements)
@@ -689,7 +1074,8 @@ public final class CompanionVMAgentLoop: ObservableObject {
         let grounded = await ClickyHybridGroundingEngine.shared.resolveElementCoordinate(
             targetPrompt: targetDescription,
             pid: pid,
-            snapshotPath: snapshotPath
+            snapshotPath: snapshotPath,
+            actionType: "type"
         )
 
         if let pt = grounded?.coordinate {
@@ -702,136 +1088,27 @@ public final class CompanionVMAgentLoop: ObservableObject {
         return true
     }
 
+    private func findMatchingOcrElement(query: String) async -> (text: String, box: CGRect)? {
+        await ClickyUIObservationService.shared.findMatchingOcrElement(query: query)
+    }
+
     /// Reads screen contents into a structured, section-based JSON representation
-    /// Sections: topBar, sidebar, listItems (with explicit 1-based indexing), previewPane
+    /// Sections: topBar, sidebar, listItems (with explicit 1-based indexing), previewPane, content, "viewport": {"isAtTop": Bool}
     public func readStructuredObservation(
         appName: String,
         pid: pid_t? = nil,
-        snapshotPath: String? = nil
+        snapshotPath: String? = nil,
+        targetSection: String? = nil,
+        intentType: String? = nil
     ) async -> String {
-        guard let snapPath = snapshotPath ?? CompanionWindowStreamService.shared.activeSnapshotPath,
-              FileManager.default.fileExists(atPath: snapPath),
-              let img = NSImage(contentsOfFile: snapPath),
-              let cgImage = img.cgImage(forProposedRect: nil, context: nil, hints: nil) else {
-            // Fallback to AX if snapshot unavailable
-            if let pid = pid, pid > 0 {
-                let appElement = AXUIElementCreateApplication(pid)
-                var windowRef: CFTypeRef?
-                if AXUIElementCopyAttributeValue(appElement, kAXFocusedWindowAttribute as CFString, &windowRef) == .success,
-                   let win = windowRef {
-                    let axTexts = extractAXElementTextRecursive(from: win as! AXUIElement, maxDepth: 4)
-                    let fallbackDict: [String: Any] = ["content": axTexts]
-                    if let data = try? JSONSerialization.data(withJSONObject: fallbackDict, options: [.prettyPrinted]),
-                       let str = String(data: data, encoding: .utf8) {
-                        return str
-                    }
-                }
-            }
-            return "{}"
-        }
-
-        let req = VNRecognizeTextRequest()
-        req.recognitionLevel = .accurate
-        let handler = VNImageRequestHandler(cgImage: cgImage, options: [:])
-        try? handler.perform([req])
-
-        guard let results = req.results, !results.isEmpty else {
-            return "{}"
-        }
-
-        struct DetectedItem {
-            let text: String
-            let box: CGRect
-        }
-
-        var topBarItems: [String] = []
-        var sidebarItems: [String] = []
-        var previewPaneItems: [String] = []
-        var listRawItems: [DetectedItem] = []
-        var generalItems: [DetectedItem] = []
-
-        for obs in results {
-            guard let str = obs.topCandidates(1).first?.string.trimmingCharacters(in: .whitespacesAndNewlines),
-                  str.count >= 2 else { continue }
-            let b = obs.boundingBox
-
-            // Top bar / toolbar
-            if b.midY >= 0.93 {
-                if !topBarItems.contains(str) { topBarItems.append(str) }
-            }
-            // Sidebar (left column)
-            else if b.maxX <= 0.17 {
-                if !sidebarItems.contains(str) { sidebarItems.append(str) }
-            }
-            // Preview / detail pane (right column)
-            else if b.minX >= 0.55 {
-                if !previewPaneItems.contains(str) { previewPaneItems.append(str) }
-            }
-            // Middle column: list items
-            else if b.minX >= 0.16 && b.maxX <= 0.55 {
-                listRawItems.append(DetectedItem(text: str, box: b))
-            } else {
-                generalItems.append(DetectedItem(text: str, box: b))
-            }
-        }
-
-        // Group middle column into distinct list item cards
-        let sortedList = listRawItems.sorted { $0.box.midY > $1.box.midY }
-        var cards: [[DetectedItem]] = []
-
-        for item in sortedList {
-            if let idx = cards.firstIndex(where: { card in
-                guard let top = card.first else { return false }
-                return abs(top.box.midY - item.box.midY) < 0.085
-            }) {
-                cards[idx].append(item)
-            } else {
-                cards.append([item])
-            }
-        }
-
-        var rawSummaries: [String] = []
-        for card in cards {
-            let sortedCard = card.sorted {
-                if abs($0.box.midY - $1.box.midY) < 0.02 {
-                    return $0.box.minX < $1.box.minX
-                }
-                return $0.box.midY > $1.box.midY
-            }
-            rawSummaries.append(sortedCard.map { $0.text }.joined(separator: " | "))
-        }
-
-        let assignedIndices = resolveCardIndices(newCards: rawSummaries, previousItems: sessionObservedListItems)
-        var formattedListItems: [[String: Any]] = []
-        for (idx, summary) in zip(assignedIndices, rawSummaries) {
-            formattedListItems.append([
-                "index": idx,
-                "content": summary
-            ])
-            if !sessionObservedListItems.contains(where: { $0.index == idx }) {
-                sessionObservedListItems.append((index: idx, content: summary))
-            }
-        }
-
-        var sectionJSON: [String: Any] = [:]
-        if !topBarItems.isEmpty { sectionJSON["topBar"] = topBarItems }
-        if !sidebarItems.isEmpty { sectionJSON["sidebar"] = sidebarItems }
-        if !formattedListItems.isEmpty { sectionJSON["listItems"] = formattedListItems }
-        if !previewPaneItems.isEmpty { sectionJSON["previewPane"] = previewPaneItems }
-
-        // Single-pane fallback: if no columns were detected
-        if formattedListItems.isEmpty && !generalItems.isEmpty {
-            let genSorted = generalItems.sorted { $0.box.midY > $1.box.midY }
-            sectionJSON["content"] = genSorted.map { $0.text }
-        }
-
-        if let jsonData = try? JSONSerialization.data(withJSONObject: sectionJSON, options: [.prettyPrinted, .sortedKeys]),
-           let jsonString = String(data: jsonData, encoding: .utf8) {
-            ClickyLogger.info("[VM_AGENT_LOOP]", "Structured observation: \(topBarItems.count) topBar, \(sidebarItems.count) sidebar, \(formattedListItems.count) listItems, \(previewPaneItems.count) preview")
-            return jsonString
-        }
-
-        return "{}"
+        // Injects viewport section ("viewport": {"isAtTop": Bool}) via ClickyUIObservationService
+        await ClickyUIObservationService.shared.readStructuredObservation(
+            appName: appName,
+            pid: pid,
+            snapshotPath: snapshotPath,
+            targetSection: targetSection,
+            intentType: intentType
+        )
     }
 
     /// Produces a concise, targeted per-item summary of screen state delta following an action.
@@ -842,74 +1119,16 @@ public final class CompanionVMAgentLoop: ObservableObject {
         observationJSON: String,
         targetIndex: Int?
     ) -> String {
-        guard let data = observationJSON.data(using: .utf8),
-              let dict = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
-            return ""
-        }
-
-        let preview = (dict["previewPane"] as? [String]) ?? []
-        let previewSummary = preview.prefix(4).joined(separator: " | ")
-        let listItems = (dict["listItems"] as? [[String: Any]]) ?? []
-
-        if actionType == "click" || actionType == "right_click" {
-            var itemSummary = ""
-            if let tIdx = targetIndex, let match = listItems.first(where: { ($0["index"] as? Int) == tIdx }) {
-                let content = (match["content"] as? String) ?? ""
-                itemSummary = "Target Item #\(tIdx): '\(content)'"
-            } else if let firstItem = listItems.first {
-                let idx = (firstItem["index"] as? Int) ?? 1
-                let content = (firstItem["content"] as? String) ?? ""
-                itemSummary = "Item #\(idx): '\(content)'"
-            }
-
-            var components: [String] = []
-            if !itemSummary.isEmpty { components.append(itemSummary) }
-            if !previewSummary.isEmpty { components.append("Reading Pane: '\(previewSummary)'") }
-            return components.joined(separator: " | ")
-        } else if actionType.contains("scroll") {
-            let indices = listItems.compactMap { $0["index"] as? Int }.sorted()
-            if let minIdx = indices.first, let maxIdx = indices.last {
-                return "Visible list items now: indices \(minIdx) to \(maxIdx) (count: \(indices.count))"
-            }
-            return "List scrolled"
-        } else if actionType == "type" {
-            return "Input field '\(targetElement)' updated"
-        } else {
-            if !previewSummary.isEmpty {
-                return "Display: '\(previewSummary)'"
-            }
-            return ""
-        }
+        ClickyUIObservationService.shared.summarizeTargetedObservation(
+            actionType: actionType,
+            targetElement: targetElement,
+            observationJSON: observationJSON,
+            targetIndex: targetIndex
+        )
     }
 
-    /// Visual Anchor Chaining: matches overlapping cards from previous observations
-    /// to assign continuous, absolute 1-based indices across vertical scroll actions.
-    private func resolveCardIndices(newCards: [String], previousItems: [(index: Int, content: String)]) -> [Int] {
-        guard !previousItems.isEmpty else { return newCards.indices.map { $0 + 1 } }
-        var anchorNewIdx: Int?
-        var anchorKnownIndex: Int?
-        for (newIdx, newContent) in newCards.enumerated() {
-            let cleanNew = newContent.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
-            guard cleanNew.count >= 6 else { continue }
-            if let match = previousItems.first(where: { prev in
-                let cleanPrev = prev.content.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
-                guard cleanPrev.count >= 6 else { return false }
-                let prevPrefix = String(cleanPrev.prefix(30))
-                let newPrefix = String(cleanNew.prefix(30))
-                return cleanNew.contains(prevPrefix) || cleanPrev.contains(newPrefix)
-            }) {
-                anchorNewIdx = newIdx
-                anchorKnownIndex = match.index
-                break
-            }
-        }
-        if let anchorNew = anchorNewIdx, let knownIdx = anchorKnownIndex {
-            return newCards.enumerated().map { (idx, _) in
-                let offset = idx - anchorNew
-                return max(1, knownIdx + offset)
-            }
-        }
-        return newCards.indices.map { $0 + 1 }
+    private func resolveCardIndices(newCards: [String], previousItems: [(index: Int, content: String)], isAtTop: Bool = true) -> [Int] {
+        ClickyUIObservationService.shared.resolveCardIndices(newCards: newCards, previousItems: previousItems, isAtTop: isAtTop)
     }
 
     /// Reads text contents from application via universal accessibility hierarchy (AXUIElement)
@@ -948,11 +1167,30 @@ public final class CompanionVMAgentLoop: ObservableObject {
             responseToUser: safeResponse,
             auditTrail: auditTrail
         )
-
-        // Save deliverable receipt in isolated workspace
-        saveDeliverableReceipt(receipt: receipt, slug: slug)
+        #if DEBUG
+        let isE2ERun = CompanionManager.shared.activeE2ERunId != nil
+        let teardownDelay: TimeInterval = isE2ERun ? 10.0 : 1.2
+        #else
+        let teardownDelay: TimeInterval = 1.2
+        #endif
 
         let finalStatus = status ?? (isSuccess ? .done : .failed)
+        let shouldSaveReceipt = isSuccess && finalStatus != .failed
+
+        if shouldSaveReceipt {
+            saveDeliverableReceipt(receipt: receipt, slug: slug)
+        } else {
+            ClickyLogger.warning("[VM_AGENT_LOOP]", "Task was not validated as successful; suppressed saving deliverable receipt.")
+        }
+
+        #if DEBUG
+        CompanionManager.postE2EDone(
+            runId: nil,
+            concluded: true,
+            validatorIsDone: isSuccess,
+            deliverableSaved: shouldSaveReceipt
+        )
+        #endif
         let finalizedQueue: [ComputerCardQueueItem]
         if finalStatus == .done {
             finalizedQueue = queueItems.map {
@@ -963,7 +1201,7 @@ public final class CompanionVMAgentLoop: ObservableObject {
         }
 
         if finalStatus != .takeoverNeeded {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + teardownDelay) {
                 CompanionWindowStreamService.shared.stopStreaming()
                 MascotVirtualDesktopService.shared.stopVirtualDesktop()
             }
@@ -1002,69 +1240,19 @@ public final class CompanionVMAgentLoop: ObservableObject {
         }
     }
 
-    // MARK: - AX Helpers
-    private func findTargetAXApplication(appName: String) -> AXUIElement? {
-        let runningApps = NSWorkspace.shared.runningApplications
-        if let app = runningApps.first(where: { $0.localizedName?.localizedCaseInsensitiveContains(appName) == true }) {
-            return AXUIElementCreateApplication(app.processIdentifier)
-        }
-        return nil
-    }
-
-    private func extractAXElementTitles(from element: AXUIElement) -> [String] {
-        return extractAXElementTextRecursive(from: element, maxDepth: 3)
-    }
-
-    private func extractAXElementTextRecursive(from element: AXUIElement, depth: Int = 0, maxDepth: Int = 4) -> [String] {
-        guard depth <= maxDepth else { return [] }
-        var results: [String] = []
-
-        var titleRef: CFTypeRef?
-        var valRef: CFTypeRef?
-        var descRef: CFTypeRef?
-
-        if AXUIElementCopyAttributeValue(element, kAXTitleAttribute as CFString, &titleRef) == .success,
-           let title = titleRef as? String, !title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            results.append(title.trimmingCharacters(in: .whitespacesAndNewlines))
-        }
-        if AXUIElementCopyAttributeValue(element, kAXValueAttribute as CFString, &valRef) == .success,
-           let val = valRef as? String, !val.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            results.append(val.trimmingCharacters(in: .whitespacesAndNewlines))
-        }
-        if AXUIElementCopyAttributeValue(element, kAXDescriptionAttribute as CFString, &descRef) == .success,
-           let desc = descRef as? String, !desc.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            results.append(desc.trimmingCharacters(in: .whitespacesAndNewlines))
-        }
-
-        // Traverse rows if table or outline view
-        var rowsRef: CFTypeRef?
-        if AXUIElementCopyAttributeValue(element, kAXRowsAttribute as CFString, &rowsRef) == .success,
-           let rows = rowsRef as? [AXUIElement] {
-            for row in rows.prefix(15) {
-                let rowTexts = extractAXElementTextRecursive(from: row, depth: depth + 1, maxDepth: maxDepth)
-                if !rowTexts.isEmpty {
-                    results.append(rowTexts.joined(separator: " | "))
-                }
-                if results.count >= 20 { break }
-            }
-        }
-
-        var childrenRef: CFTypeRef?
-        if AXUIElementCopyAttributeValue(element, kAXChildrenAttribute as CFString, &childrenRef) == .success,
-           let children = childrenRef as? [AXUIElement] {
-            for child in children.prefix(20) {
-                let childTexts = extractAXElementTextRecursive(from: child, depth: depth + 1, maxDepth: maxDepth)
-                results.append(contentsOf: childTexts)
-                if results.count >= 25 { break }
-            }
-        }
-
-        var unique: [String] = []
-        for text in results {
-            if text.count > 2 && !unique.contains(text) {
-                unique.append(text)
-            }
-        }
-        return Array(unique.prefix(25))
+    private func extractAXToolbarControls(
+        from element: AXUIElement,
+        winPos: CGPoint,
+        winSize: CGSize,
+        into topBarItems: inout [String],
+        depth: Int = 0
+    ) {
+        ClickyUIObservationService.shared.extractAXToolbarControls(
+            from: element,
+            winPos: winPos,
+            winSize: winSize,
+            into: &topBarItems,
+            depth: depth
+        )
     }
 }

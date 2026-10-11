@@ -470,6 +470,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         AntigravityBridgeManager.shared.stopBridge()
         XPCHelperClient.shared.stopMonitoringAccessibilityAuthorization()
         CuaDriverClient.shared.stopDaemon()
+        LayaDecisionEngine.shared.stopDaemon()
     }
 
     @MainActor
@@ -714,9 +715,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        // Startup Orphan Sweep (Invariant 39): Sweeps any workflow app windows stranded on host display
+        MascotVirtualDesktopService.shared.sweepOrphanWindowsOnStartup()
+
         _ = AntigravityBridgeManager.shared
-        
-        // Wire capability contracts
         CompanionUIHostRegistry.shared = CompanionUIHostBridge.shared
         DomainActionDispatcherRegistry.shared = TradingViewActionDispatcher.shared
         
@@ -914,6 +916,62 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 }
         }
 
+        #if DEBUG
+        // TASK-044 Ground-Truth Oracle E2E Injection Contract
+        DistributedNotificationCenter.default().addObserver(
+            forName: NSNotification.Name("iza.e2e.task"),
+            object: nil, queue: .main) { notif in
+                Task { @MainActor in
+                    let prompt = notif.userInfo?["text"] as? String ?? notif.userInfo?["prompt"] as? String
+                    let runId = notif.userInfo?["runId"] as? String ?? UUID().uuidString
+                    CompanionManager.shared.activeE2ERunId = runId
+                    ClickyLogger.info("[E2E_IPC]", "Received task injection: runId=\(runId), text='\(prompt ?? "")'")
+
+                    HomeSpaceWindowManager.shared.show()
+                    if let prompt = prompt, !prompt.isEmpty {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+                            NotificationCenter.default.post(name: Notification.Name("HomeSpaceSubmitPrompt"), object: prompt)
+                        }
+                    }
+                }
+        }
+
+        DistributedNotificationCenter.default().addObserver(
+            forName: NSNotification.Name("iza.e2e.ax_query"),
+            object: nil, queue: .main) { notif in
+                Task { @MainActor in
+                    let queryId = notif.userInfo?["queryId"] as? String ?? ""
+                    let appName = notif.userInfo?["targetAppName"] as? String ?? ""
+                    let specJson = notif.userInfo?["specJson"] as? String ?? "[]"
+
+                    ClickyLogger.info("[E2E_IPC]", "Received ax_query for: \(appName), queryId=\(queryId)")
+
+                    var expectedAX: [[String: Any]] = []
+                    if let data = specJson.data(using: .utf8),
+                       let list = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]] {
+                        expectedAX = list
+                    }
+
+                    let result = ClickyUIObservationService.shared.evaluateAXTreeForE2E(
+                        targetAppName: appName,
+                        expectedAX: expectedAX
+                    )
+
+                    ClickyLogger.info("[E2E_IPC]", "Posting ax_result for: \(queryId), passed=\(result.passed), reason=\(result.reason)")
+
+                    DistributedNotificationCenter.default().postNotificationName(
+                        NSNotification.Name("iza.e2e.ax_result"),
+                        object: nil,
+                        userInfo: [
+                            "queryId": queryId,
+                            "passed": result.passed,
+                            "reason": result.reason
+                        ],
+                        deliverImmediately: true
+                    )
+                }
+        }
+        #endif
         DistributedNotificationCenter.default().addObserver(
             forName: NSNotification.Name("IzanotchyTestMaximizeModal"),
             object: nil, queue: .main) { _ in

@@ -12,42 +12,23 @@ public enum IngressPolicy {
 
     /// System instructions defining the canonical contract rules for the AFM model.
     public static let systemInstructions: String = """
-    You are an autonomous Ingress Intent Classifier, Task Decomposer, and Language Normalizer.
-    Analyze the user instruction and the provided list of connected applications. Output a canonical English JSON Task Contract.
+    You are an autonomous Ingress Intent Classifier and Task Decomposer for macOS.
+    Deconstruct user instruction into a canonical English JSON Task Contract for connected applications.
 
     Principles:
-    1. Intent Classification (Conversational vs Computer Action):
-       - "conversational": If the user instruction is a greeting, salutation, casual chit-chat, friendly remark, question about yourself/abilities, or does not ask to open, inspect, or operate a computer application.
-         For conversational input, you MUST set:
-         "targetAppName": "None"
-         "intentType": "conversational"
-         "actionScope": "conversational"
-         "requiresCUA": false
-         "requiresTakeoverOnCompletion": false
-         "targetEntity": "user"
-         "targetIndex": null
-         "searchQuery": null
-         "plannedSubGoals": []
-         "normalizedGoal": "Respond to user conversationally"
-       - "action": If the user explicitly asks to view, check, inspect, read, search, compose, send, click, navigate, or operate an application or computer screen.
-         For action input:
-         - Select the target application exclusively from the connected applications.
-         - Set "requiresCUA": true.
-         - If the action is a final submission/send action (e.g. sending an email, submitting a form, placing an order) that requires human confirmation, set "requiresTakeoverOnCompletion": true; otherwise set false.
-         - Break down into 2-3 sequential sub-goals.
-
-    2. Ordinal & Target Entity Resolution:
-       - If an action instruction references an item by its order, rank, or position (in any language), resolve it dynamically to a 1-based numerical index.
-       - If an action instruction asks to check, inspect, view, or read an inbox, list, or latest messages without specifying a rank or ordinal number (e.g. "check email", "cek email", "baca pesan", "read inbox"), set "targetIndex": 1 (the topmost latest item).
-       - If the instruction targets a specific UI control or view, identify that element.
-
-    3. Search Query Resolution:
-       - Extract an explicit text query ONLY if the user provides a concrete subject, name, or topic to filter by.
-       - Do NOT treat greetings, self-references, or pronouns as search queries (set to null).
-
-    4. Canonical Goal: Formulate a concise English statement of the exact objective.
-
-    5. Language Detection: Detect the primary ISO 639-1 language code of the user instruction (e.g. "id", "en", "ja", "fr", "de", "es", "zh").
+    1. Intent Classification:
+       - "conversational": casual greetings (e.g. "halo", "hai", "hello"), chit-chat, or general questions not operating an application. Set targetAppName to "None", requiresCUA to false.
+       - "inspect": viewing, checking, inspecting, or reading items, messages, or files in an application.
+       - "compose" / "send": writing, creating, or sending a message or document.
+       - "search": searching with explicit keywords or specific third-party filters.
+    2. Container, Ordinal & Target Entity Resolution:
+       - If targeting a specific folder, mailbox, category, or tab, extract it into "targetContainer", otherwise null.
+       - Identify primary functional section into "targetSection": "toolbar" (create/compose/top-level), "list" (collection items), "navigation" (sidebar/folders), "content" (document/canvas), or null.
+       - For latest/topmost item in a list or inbox, set "targetIndex": 1 (the topmost latest item). For ranked items, set targetIndex to that integer. Otherwise null.
+       - "searchQuery": Extract ONLY if user explicitly specifies a third-party sender name, subject topic, or search query. Personal conversational references to user's own items (e.g. "email saya", "my email") are general inspection (set searchQuery to null, targetIndex to 1).
+       - Identify the target element or view in "targetEntity".
+    3. Goal & Sub-Goals:
+       - Formulate a concise English statement in "normalizedGoal" and 1-3 sequential steps in "plannedSubGoals".
 
     Output ONLY a valid JSON object matching this schema:
     {
@@ -56,6 +37,8 @@ public enum IngressPolicy {
       "actionScope": "<string: scope of action>",
       "intentType": "<string: conversational, inspect, read, search, compose, send, interact>",
       "targetEntity": "<string: target element or entity, or user>",
+      "targetContainer": <string or null>,
+      "targetSection": <string or null: "toolbar", "list", "navigation", "content">,
       "targetIndex": <integer or null>,
       "searchQuery": <string or null>,
       "normalizedGoal": "<string: canonical English goal>",

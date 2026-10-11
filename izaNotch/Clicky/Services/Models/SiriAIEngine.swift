@@ -19,6 +19,7 @@ public final class SiriAIEngine: @unchecked Sendable {
     private var daemonProcess: Process?
     private let engineLock = NSRecursiveLock()
     private let session: URLSession
+    public var model: String = "system"
 
     private init() {
         let config = URLSessionConfiguration.default
@@ -254,6 +255,51 @@ public final class SiriAIEngine: @unchecked Sendable {
             stopReason: "stop",
             duration: duration
         )
+    }
+
+    public func analyzeImageStreaming(
+        images: [(data: Data, label: String)],
+        systemPrompt: String,
+        conversationHistory: [(userPlaceholder: String, assistantResponse: String)] = [],
+        userPrompt: String,
+        onTextChunk: @escaping @MainActor @Sendable (String) -> Void
+    ) async throws -> (text: String, duration: TimeInterval) {
+        var contentBlocks: [[String: Any]] = []
+        for image in images {
+            let base64String = image.data.base64EncodedString()
+            contentBlocks.append([
+                "type": "image",
+                "source": [
+                    "type": "base64",
+                    "media_type": "image/jpeg",
+                    "data": base64String
+                ]
+            ])
+        }
+        contentBlocks.append([
+            "type": "text",
+            "text": userPrompt
+        ])
+
+        var messagesPayload: [[String: Any]] = []
+        for turn in conversationHistory {
+            messagesPayload.append(["role": "user", "content": turn.userPlaceholder])
+            messagesPayload.append(["role": "assistant", "content": turn.assistantResponse])
+        }
+        messagesPayload.append(["role": "user", "content": contentBlocks])
+
+        let result = try await analyzeMessagesWithToolsStreaming(
+            messages: messagesPayload,
+            systemPrompt: systemPrompt,
+            tools: [],
+            maxTokens: 1024,
+            onTextChunk: { chunk in
+                Task { @MainActor in
+                    onTextChunk(chunk)
+                }
+            }
+        )
+        return (text: result.text, duration: result.duration)
     }
 }
 
