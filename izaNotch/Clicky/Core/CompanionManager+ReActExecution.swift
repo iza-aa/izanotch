@@ -343,7 +343,7 @@ extension CompanionManager {
                                             "data": base64Data
                                         ]
                                     ])
-                                    ClickyLogger.info("[TOOL_EXEC]", "📸 \(call.name) → screenshot attached (\(mime))")
+                                    ClickyLogger.info("[TOOL_EXEC]", "\(call.name) -> screenshot attached (\(mime))")
                                 } else if blockType == "text", let text = block["text"] as? String {
                                     resultContent.append([
                                         "type": "text",
@@ -382,7 +382,7 @@ extension CompanionManager {
                                     "data": shotData.base64EncodedString()
                                 ]
                             ])
-                            ClickyLogger.info("[TOOL_EXEC]", "📸 \(call.name) → file screenshot attached")
+                            ClickyLogger.info("[TOOL_EXEC]", "\(call.name) -> file screenshot attached")
                         }
 
                         toolResultBlocks.append([
@@ -644,12 +644,20 @@ extension CompanionManager {
                 self.isHomeSpaceStreaming = false
                 self.ongoingTaskGoal = nil
 
-                // Keep only the last 10 exchanges to avoid unbounded context growth
+                // Pattern G3 (MT-14): Compact older history before eviction into append-only opaque state
                 if conversationHistory.count > 10 {
-                    conversationHistory.removeFirst(conversationHistory.count - 10)
+                    let evictingCount = conversationHistory.count - 10
+                    let toCompact = Array(conversationHistory.prefix(evictingCount))
+                    let extracted = toCompact.map { "- Pertanyaan: \"\($0.userTranscript)\" -> Jawaban: \"\($0.assistantResponse)\"" }.joined(separator: "\n")
+                    let opaqueToken = """
+                    [COMPACTED_TURNS_STATE (\(evictingCount) turn): \(Date())]
+                    \(extracted)
+                    """
+                    CompanionMemoryManager.shared.appendCompactedState(slug: self.activeBuddy.slug, opaqueToken: opaqueToken)
+                    conversationHistory.removeFirst(evictingCount)
                 }
 
-                print("🧠 Conversation history: \(conversationHistory.count) exchanges")
+                print("[MEMORY] Conversation history: \(conversationHistory.count) exchanges")
 
                 ClickyAnalytics.trackAIResponseReceived(response: spokenText)
 

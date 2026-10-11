@@ -595,6 +595,18 @@ public final class CompanionMemoryManager: @unchecked Sendable {
         return opaqueBlob
     }
 
+    /// Pattern G3 (MT-14): Appends opaque compacted state token verbatim (append-only, immutable)
+    public func appendCompactedState(slug: String, opaqueToken: String) {
+        var mem = readMemory(for: slug)
+        if let existing = mem.compactedStateToken, !existing.isEmpty {
+            mem.compactedStateToken = existing + "\n\n" + opaqueToken
+        } else {
+            mem.compactedStateToken = opaqueToken
+        }
+        mem.lastCompactedAt = Date()
+        saveMemory(mem)
+        ClickyLogger.info("[MEMORY]", "Appended compacted state token for '\(slug)' (append-only G3 invariant).")
+    }
     /// Formats memory into system prompt context with explicit authoritative source invariant
     public func formatMemoryForContext(slug: String) -> String {
         let mem = readMemory(for: slug)
