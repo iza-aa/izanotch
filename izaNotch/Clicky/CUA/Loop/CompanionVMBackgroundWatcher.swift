@@ -20,6 +20,9 @@ public final class CompanionVMBackgroundWatcher: ObservableObject {
     private var watcherTask: Task<Void, Never>? = nil
     private let checkIntervalSeconds: UInt64 = 60
     private var alertedItemIds: Set<String> = []
+    public private(set) var isPausedForSleep: Bool = false
+    private var sleepObserver: Any? = nil
+    private var wakeObserver: Any? = nil
 
     private init() {}
 
@@ -34,6 +37,24 @@ public final class CompanionVMBackgroundWatcher: ObservableObject {
 
         isRunning = true
         ClickyLogger.info("[VM_WATCHER]", "Starting continuous Companion VM background watcher (interval: \(checkIntervalSeconds)s)...")
+
+        sleepObserver = NSWorkspace.shared.notificationCenter.addObserver(
+            forName: NSWorkspace.willSleepNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.isPausedForSleep = true
+            ClickyLogger.info("[POWER_LIFECYCLE]", "System will sleep: Paused background watcher at safe point.")
+        }
+
+        wakeObserver = NSWorkspace.shared.notificationCenter.addObserver(
+            forName: NSWorkspace.didWakeNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.isPausedForSleep = false
+            ClickyLogger.info("[POWER_LIFECYCLE]", "System did wake: Resumed background watcher.")
+        }
 
         watcherTask = Task { [weak self] in
             while !Task.isCancelled {
@@ -54,8 +75,11 @@ public final class CompanionVMBackgroundWatcher: ObservableObject {
 
     // MARK: - Polling Cycle
 
-    /// Executes one inspection cycle across all active companions in virtual sandbox
     public func pollCycle() async {
+        guard !isPausedForSleep else {
+            ClickyLogger.info("[POWER_LIFECYCLE]", "Skipping poll cycle: system is sleeping.")
+            return
+        }
         lastCheckTime = Date()
         let companions = CompanionRosterStore.shared.allCompanions
         let sandboxCompanions = companions.filter { $0.executionDomain == .virtualSandbox }
