@@ -643,6 +643,92 @@ public final class CompanionMemoryManager: @unchecked Sendable {
         """
     }
 }
+
+// MARK: - TeamMemoryManager (PRD §A11, S3-team, MT-38: Team Memory & Private Notes Separation)
+
+public struct TeamMemoryItem: Codable, Sendable, Identifiable, Equatable {
+    public var id: String { key }
+    public let key: String
+    public let value: String
+    public let isTeamWide: Bool
+    public let authorUserEmail: String
+    public let recordedAt: Date
+
+    public init(key: String, value: String, isTeamWide: Bool, authorUserEmail: String, recordedAt: Date = Date()) {
+        self.key = key
+        self.value = value
+        self.isTeamWide = isTeamWide
+        self.authorUserEmail = authorUserEmail
+        self.recordedAt = recordedAt
+    }
+}
+
+public final class TeamMemoryManager: @unchecked Sendable {
+    public static let shared = TeamMemoryManager()
+
+    private let lock = NSLock()
+    private var memoryItems: [String: TeamMemoryItem] = [:]
+    private let teamMemoryURL: URL
+
+    private init() {
+        let home = FileManager.default.homeDirectoryForCurrentUser
+        let baseDir = home.appendingPathComponent(".izanotchy/shared_workspace", isDirectory: true)
+        try? FileManager.default.createDirectory(at: baseDir, withIntermediateDirectories: true)
+        self.teamMemoryURL = baseDir.appendingPathComponent("team_memory.json")
+        loadFromDisk()
+    }
+
+    /// Records memory: either team-wide or private personal note
+    public func recordMemory(key: String, value: String, isTeamWide: Bool, authorUserEmail: String) {
+        lock.lock()
+        let item = TeamMemoryItem(key: key, value: value, isTeamWide: isTeamWide, authorUserEmail: authorUserEmail)
+        memoryItems[key] = item
+        lock.unlock()
+        saveToDisk()
+        ClickyLogger.info("[TEAM_MEMORY]", "Recorded memory '\(key)' (teamWide=\(isTeamWide), author=\(authorUserEmail))")
+    }
+
+    /// Retrieves accessible memory for a specific user:
+    /// Invariant (PRD §A11): Returns team-wide memory + user's own private notes.
+    /// Private notes from OTHER users are strictly filtered out (zero leakage).
+    public func getAccessibleMemory(for userEmail: String) -> [TeamMemoryItem] {
+        lock.lock()
+        defer { lock.unlock() }
+
+        let cleanUser = userEmail.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        return memoryItems.values.filter { item in
+            if item.isTeamWide {
+                return true
+            }
+            return item.authorUserEmail.lowercased() == cleanUser
+        }.sorted(by: { $0.key < $1.key })
+    }
+
+    private func saveToDisk() {
+        lock.lock()
+        let items = Array(memoryItems.values)
+        lock.unlock()
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+        if let data = try? encoder.encode(items) {
+            try? data.write(to: teamMemoryURL, options: .atomic)
+        }
+    }
+
+    private func loadFromDisk() {
+        guard FileManager.default.fileExists(atPath: teamMemoryURL.path),
+              let data = try? Data(contentsOf: teamMemoryURL),
+              let list = try? JSONDecoder().decode([TeamMemoryItem].self, from: data) else {
+            return
+        }
+        lock.lock()
+        for item in list {
+            memoryItems[item.key] = item
+        }
+        lock.unlock()
+    }
+}
+
 // MARK: - Microsoft Outlook Connector (PRD §A15, §G15, MT-35)
 
 public enum OutlookScope: String, CaseIterable, Codable, Sendable {
