@@ -128,6 +128,10 @@ public final class CompanionVMViewportController: NSObject, ObservableObject, WK
         return WebSiteAdapterRegistry.shared.adapter(forEmailOrDomain: query).id
     }
 
+    /// Resolves webmail adapter dynamically from email host via WebSiteAdapterRegistry (MT-11)
+    public static func resolveMailProvider(forEmailHost host: String) -> WebSiteAdapter {
+        return WebSiteAdapterRegistry.shared.adapter(forEmailHost: host)
+    }
     // MARK: - Desktop-First Viewport Layout & Zoom
 
     public func updateViewportLayout(width: CGFloat, height: CGFloat, isModal: Bool = false) {

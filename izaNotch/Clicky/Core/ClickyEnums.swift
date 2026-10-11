@@ -291,7 +291,7 @@ public struct BuddySession: Identifiable, Equatable {
         } else if lower.contains("futures") || lower.contains("trade") {
             self.allowedSafariDomains = ["tradingview.com", "binance.com", "coinglass.com"]
         } else if lower.contains("inbox") || lower.contains("mail") {
-            self.allowedSafariDomains = ["google.com", "mail.google.com", "salesforce.com"]
+            self.allowedSafariDomains = WebSiteAdapterRegistry.shared.defaultAdapter.domains
         } else {
             self.allowedSafariDomains = ["google.com", "github.com"]
         }
