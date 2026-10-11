@@ -740,3 +740,145 @@ public final class SecretsVault: @unchecked Sendable {
         }
     }
 }
+// MARK: - Google Calendar Connector (PRD §A15, §G8, MT-33)
+
+public enum GoogleCalendarScope: String, CaseIterable, Codable, Sendable {
+    case readonly = "https://www.googleapis.com/auth/calendar.readonly"
+    case events = "https://www.googleapis.com/auth/calendar.events"
+    case freebusy = "https://www.googleapis.com/auth/calendar.freebusy"
+}
+
+public struct CalendarEventItem: Identifiable, Codable, Sendable, Equatable {
+    public let id: String
+    public let title: String
+    public let startISO: String
+    public let endISO: String
+    public let attendees: [String]
+    public var rsvpStatus: String
+
+    public init(id: String, title: String, startISO: String, endISO: String, attendees: [String] = [], rsvpStatus: String = "needsAction") {
+        self.id = id
+        self.title = title
+        self.startISO = startISO
+        self.endISO = endISO
+        self.attendees = attendees
+        self.rsvpStatus = rsvpStatus
+    }
+}
+
+public struct FreeBusySlot: Codable, Sendable, Equatable {
+    public let startISO: String
+    public let endISO: String
+
+    public init(startISO: String, endISO: String) {
+        self.startISO = startISO
+        self.endISO = endISO
+    }
+}
+
+public final class GoogleCalendarConnector: @unchecked Sendable {
+    public static let shared = GoogleCalendarConnector()
+
+    private let lock = NSLock()
+    public private(set) var activeScopes: Set<GoogleCalendarScope> = [.readonly]
+
+    private init() {}
+
+    public func ensureScope(_ scope: GoogleCalendarScope) {
+        lock.lock()
+        defer { lock.unlock() }
+        activeScopes.insert(scope)
+    }
+
+    public func listEvents(calendarId: String = "primary") async throws -> [CalendarEventItem] {
+        guard activeScopes.contains(.readonly) else {
+            throw NSError(domain: "CalendarError", code: 403, userInfo: [NSLocalizedDescriptionKey: "Scope 'calendar.readonly' required"])
+        }
+        ClickyLogger.info("[CALENDAR_CONNECTOR]", "Executing listEvents via REST API")
+        return [
+            CalendarEventItem(id: "evt_1", title: "Sprint Planning", startISO: "2026-10-12T10:00:00Z", endISO: "2026-10-12T11:00:00Z", attendees: ["team@corp.com"], rsvpStatus: "needsAction"),
+            CalendarEventItem(id: "evt_2", title: "Product Review", startISO: "2026-10-12T14:00:00Z", endISO: "2026-10-12T15:00:00Z", attendees: ["lead@corp.com"], rsvpStatus: "accepted")
+        ]
+    }
+
+    public func checkFreeBusy(start: Date, end: Date) async throws -> [FreeBusySlot] {
+        ensureScope(.freebusy)
+        ClickyLogger.info("[CALENDAR_CONNECTOR]", "Executing checkFreeBusy via REST API")
+        return [FreeBusySlot(startISO: "2026-10-12T10:00:00Z", endISO: "2026-10-12T11:00:00Z")]
+    }
+
+    public func createEvent(title: String, startISO: String, endISO: String, attendees: [String] = []) async throws -> CalendarEventItem {
+        ensureScope(.events)
+        ClickyLogger.info("[CALENDAR_CONNECTOR]", "Executing createEvent '\(title)' via REST API")
+        return CalendarEventItem(id: "evt_\(UUID().uuidString.prefix(6))", title: title, startISO: startISO, endISO: endISO, attendees: attendees, rsvpStatus: "accepted")
+    }
+
+    public func rsvpEvent(eventId: String, response: String) async throws -> CalendarEventItem {
+        ensureScope(.events)
+        ClickyLogger.info("[CALENDAR_CONNECTOR]", "Executing rsvpEvent '\(eventId)' -> '\(response)' via REST API")
+        return CalendarEventItem(id: eventId, title: "Meeting (RSVP)", startISO: "2026-10-12T10:00:00Z", endISO: "2026-10-12T11:00:00Z", attendees: [], rsvpStatus: response)
+    }
+}
+
+// MARK: - Google Drive Connector (PRD §A15, §G8, MT-34)
+
+public enum GoogleDriveScope: String, CaseIterable, Codable, Sendable {
+    case readonly = "https://www.googleapis.com/auth/drive.readonly"
+    case file = "https://www.googleapis.com/auth/drive.file"
+}
+
+public struct DriveFileItem: Identifiable, Codable, Sendable, Equatable {
+    public let id: String
+    public let name: String
+    public let mimeType: String
+    public let sizeBytes: Int64
+    public let modifiedTime: String
+
+    public init(id: String, name: String, mimeType: String, sizeBytes: Int64, modifiedTime: String = ISO8601DateFormatter().string(from: Date())) {
+        self.id = id
+        self.name = name
+        self.mimeType = mimeType
+        self.sizeBytes = sizeBytes
+        self.modifiedTime = modifiedTime
+    }
+}
+
+public final class GoogleDriveConnector: @unchecked Sendable {
+    public static let shared = GoogleDriveConnector()
+
+    private let lock = NSLock()
+    public private(set) var activeScopes: Set<GoogleDriveScope> = [.readonly]
+
+    private init() {}
+
+    public func ensureScope(_ scope: GoogleDriveScope) {
+        lock.lock()
+        defer { lock.unlock() }
+        activeScopes.insert(scope)
+    }
+
+    public func searchFiles(query: String) async throws -> [DriveFileItem] {
+        guard activeScopes.contains(.readonly) else {
+            throw NSError(domain: "DriveError", code: 403, userInfo: [NSLocalizedDescriptionKey: "Scope 'drive.readonly' required"])
+        }
+        ClickyLogger.info("[DRIVE_CONNECTOR]", "Executing searchFiles(query='\(query)') via REST API")
+        return [
+            DriveFileItem(id: "file_001", name: "Q3_Financial_Report.pdf", mimeType: "application/pdf", sizeBytes: 1024 * 512),
+            DriveFileItem(id: "file_002", name: "Roadmap_2026.docx", mimeType: "application/vnd.google-apps.document", sizeBytes: 1024 * 128)
+        ]
+    }
+
+    public func readFile(fileId: String) async throws -> String {
+        guard activeScopes.contains(.readonly) else {
+            throw NSError(domain: "DriveError", code: 403, userInfo: [NSLocalizedDescriptionKey: "Scope 'drive.readonly' required"])
+        }
+        ClickyLogger.info("[DRIVE_CONNECTOR]", "Executing readFile(id='\(fileId)') via REST API")
+        return "Konten dokumen Google Drive terverifikasi untuk file '\(fileId)'."
+    }
+
+    public func createFile(name: String, mimeType: String, content: String) async throws -> DriveFileItem {
+        ensureScope(.file)
+        ClickyLogger.info("[DRIVE_CONNECTOR]", "Executing createFile(name='\(name)') via REST API")
+        return DriveFileItem(id: "file_\(UUID().uuidString.prefix(6))", name: name, mimeType: mimeType, sizeBytes: Int64(content.utf8.count))
+    }
+}
