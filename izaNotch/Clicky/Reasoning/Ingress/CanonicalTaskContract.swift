@@ -395,3 +395,148 @@ public final class TrustDesignEngine: Sendable {
     /// Real Work warning for Test Run mode
     public static let testRunWarning = "Peringatan: Test run menyentuh aplikasi nyata dengan input aman (read-only/draft). Aksi eksternal yang berdampak permanen dicegah oleh approval boundary."
 }
+// MARK: - AutoReviewRuleEngine (PRD §A12, MT-17: Auto-Review Rule Engine & Invariant Resolution)
+
+public enum AutoReviewRuleType: String, Codable, Sendable {
+    case askFirst = "ask_first"
+    case allowAutomatically = "allow_automatically"
+}
+
+public enum AutoReviewDecision: String, Codable, Sendable {
+    case askFirst = "ask_first"
+    case allowAutomatically = "allow_automatically"
+}
+
+public struct AutoReviewRule: Codable, Sendable, Identifiable, Equatable {
+    public let id: String
+    public let name: String
+    public let type: AutoReviewRuleType
+    public let operationPattern: String
+    public let isSystemRule: Bool
+    public let description: String
+
+    public init(
+        id: String = UUID().uuidString,
+        name: String,
+        type: AutoReviewRuleType,
+        operationPattern: String,
+        isSystemRule: Bool = false,
+        description: String = ""
+    ) {
+        self.id = id
+        self.name = name
+        self.type = type
+        self.operationPattern = operationPattern
+        self.isSystemRule = isSystemRule
+        self.description = description
+    }
+
+    public func matches(operation: String) -> Bool {
+        let op = operation.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+        let pat = operationPattern.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+        if pat == "*" || pat == op { return true }
+        if pat.hasSuffix("*") {
+            let prefix = String(pat.dropLast())
+            return op.hasPrefix(prefix)
+        }
+        if pat.hasPrefix("*") {
+            let suffix = String(pat.dropFirst())
+            return op.hasSuffix(suffix)
+        }
+        return op.contains(pat)
+    }
+}
+
+public final class AutoReviewRuleEngine: @unchecked Sendable {
+    public static let shared = AutoReviewRuleEngine()
+
+    private let lock = NSLock()
+    private var systemRules: [AutoReviewRule] = []
+    private var personalRules: [AutoReviewRule] = []
+
+    private init() {
+        seedDefaultRules()
+    }
+
+    private func seedDefaultRules() {
+        // System Rules (Cannot be loosened by personal rules)
+        systemRules = [
+            AutoReviewRule(
+                name: "Require Approval For External Email Send",
+                type: .askFirst,
+                operationPattern: "send*",
+                isSystemRule: true,
+                description: "System rule: All external email sends require explicit human confirmation"
+            ),
+            AutoReviewRule(
+                name: "Require Approval For File Deletion",
+                type: .askFirst,
+                operationPattern: "delete*",
+                isSystemRule: true,
+                description: "System rule: File deletion requires explicit human confirmation"
+            ),
+            AutoReviewRule(
+                name: "Allow Automatic Local Inspection",
+                type: .allowAutomatically,
+                operationPattern: "inspect*",
+                isSystemRule: true,
+                description: "System rule: Read-only inspection operates automatically"
+            )
+        ]
+    }
+
+    /// Adds a personal rule. Invariant: Personal rules can only tighten (Ask first), never bypass system rules!
+    public func addPersonalRule(_ rule: AutoReviewRule) -> Bool {
+        lock.lock()
+        defer { lock.unlock() }
+
+        // Reject if personal rule attempts to loosen a system askFirst rule
+        if rule.type == .allowAutomatically {
+            let conflictsWithSystem = systemRules.contains { sys in
+                sys.type == .askFirst && (sys.operationPattern == rule.operationPattern || rule.matches(operation: sys.operationPattern))
+            }
+            if conflictsWithSystem {
+                ClickyLogger.warning("[AUTO_REVIEW]", "Rejected personal rule '\(rule.name)': Personal rules cannot loosen system Ask First rules.")
+                return false
+            }
+        }
+
+        personalRules.append(rule)
+        ClickyLogger.info("[AUTO_REVIEW]", "Added personal rule '\(rule.name)' (\(rule.type.rawValue))")
+        return true
+    }
+
+    /// Evaluates an operation against active rules.
+    /// Invariant: "Ask first MENANG" (Ask first wins conflicts)!
+    public func evaluate(operation: String) -> (decision: AutoReviewDecision, matchedRule: AutoReviewRule?, reason: String) {
+        lock.lock()
+        let allRules = systemRules + personalRules
+        lock.unlock()
+
+        // 1. Check if ANY rule (system or personal) matches with askFirst
+        let askFirstMatches = allRules.filter { $0.type == .askFirst && $0.matches(operation: operation) }
+        if let primaryAsk = askFirstMatches.first {
+            let reason = "Rule '\(primaryAsk.name)' matched with Ask First. Invariant: Ask First wins conflicts."
+            ClickyLogger.info("[AUTO_REVIEW]", "Evaluation for '\(operation)' -> ASK FIRST: \(reason)")
+            return (.askFirst, primaryAsk, reason)
+        }
+
+        // 2. Check if a rule matches with allowAutomatically
+        let allowMatches = allRules.filter { $0.type == .allowAutomatically && $0.matches(operation: operation) }
+        if let primaryAllow = allowMatches.first {
+            let reason = "Rule '\(primaryAllow.name)' matched with Allow Automatically (no Ask First conflicts)."
+            ClickyLogger.info("[AUTO_REVIEW]", "Evaluation for '\(operation)' -> ALLOW AUTOMATICALLY: \(reason)")
+            return (.allowAutomatically, primaryAllow, reason)
+        }
+
+        // 3. Fallback: Sensitive operations ask first, read-only operations allow
+        let isSensitive = TrustDesignEngine.sensitiveOperations.contains(operation.lowercased())
+        if isSensitive {
+            let reason = "Operation '\(operation)' is classified as sensitive; default policy requires Ask First."
+            return (.askFirst, nil, reason)
+        } else {
+            let reason = "Operation '\(operation)' is read-only/safe; default policy permits automatic execution."
+            return (.allowAutomatically, nil, reason)
+        }
+    }
+}
