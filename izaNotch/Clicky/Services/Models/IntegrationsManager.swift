@@ -349,7 +349,7 @@ public final class ConnectorRegistry: @unchecked Sendable {
         accounts[account.provider] = account
         lock.unlock()
         saveToVault()
-        ClickyLogger.info("[CONNECTOR_REGISTRY]", "Connected provider '\(account.provider.rawValue)' (scopes: \(account.grantedScopes.joined(separator: ", ")), actsAsTheAsker=\(account.actsAsTheAsker))")
+        ClickyLogger.info("[CONNECTOR_REGISTRY]", "Connected provider '\(account.provider.rawValue)' for user '\(account.email ?? "current_user")' (actsAsTheAsker=\(account.actsAsTheAsker), scopes: [\(account.grantedScopes.joined(separator: ", "))])")
     }
 
     public func disconnect(provider: ConnectorProvider) {
@@ -362,7 +362,13 @@ public final class ConnectorRegistry: @unchecked Sendable {
 
     public func revoke(provider: ConnectorProvider) {
         disconnect(provider: provider)
-        ClickyLogger.info("[CONNECTOR_REGISTRY]", "Revoked access and deleted credentials for '\(provider.rawValue)'")
+        Task { @MainActor in
+            IntegrationsManager.shared.disconnect(id: provider.rawValue)
+        }
+        if provider == .gmail {
+            GmailAPIConnector.shared.resetToReadOnlyScope()
+        }
+        ClickyLogger.info("[CONNECTOR_REGISTRY]", "Revoked access and purged credentials for '\(provider.rawValue)' (zero credentials logged)")
     }
 
     private func saveToVault() {
