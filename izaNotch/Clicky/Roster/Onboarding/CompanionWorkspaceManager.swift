@@ -443,3 +443,191 @@ public final class EvidencePreservationService: @unchecked Sendable {
         return result
     }
 }
+// MARK: - CompanionMemory & Compaction Manager (PRD §A1, §A4, §G3, MT-13 & MT-14)
+
+public struct CompanionMemoryFact: Codable, Sendable, Identifiable, Equatable {
+    public var id: String { key }
+    public let key: String
+    public let value: String
+    public let sourceCitation: String
+    public let recordedAt: Date
+
+    public init(key: String, value: String, sourceCitation: String, recordedAt: Date = Date()) {
+        self.key = key
+        self.value = value
+        self.sourceCitation = sourceCitation
+        self.recordedAt = recordedAt
+    }
+}
+
+public struct CompanionWorkSummary: Codable, Sendable, Identifiable, Equatable {
+    public var id: String { runId }
+    public let runId: String
+    public let taskPrompt: String
+    public let outcome: String
+    public let sourcesCited: [String]
+    public let completedAt: Date
+
+    public init(runId: String, taskPrompt: String, outcome: String, sourcesCited: [String] = [], completedAt: Date = Date()) {
+        self.runId = runId
+        self.taskPrompt = taskPrompt
+        self.outcome = outcome
+        self.sourcesCited = sourcesCited
+        self.completedAt = completedAt
+    }
+}
+
+public struct CompanionMemoryData: Codable, Sendable, Equatable {
+    public var companionSlug: String
+    public var stablePreferences: [String: String]
+    public var extractedFacts: [CompanionMemoryFact]
+    public var workSummaries: [CompanionWorkSummary]
+    public var compactedStateToken: String?
+    public var lastCompactedAt: Date?
+
+    public init(
+        companionSlug: String,
+        stablePreferences: [String: String] = [:],
+        extractedFacts: [CompanionMemoryFact] = [],
+        workSummaries: [CompanionWorkSummary] = [],
+        compactedStateToken: String? = nil,
+        lastCompactedAt: Date? = nil
+    ) {
+        self.companionSlug = companionSlug
+        self.stablePreferences = stablePreferences
+        self.extractedFacts = extractedFacts
+        self.workSummaries = workSummaries
+        self.compactedStateToken = compactedStateToken
+        self.lastCompactedAt = lastCompactedAt
+    }
+}
+
+public final class CompanionMemoryManager: @unchecked Sendable {
+    public static let shared = CompanionMemoryManager()
+
+    private let fileManager = FileManager.default
+    private let lock = NSLock()
+
+    private init() {}
+
+    private func memoryFileURL(for slug: String) -> URL {
+        let baseDir = fileManager.homeDirectoryForCurrentUser
+            .appendingPathComponent(".izanotchy/companions/\(slug)", isDirectory: true)
+        try? fileManager.createDirectory(at: baseDir, withIntermediateDirectories: true)
+        return baseDir.appendingPathComponent("memory.json")
+    }
+
+    public func readMemory(for slug: String) -> CompanionMemoryData {
+        lock.lock()
+        defer { lock.unlock() }
+
+        let file = memoryFileURL(for: slug)
+        guard fileManager.fileExists(atPath: file.path),
+              let data = try? Data(contentsOf: file),
+              let decoded = try? JSONDecoder().decode(CompanionMemoryData.self, from: data) else {
+            return CompanionMemoryData(companionSlug: slug)
+        }
+        return decoded
+    }
+
+    public func saveMemory(_ memory: CompanionMemoryData) {
+        lock.lock()
+        defer { lock.unlock() }
+
+        let file = memoryFileURL(for: memory.companionSlug)
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+        if let data = try? encoder.encode(memory) {
+            try? data.write(to: file, options: .atomic)
+        }
+    }
+
+    public func rememberPreference(slug: String, key: String, value: String) {
+        var mem = readMemory(for: slug)
+        mem.stablePreferences[key] = value
+        saveMemory(mem)
+        ClickyLogger.info("[MEMORY]", "Recorded stable preference for '\(slug)': \(key)='\(value)'")
+    }
+
+    public func recordFact(slug: String, key: String, value: String, sourceCitation: String) {
+        var mem = readMemory(for: slug)
+        mem.extractedFacts.removeAll(where: { $0.key == key })
+        mem.extractedFacts.append(CompanionMemoryFact(key: key, value: value, sourceCitation: sourceCitation))
+        saveMemory(mem)
+        ClickyLogger.info("[MEMORY]", "Recorded fact for '\(slug)': \(key)='\(value)' (citation: \(sourceCitation))")
+    }
+
+    public func recordWorkSummary(slug: String, runId: String, prompt: String, outcome: String, sources: [String]) {
+        var mem = readMemory(for: slug)
+        mem.workSummaries.append(CompanionWorkSummary(runId: runId, taskPrompt: prompt, outcome: outcome, sourcesCited: sources))
+        saveMemory(mem)
+        ClickyLogger.info("[MEMORY]", "Recorded work summary for '\(slug)': runId=\(runId) (sources: \(sources.count))")
+
+        // Auto-compact if summaries accumulate beyond threshold (pattern G3)
+        if mem.workSummaries.count > 10 {
+            compactMemory(slug: slug)
+        }
+    }
+
+    /// Pattern G3: Compacts long history into an opaque append-only summary token
+    @discardableResult
+    public func compactMemory(slug: String) -> String {
+        var mem = readMemory(for: slug)
+        let totalSummaries = mem.workSummaries.count
+        guard totalSummaries > 3 else {
+            return mem.compactedStateToken ?? ""
+        }
+
+        // Retain key facts and compile opaque work summary
+        let keyAccomplishments = mem.workSummaries.map { "- \($0.taskPrompt): \($0.outcome) (Sumber: \($0.sourcesCited.joined(separator: ", ")))" }.joined(separator: "\n")
+        let opaqueBlob = """
+        [COMPACTED_STATE: \(slug) - \(Date())]
+        Ringkasan Riwayat Kerja (\(totalSummaries) tugas sebelumnya):
+        \(keyAccomplishments)
+        """
+
+        mem.compactedStateToken = opaqueBlob
+        mem.lastCompactedAt = Date()
+        // Retain only the 3 most recent work summaries, previous ones compacted into opaque state
+        mem.workSummaries = Array(mem.workSummaries.suffix(3))
+        saveMemory(mem)
+        ClickyLogger.info("[MEMORY]", "Compacted \(totalSummaries) work summaries into opaque state token for '\(slug)'.")
+        return opaqueBlob
+    }
+
+    /// Formats memory into system prompt context with explicit authoritative source invariant
+    public func formatMemoryForContext(slug: String) -> String {
+        let mem = readMemory(for: slug)
+        var sections: [String] = []
+
+        if !mem.stablePreferences.isEmpty {
+            let prefLines = mem.stablePreferences.map { "  - \($0.key): \($0.value)" }.joined(separator: "\n")
+            sections.append("Preferensi Pengguna Stabil:\n\(prefLines)")
+        }
+
+        if !mem.extractedFacts.isEmpty {
+            let factLines = mem.extractedFacts.map { "  - \($0.key): \($0.value) [Sitasi: \($0.sourceCitation)]" }.joined(separator: "\n")
+            sections.append("Fakta Kunci Terekam (dengan Sitasi Sumber Asli):\n\(factLines)")
+        }
+
+        if let token = mem.compactedStateToken, !token.isEmpty {
+            sections.append("Keadaan Riwayat Terpadatkan:\n\(token)")
+        }
+
+        if !mem.workSummaries.isEmpty {
+            let summLines = mem.workSummaries.map { "  - \($0.taskPrompt): \($0.outcome)" }.joined(separator: "\n")
+            sections.append("Ringkasan Tugas Terkini:\n\(summLines)")
+        }
+
+        guard !sections.isEmpty else { return "" }
+
+        return """
+        [COMPANION_MEMORY: \(slug)]
+        \(sections.joined(separator: "\n\n"))
+
+        ATURAN MUTLAK MEMORI (PRD §A4):
+        Memori ini adalah panduan konteks masa lalu, BUKAN pengganti sumber otoritatif terkini.
+        Untuk setiap keputusan konsekuensial atau klaim data faktual, Anda WAJIB memeriksa data terkini pada sumber nyata dan menyertakan sitasi sumber tersebut.
+        """
+    }
+}

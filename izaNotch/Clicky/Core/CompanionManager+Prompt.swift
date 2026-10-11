@@ -157,6 +157,10 @@ extension CompanionManager {
                 """
             }
 
+            let memoryContext = CompanionMemoryManager.shared.formatMemoryForContext(slug: slug)
+            if !memoryContext.isEmpty {
+                companionIdentityContext += "\n\n" + memoryContext
+            }
             isTradingSpecialized = b.name.localizedCaseInsensitiveContains("Futures") ||
                                    b.roleDescription.localizedCaseInsensitiveContains("Futures") ||
                                    b.roleDescription.localizedCaseInsensitiveContains("Analyst") ||
