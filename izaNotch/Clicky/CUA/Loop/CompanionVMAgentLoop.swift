@@ -1210,7 +1210,6 @@ public final class CompanionVMAgentLoop: ObservableObject {
         let activeRunId = CompanionManager.shared.activeE2ERunId ?? UUID().uuidString
         let evidenceDir = FileManager.default.homeDirectoryForCurrentUser
             .appendingPathComponent(".izanotchy/companions/\(slug)/workspace/evidence/\(activeRunId)", isDirectory: true)
-        try? FileManager.default.createDirectory(at: evidenceDir, withIntermediateDirectories: true)
 
         let performedActions = auditTrail.map { "\($0.actionName): \($0.targetDescription)" }
         let facts: [String] = [
@@ -1226,14 +1225,16 @@ public final class CompanionVMAgentLoop: ObservableObject {
             awaitingApproval: [],
             openQuestions: []
         )
-        let snapPath = CompanionWindowStreamService.shared.activeSnapshotPath ?? CompanionVMViewportController.shared.activeSnapshotPath ?? ""
-        let egressEvidence = EgressEvidence(
+        let snapPath = CompanionWindowStreamService.shared.activeSnapshotPath ?? CompanionVMViewportController.shared.activeSnapshotPath
+        let egressEvidence = EvidencePreservationService.shared.preserveRunEvidence(
+            runId: activeRunId,
+            slug: slug,
             sourceLinks: [],
-            screenshots: (!snapPath.isEmpty && FileManager.default.fileExists(atPath: snapPath)) ? [snapPath] : [],
-            timestamps: [ISO8601DateFormatter().string(from: Date())],
-            files: [],
-            actionLog: ("~/Library/Logs/Izanotchy/clicky.log" as NSString).expandingTildeInPath,
-            unverified: []
+            snapshotPath: snapPath,
+            performedSteps: performedActions,
+            filesCreated: ["\(evidenceDir.path)/egress.json"],
+            unverifiedItems: [],
+            report: egressReport
         )
         let egressRes = EgressResult(
             runId: activeRunId,
@@ -1242,12 +1243,9 @@ public final class CompanionVMAgentLoop: ObservableObject {
             report: egressReport,
             evidence: egressEvidence,
             deliverables: [
-                EgressDeliverable(type: "card", artifact: "\(evidenceDir.path)/egress.json")
+                EgressDeliverable(type: "card", artifact: "\(evidenceDir.path)/egress.json", title: "\(appName) Task Receipt", summary: safeResponse)
             ]
         )
-        if let egressData = try? JSONEncoder().encode(egressRes) {
-            try? egressData.write(to: evidenceDir.appendingPathComponent("egress.json"))
-        }
 
         return ComputerCardPayload(
             cardTitle: "Computer",

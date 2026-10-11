@@ -294,17 +294,16 @@ public final class WebWorkspaceAgentLoop: ObservableObject {
             let activeRunId = CompanionManager.shared.activeE2ERunId ?? UUID().uuidString
             let evidenceDir = FileManager.default.homeDirectoryForCurrentUser
                 .appendingPathComponent(".izanotchy/companions/\(slug)/workspace/evidence/\(activeRunId)", isDirectory: true)
-            try? FileManager.default.createDirectory(at: evidenceDir, withIntermediateDirectories: true)
-            let snapURL = FileManager.default.homeDirectoryForCurrentUser
-                .appendingPathComponent(".izanotchy/companions/\(slug)/workspace/snapshots/active_frame.png")
-            let snapPath = snapURL.path
-            let composeEvidence = EgressEvidence(
+
+            let composeEvidence = EvidencePreservationService.shared.preserveRunEvidence(
+                runId: activeRunId,
+                slug: slug,
                 sourceLinks: [adapter.entryURL.absoluteString],
-                screenshots: FileManager.default.fileExists(atPath: snapPath) ? [snapPath] : [],
-                timestamps: [ISO8601DateFormatter().string(from: Date())],
-                files: [],
-                actionLog: ("~/Library/Logs/Izanotchy/clicky.log" as NSString).expandingTildeInPath,
-                unverified: []
+                snapshotPath: nil,
+                performedSteps: queueItems.map { $0.name },
+                filesCreated: ["\(evidenceDir.path)/egress.json"],
+                unverifiedItems: [],
+                report: composeReport
             )
             let composeEgressResult = EgressResult(
                 runId: activeRunId,
@@ -313,12 +312,9 @@ public final class WebWorkspaceAgentLoop: ObservableObject {
                 report: composeReport,
                 evidence: composeEvidence,
                 deliverables: [
-                    EgressDeliverable(type: "card", artifact: "\(evidenceDir.path)/egress.json")
+                    EgressDeliverable(type: "card", artifact: "\(evidenceDir.path)/egress.json", title: "Draf Email Terkirim", summary: deliverableText)
                 ]
             )
-            if let egressData = try? JSONEncoder().encode(composeEgressResult) {
-                try? egressData.write(to: evidenceDir.appendingPathComponent("egress.json"))
-            }
             payload.egressResult = composeEgressResult
             onProgress(payload)
 
@@ -529,21 +525,17 @@ public final class WebWorkspaceAgentLoop: ObservableObject {
             let activeRunId = CompanionManager.shared.activeE2ERunId ?? UUID().uuidString
             let evidenceDir = FileManager.default.homeDirectoryForCurrentUser
                 .appendingPathComponent(".izanotchy/companions/\(slug)/workspace/evidence/\(activeRunId)", isDirectory: true)
-            try? FileManager.default.createDirectory(at: evidenceDir, withIntermediateDirectories: true)
 
-            let snapURL = FileManager.default.homeDirectoryForCurrentUser
-                .appendingPathComponent(".izanotchy/companions/\(slug)/workspace/snapshots/active_frame.png")
-            let snapPath = snapURL.path
-
-            let egressEvidence = EgressEvidence(
+            let egressEvidence = EvidencePreservationService.shared.preserveRunEvidence(
+                runId: activeRunId,
+                slug: slug,
                 sourceLinks: [adapter.entryURL.absoluteString],
-                screenshots: FileManager.default.fileExists(atPath: snapPath) ? [snapPath] : [],
-                timestamps: [ISO8601DateFormatter().string(from: Date())],
-                files: [],
-                actionLog: ("~/Library/Logs/Izanotchy/clicky.log" as NSString).expandingTildeInPath,
-                unverified: []
+                snapshotPath: nil,
+                performedSteps: queueItems.map { $0.name },
+                filesCreated: ["\(evidenceDir.path)/egress.json"],
+                unverifiedItems: [],
+                report: egressReport
             )
-
             let egressResult = EgressResult(
                 runId: activeRunId,
                 concluded: true,
@@ -551,13 +543,9 @@ public final class WebWorkspaceAgentLoop: ObservableObject {
                 report: egressReport,
                 evidence: egressEvidence,
                 deliverables: [
-                    EgressDeliverable(type: "card", artifact: "\(evidenceDir.path)/egress.json")
+                    EgressDeliverable(type: "card", artifact: "\(evidenceDir.path)/egress.json", title: "Laporan Email Terverifikasi", summary: findingSummary)
                 ]
             )
-
-            if let egressData = try? JSONEncoder().encode(egressResult) {
-                try? egressData.write(to: evidenceDir.appendingPathComponent("egress.json"))
-            }
             payload.egressResult = egressResult
             onProgress(payload)
 
