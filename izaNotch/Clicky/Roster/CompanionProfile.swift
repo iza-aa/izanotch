@@ -252,7 +252,8 @@ extension CompanionProfile {
         lastMessage: "Hey! Aku Clicky. Ada tombol atau tugas yang perlu aku arahkan di layar?",
         activeSkills: ["claude-code", "excalidraw"],
         mdPath: "Clicky.md",
-        isPinnedToRail: false
+        isPinnedToRail: false,
+        workflowAppNames: []
     )
     
     public static let defaultStarters: [CompanionProfile] = [

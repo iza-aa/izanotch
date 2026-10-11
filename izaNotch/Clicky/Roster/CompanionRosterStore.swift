@@ -85,8 +85,14 @@ public final class CompanionRosterStore: ObservableObject {
         }
 
         // Keep only Futures Scout and user-created characters; eliminate starter bots (Research Buddy, Shippy, Clicky)
+        // Keep Futures Scout, Clicky (canonical native CUA companion without connected apps — TASK-046 Principle 1), and user companions
         var filteredCompanions = loadedCompanions.filter {
-            $0.slug != "research-buddy" && $0.slug != "shippy" && $0.slug != "clicky"
+            $0.slug != "research-buddy" && $0.slug != "shippy"
+        }
+        if !filteredCompanions.contains(where: { $0.slug == "clicky" }) {
+            var clicky = CompanionProfile.defaultClicky
+            clicky.workflowAppNames = []
+            filteredCompanions.append(clicky)
         }
         if !filteredCompanions.contains(where: { $0.slug == "futures-scout" || $0.name.lowercased().contains("futures scout") }) {
             filteredCompanions.insert(scoutProfile, at: 0)
@@ -95,6 +101,9 @@ public final class CompanionRosterStore: ObservableObject {
         // Clean up any residual initial greetings from companions so they open in clean welcome state
         filteredCompanions = filteredCompanions.map { comp in
             var c = comp
+            if c.slug == "clicky" {
+                c.workflowAppNames = []
+            }
             if c.slug == "inbox-buddy" {
                 c.messages = []
                 c.lastMessage = ""

@@ -6,7 +6,8 @@ TASK-046 Deterministic Surface Pivot (`tasks/TASK_046_DETERMINISTIC_SURFACE_PIVO
 - Fase B: pembersihan kode liar terledger (periphery scan + Delete-Zone).
 - Fase C: Web Workspace (WKWebView, observasi/aksi via DOM).
 - Fase D: Automations (bot hidup terjadwal).
-Referensi arsitektur: `github-reference/grok-bot/` (REA evidence di `rea-evidence/`).
+Referensi arsitektur: `github-reference/grok-bot/` (REA evidence di `rea-evidence/`), studi cara kerja: `github-reference/grok-bot/HOW_IT_WORKS.md`.
+Skill review UI proyek: `.zcode/skills/swiftui-pro-iza/` (diadaptasi dari twostraws/swiftui-agent-skill, MIT) — muat saat mengerjakan/mereview kode SwiftUI.
 
 ## Arsitektur CUA (mode native, companion tanpa connected apps)
 Membangun dan menstabilkan alur kerja CUA (Computer Use Agent) di isolated virtual display agar dapat menjalankan tugas sehari-hari secara handal, cepat, dan 100% bebas dari intrusi layar utama pengguna.

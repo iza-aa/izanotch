@@ -924,8 +924,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 Task { @MainActor in
                     let prompt = notif.userInfo?["text"] as? String ?? notif.userInfo?["prompt"] as? String
                     let runId = notif.userInfo?["runId"] as? String ?? UUID().uuidString
+                    let companionSlug = notif.userInfo?["companionSlug"] as? String ?? notif.userInfo?["companion"] as? String ?? notif.userInfo?["buddy"] as? String
                     CompanionManager.shared.activeE2ERunId = runId
-                    ClickyLogger.info("[E2E_IPC]", "Received task injection: runId=\(runId), text='\(prompt ?? "")'")
+                    ClickyLogger.info("[E2E_IPC]", "Received task injection: runId=\(runId), text='\(prompt ?? "")', companion='\(companionSlug ?? "current")'")
+
+                    if let slug = companionSlug, !slug.isEmpty {
+                        CompanionManager.shared.selectCompanion(bySlug: slug)
+                    }
 
                     HomeSpaceWindowManager.shared.show()
                     if let prompt = prompt, !prompt.isEmpty {

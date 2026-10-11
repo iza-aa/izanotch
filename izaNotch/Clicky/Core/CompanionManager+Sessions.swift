@@ -184,6 +184,12 @@ extension CompanionManager {
         CompanionRosterStore.shared.updateMessage(id: id, computerPayload: computerPayload, text: text, forCompanionId: activeSessionID)
         objectWillChange.send()
     }
+    public func selectCompanion(bySlug slug: String) {
+        if let session = sessions.first(where: { $0.slug == slug || $0.name.lowercased().replacingOccurrences(of: " ", with: "-") == slug }) {
+            selectSession(id: session.id)
+            ClickyLogger.info("[ROSTER]", "Switched active companion to '\(session.name)' (slug=\(session.slug))")
+        }
+    }
 
     public func selectSession(id: UUID, syncRoster: Bool = true) {
         guard let session = sessions.first(where: { $0.id == id }) else { return }
