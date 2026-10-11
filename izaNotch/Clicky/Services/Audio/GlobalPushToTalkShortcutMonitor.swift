@@ -27,19 +27,32 @@ final class GlobalPushToTalkShortcutMonitor: ObservableObject {
     deinit {
         stop()
     }
+    private var lastEscapeTimestamp: TimeInterval = 0
 
     public var onEscapePressed: (@MainActor () -> Void)? = nil
 
+    private func triggerEscapePressedDeduplicated() {
+        let now = Date().timeIntervalSince1970
+        guard now - lastEscapeTimestamp > 0.35 else { return }
+        lastEscapeTimestamp = now
+        DispatchQueue.main.async { [weak self] in
+            self?.onEscapePressed?()
+        }
+    }
+
     func start() {
+        if globalEventTap != nil || globalNSEventMonitor != nil {
+            ClickyLogger.info("[SHORTCUT]", "SHORTCUT handler deduplicated (tap already active)")
+            return
+        }
+
         if globalNSEventMonitor == nil {
             globalNSEventMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.flagsChanged, .keyDown, .keyUp]) { [weak self] event in
                 guard let self = self else { return }
 
                 if event.type == .keyDown && event.keyCode == 53 {
                     guard !Self.isSynthesizingInput else { return }
-                    DispatchQueue.main.async {
-                        self.onEscapePressed?()
-                    }
+                    self.triggerEscapePressedDeduplicated()
                     return
                 }
 
@@ -67,8 +80,10 @@ final class GlobalPushToTalkShortcutMonitor: ObservableObject {
             ClickyLogger.success("[SHORTCUT]", "NSEvent global monitor successfully registered")
         }
 
-        // If the event tap is already running, don't restart it.
-        guard globalEventTap == nil else { return }
+        guard globalEventTap == nil else {
+            ClickyLogger.info("[SHORTCUT]", "SHORTCUT handler deduplicated (tap already active)")
+            return
+        }
 
         let monitoredEventTypes: [CGEventType] = [.flagsChanged, .keyDown, .keyUp]
         let eventMask = monitoredEventTypes.reduce(CGEventMask(0)) { currentMask, eventType in
@@ -137,6 +152,7 @@ final class GlobalPushToTalkShortcutMonitor: ObservableObject {
         }
 
         if let globalEventTap {
+            CGEvent.tapEnable(tap: globalEventTap, enable: false)
             CFMachPortInvalidate(globalEventTap)
             self.globalEventTap = nil
         }
@@ -156,9 +172,7 @@ final class GlobalPushToTalkShortcutMonitor: ObservableObject {
         let eventKeyCode = UInt16(event.getIntegerValueField(.keyboardEventKeycode))
         if eventType == .keyDown && eventKeyCode == 53 {
             if !Self.isSynthesizingInput {
-                DispatchQueue.main.async {
-                    self.onEscapePressed?()
-                }
+                triggerEscapePressedDeduplicated()
             }
         }
 
