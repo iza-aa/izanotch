@@ -117,14 +117,14 @@ Prasyarat masuk TASK-047: 8 skenario `scenarios.fasec.json` lulus + 8 bloker B1-
 
 ### FASE 10 — TEAM & GOVERNANCE PARITY (PRD §A11/A16, G7; sumber S3, S4) — FASE AKHIR
 
-| ID | [Tipe] | Scope | Baca | Bukti review |
-|---|---|---|---|---|
-| MT-38 | [non-UI] | Team companion: team memory + private notes per orang, bot acts-as-the-asker | S3-team | Team memory tersimpan saat dinyatakan team-wide; catatan privat tak bocor |
-| MT-39 | [non-UI] | Secrets vault tim: encrypted, redacted di output/log/model, limits (25 @ 8-4096 byte) | S3-secrets | Secret tak pernah tampil; redaksi terverifikasi |
-| MT-40 | [UI] | Managers & admin distribution (ubah setup vs publish/delete separation) | S3-team | Manager mengubah setup; publish tetap owner |
-| MT-41 | [non-UI] | Audit logs + action recording (redaksi kredensial/PEM/email; retensi; export) | S4-security | Audit mencatat peristiwa control-plane; redaksi terverifikasi |
-| MT-42 | [non-UI] | Network/egress parity (semua dari Mac pengguna; dokumentasi perbedaan "laptop ditutup" vs cloud) | S4-network | Dokumentasi + uji: kerja berjalan selama Mac menyala |
-| MT-43 | [non-UI] | Prompt-injection defense berlapis (untrusted tagging + rule engine + least privilege — melampaui coverage Auto Review mereka yang tidak mencakup memory/settings) | S3-security | Uji injection: aksi tak sah ditolak |
+| ID | [Tipe] | Scope | Baca | Bukti review | Status |
+|---|---|---|---|---|---|
+| MT-38 | [non-UI] | Team companion: team memory + private notes per orang, bot acts-as-the-asker | S3-team | Team memory tersimpan saat dinyatakan team-wide; catatan privat tak bocor | LULUS |
+| MT-39 | [non-UI] | Secrets vault tim: encrypted, redacted di output/log/model, limits (25 @ 8-4096 byte) | S3-secrets | Secret tak pernah tampil; redaksi terverifikasi | LULUS |
+| MT-40 | [UI] | Managers & admin distribution (ubah setup vs publish/delete separation) | S3-team | Manager mengubah setup; publish tetap owner | LULUS |
+| MT-41 | [non-UI] | Audit logs + action recording (redaksi kredensial/PEM/email; retensi; export) | S4-security | Audit mencatat peristiwa control-plane; redaksi terverifikasi | LULUS |
+| MT-42 | [non-UI] | Network/egress parity (semua dari Mac pengguna; dokumentasi perbedaan "laptop ditutup" vs cloud) | S4-network | Dokumentasi + uji: kerja berjalan selama Mac menyala | LULUS |
+| MT-43 | [non-UI] | Prompt-injection defense berlapis (untrusted tagging + rule engine + least privilege — melampaui coverage Auto Review mereka yang tidak mencakup memory/settings) | S3-security | Uji injection: aksi tak sah ditolak | LULUS |
 
 ## 4. STATUS TRACKING
 
