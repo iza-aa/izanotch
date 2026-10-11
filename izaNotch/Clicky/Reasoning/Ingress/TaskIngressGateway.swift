@@ -380,3 +380,109 @@ public final class TaskIngressGateway: @unchecked Sendable {
         return str.data(using: .utf8)
     }
 }
+// MARK: - ExternalTaskIngressService (PRD §A10, §G9, MT-37: External Task Ingress & Brief ACK)
+
+public struct ExternalTaskIngressPayload: Codable, Sendable, Identifiable {
+    public var id: String { runId }
+    public let runId: String
+    public let prompt: String
+    public let companionSlug: String?
+    public let source: String // "notification", "sharesheet", "url_scheme", "cli"
+    public let timestamp: Date
+
+    public init(
+        runId: String = UUID().uuidString,
+        prompt: String,
+        companionSlug: String? = nil,
+        source: String = "notification",
+        timestamp: Date = Date()
+    ) {
+        self.runId = runId
+        self.prompt = prompt
+        self.companionSlug = companionSlug
+        self.source = source
+        self.timestamp = timestamp
+    }
+}
+
+@MainActor
+public final class ExternalTaskIngressService: ObservableObject {
+    public static let shared = ExternalTaskIngressService()
+
+    @Published public private(set) var lastIngressPayload: ExternalTaskIngressPayload? = nil
+    @Published public private(set) var lastAckMessage: String? = nil
+
+    private init() {
+        setupDistributedNotificationListener()
+    }
+
+    /// Sets up macOS IPC notification listener for external task submissions
+    public func setupDistributedNotificationListener() {
+        DistributedNotificationCenter.default().addObserver(
+            forName: NSNotification.Name("iza.external.task_ingress"),
+            object: nil,
+            queue: .main
+        ) { [weak self] notif in
+            guard let self = self else { return }
+            let prompt = (notif.userInfo?["prompt"] as? String) ?? (notif.userInfo?["text"] as? String) ?? ""
+            let slug = notif.userInfo?["companionSlug"] as? String
+            let source = (notif.userInfo?["source"] as? String) ?? "notification"
+            let runId = (notif.userInfo?["runId"] as? String) ?? UUID().uuidString
+
+            if !prompt.isEmpty {
+                let payload = ExternalTaskIngressPayload(runId: runId, prompt: prompt, companionSlug: slug, source: source)
+                self.handleExternalIngress(payload: payload)
+            }
+        }
+    }
+
+    /// Processes an external task: emits immediate ACK, then submits to companion for in-app execution
+    @discardableResult
+    public func handleExternalIngress(payload: ExternalTaskIngressPayload) -> String {
+        lastIngressPayload = payload
+
+        // 1. Resolve Target Companion
+        let targetSlug = payload.companionSlug ?? CompanionManager.shared.activeBuddy.slug
+        let companionName: String = {
+            if let comp = CompanionRosterStore.shared.allCompanions.first(where: { $0.slug == targetSlug }) {
+                return comp.name
+            }
+            return targetSlug
+        }()
+
+        // 2. Emit Immediate Concise ACK (Pola Tag-on-X, PRD §G9)
+        let concisePrompt = payload.prompt.count > 35 ? "\(payload.prompt.prefix(35))..." : payload.prompt
+        let ackText = "Tugas diterima: '\(concisePrompt)'. Sedang dikerjakan oleh \(companionName)..."
+        lastAckMessage = ackText
+
+        // Broadcast ACK via DistributedNotificationCenter
+        DistributedNotificationCenter.default().postNotificationName(
+            NSNotification.Name("iza.external.task_ack"),
+            object: nil,
+            userInfo: [
+                "runId": payload.runId,
+                "status": "acknowledged",
+                "ackMessage": ackText,
+                "companion": companionName
+            ],
+            deliverImmediately: true
+        )
+        ClickyLogger.info("[EXTERNAL_INGRESS]", "Emitted ACK for runId=\(payload.runId) from \(payload.source): '\(ackText)'")
+
+        // 3. Post into App Chat Transcript
+        let userMsg = HomeSpaceChatMessage(
+            isUser: true,
+            text: "[\(payload.source.uppercased())] \(payload.prompt)"
+        )
+        CompanionManager.shared.appendChatMessage(userMsg)
+
+        // 4. Submit prompt into execution pipeline
+        NotificationCenter.default.post(
+            name: Notification.Name("HomeSpaceSubmitPrompt"),
+            object: payload.prompt,
+            userInfo: ["runId": payload.runId]
+        )
+
+        return ackText
+    }
+}
