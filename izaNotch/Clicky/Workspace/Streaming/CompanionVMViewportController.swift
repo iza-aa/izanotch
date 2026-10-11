@@ -62,10 +62,12 @@ public final class CompanionVMViewportController: NSObject, ObservableObject, WK
         }
     }
     // MARK: - Viewport Lifecycle & App Loading
-    public func prepareViewport(slug: String, app: String, prompt: String? = nil) {
+    public func prepareViewport(slug: String, app: String, preferredAdapterId: String? = nil, prompt: String? = nil) {
         self.currentSlug = slug
         self.currentApp = app.lowercased()
-        if self.currentApp == "mail" {
+        if let preferred = preferredAdapterId {
+            self.mailProvider = preferred
+        } else if self.currentApp == "mail" {
             self.mailProvider = Self.resolveMailProvider(for: slug, prompt: prompt)
         }
         if webView == nil {

@@ -20,7 +20,6 @@
 		8C575B9B19E10ACC3272056D /* GlobalPushToTalkShortcutMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C725A5C477AF887C6929E34 /* GlobalPushToTalkShortcutMonitor.swift */; };
 		8C11DEF2F62EE1F9BDCADA90 /* ModelTurnResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8CA065C37CF98DCD86623E90 /* ModelTurnResult.swift */; };
 		8C23287116946CC5D862B0C8 /* ElevenLabsTTSClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C5F5E9FA4B7736EFBB927B6 /* ElevenLabsTTSClient.swift */; };
-		8C866BABD6003D05D763CDC7 /* OpenAIAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C99BC80BA3E96C2D82E7428 /* OpenAIAPI.swift */; };
 		8C87D693A876E2B553C58D32 /* WindowPositionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C71C837A245329AFE6106DE /* WindowPositionManager.swift */; };
 		8CF6608A1260202F554DDE59 /* BuddyDictationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C3FFDF8E7A164C8D2290AB1 /* BuddyDictationManager.swift */; };
 		8CDFCACD868202BD9F0A4287 /* BuddyAudioConversionSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8CC322FF7F46AF13ABE446C8 /* BuddyAudioConversionSupport.swift */; };
@@ -53,6 +52,14 @@
 		8C5AC0E1AABBCCDDEEFF00E1 /* AFMLunaCoordinationBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C5AC0E2AABBCCDDEEFF00E2 /* AFMLunaCoordinationBridge.swift */; };
 		8C5AC0F1AABBCCDDEEFF00F1 /* CanonicalTaskContract.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C5AC0F2AABBCCDDEEFF00F2 /* CanonicalTaskContract.swift */; };
 		8C5AC0F3AABBCCDDEEFF00F3 /* TaskIngressGateway.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C5AC0F4AABBCCDDEEFF00F4 /* TaskIngressGateway.swift */; };
+		8C5AC0F3AABBCCDDEEFF00EA /* ExecutionRoutingGate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C5AC0F4AABBCCDDEEFF00EA /* ExecutionRoutingGate.swift */; };
+		8C5AC0D1AABBCCDDEEFF01A1 /* WebSiteAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C5AC0D2AABBCCDDEEFF01A2 /* WebSiteAdapter.swift */; };
+		8C5AC0D1AABBCCDDEEFF01B1 /* WebWorkspaceDOMService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C5AC0D2AABBCCDDEEFF01B2 /* WebWorkspaceDOMService.swift */; };
+		8C5AC0D1AABBCCDDEEFF01C1 /* WebWorkspaceAgentLoop.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C5AC0D2AABBCCDDEEFF01C2 /* WebWorkspaceAgentLoop.swift */; };
+		8C5AC0D1AABBCCDDEEFF03A1 /* WebWorkspaceLoginWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C5AC0D2AABBCCDDEEFF03A2 /* WebWorkspaceLoginWindowController.swift */; };
+		8C5AC0D1AABBCCDDEEFF04A1 /* TakeoverStatusView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C5AC0D2AABBCCDDEEFF04A2 /* TakeoverStatusView.swift */; };
+		8C5AC0D1AABBCCDDEEFF02A1 /* CompanionAutomation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C5AC0D2AABBCCDDEEFF02A2 /* CompanionAutomation.swift */; };
+		8C5AC0D1AABBCCDDEEFF02B1 /* CompanionAutomationStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C5AC0D2AABBCCDDEEFF02B2 /* CompanionAutomationStore.swift */; };
 		8C5AC0F5AABBCCDDEEFF00F5 /* TaskStepPlanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C5AC0F6AABBCCDDEEFF00F6 /* TaskStepPlanner.swift */; };
 		8C5AC0F9AABBCCDDEEFF00F9 /* LayaDecisionEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C5AC0FAAABBCCDDEEFF00FA /* LayaDecisionEngine.swift */; };
 		8C5AC0F7AABBCCDDEEFF00F7 /* TaskEgressValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C5AC0F8AABBCCDDEEFF00F8 /* TaskEgressValidator.swift */; };
@@ -344,7 +351,6 @@
 		8C725A5C477AF887C6929E34 /* GlobalPushToTalkShortcutMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Clicky/Services/Audio/GlobalPushToTalkShortcutMonitor.swift"; sourceTree = "<group>"; };
 		8CA065C37CF98DCD86623E90 /* ModelTurnResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Clicky/Services/Models/ModelTurnResult.swift"; sourceTree = "<group>"; };
 		8C5F5E9FA4B7736EFBB927B6 /* ElevenLabsTTSClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Clicky/Services/Audio/ElevenLabsTTSClient.swift"; sourceTree = "<group>"; };
-		8C99BC80BA3E96C2D82E7428 /* OpenAIAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Clicky/Services/Models/OpenAIAPI.swift"; sourceTree = "<group>"; };
 		8C71C837A245329AFE6106DE /* WindowPositionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Clicky/Workspace/WindowManagement/WindowPositionManager.swift"; sourceTree = "<group>"; };
 		8C3FFDF8E7A164C8D2290AB1 /* BuddyDictationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Clicky/Services/Audio/BuddyDictationManager.swift"; sourceTree = "<group>"; };
 		8CC322FF7F46AF13ABE446C8 /* BuddyAudioConversionSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Clicky/Services/Audio/BuddyAudioConversionSupport.swift"; sourceTree = "<group>"; };
@@ -377,6 +383,14 @@
 		8C5AC0E2AABBCCDDEEFF00E2 /* AFMLunaCoordinationBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Clicky/Reasoning/Coordination/AFMLunaCoordinationBridge.swift"; sourceTree = "<group>"; };
 		8C5AC0F2AABBCCDDEEFF00F2 /* CanonicalTaskContract.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Clicky/Reasoning/Ingress/CanonicalTaskContract.swift"; sourceTree = "<group>"; };
 		8C5AC0F4AABBCCDDEEFF00F4 /* TaskIngressGateway.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Clicky/Reasoning/Ingress/TaskIngressGateway.swift"; sourceTree = "<group>"; };
+		8C5AC0F4AABBCCDDEEFF00EA /* ExecutionRoutingGate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Clicky/Reasoning/Ingress/ExecutionRoutingGate.swift"; sourceTree = "<group>"; };
+		8C5AC0D2AABBCCDDEEFF01A2 /* WebSiteAdapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Clicky/Workspace/Web/WebSiteAdapter.swift"; sourceTree = "<group>"; };
+		8C5AC0D2AABBCCDDEEFF01B2 /* WebWorkspaceDOMService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Clicky/Workspace/Web/WebWorkspaceDOMService.swift"; sourceTree = "<group>"; };
+		8C5AC0D2AABBCCDDEEFF01C2 /* WebWorkspaceAgentLoop.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Clicky/Workspace/Web/WebWorkspaceAgentLoop.swift"; sourceTree = "<group>"; };
+		8C5AC0D2AABBCCDDEEFF03A2 /* WebWorkspaceLoginWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Clicky/Workspace/Web/WebWorkspaceLoginWindowController.swift"; sourceTree = "<group>"; };
+		8C5AC0D2AABBCCDDEEFF04A2 /* TakeoverStatusView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Clicky/UI/Common/TakeoverStatusView.swift"; sourceTree = "<group>"; };
+		8C5AC0D2AABBCCDDEEFF02A2 /* CompanionAutomation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Clicky/Services/Automations/CompanionAutomation.swift"; sourceTree = "<group>"; };
+		8C5AC0D2AABBCCDDEEFF02B2 /* CompanionAutomationStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Clicky/Services/Automations/CompanionAutomationStore.swift"; sourceTree = "<group>"; };
 		8C5AC0F6AABBCCDDEEFF00F6 /* TaskStepPlanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Clicky/Reasoning/Planner/TaskStepPlanner.swift"; sourceTree = "<group>"; };
 		8C5AC0FAAABBCCDDEEFF00FA /* LayaDecisionEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Clicky/Reasoning/Planner/LayaDecisionEngine.swift"; sourceTree = "<group>"; };
 		8C5AC0F8AABBCCDDEEFF00F8 /* TaskEgressValidator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Clicky/Reasoning/Validator/TaskEgressValidator.swift"; sourceTree = "<group>"; };
@@ -673,7 +687,6 @@
 				8C725A5C477AF887C6929E34 /* GlobalPushToTalkShortcutMonitor.swift */,
 				8CA065C37CF98DCD86623E90 /* ModelTurnResult.swift */,
 				8C5F5E9FA4B7736EFBB927B6 /* ElevenLabsTTSClient.swift */,
-				8C99BC80BA3E96C2D82E7428 /* OpenAIAPI.swift */,
 				8C71C837A245329AFE6106DE /* WindowPositionManager.swift */,
 				8C3FFDF8E7A164C8D2290AB1 /* BuddyDictationManager.swift */,
 				8CC322FF7F46AF13ABE446C8 /* BuddyAudioConversionSupport.swift */,
@@ -733,6 +746,14 @@
 				8C5AC0E2AABBCCDDEEFF00E2 /* AFMLunaCoordinationBridge.swift */,
 				8C5AC0F2AABBCCDDEEFF00F2 /* CanonicalTaskContract.swift */,
 				8C5AC0F4AABBCCDDEEFF00F4 /* TaskIngressGateway.swift */,
+				8C5AC0F4AABBCCDDEEFF00EA /* ExecutionRoutingGate.swift */,
+				8C5AC0D2AABBCCDDEEFF01A2 /* WebSiteAdapter.swift */,
+				8C5AC0D2AABBCCDDEEFF01B2 /* WebWorkspaceDOMService.swift */,
+				8C5AC0D2AABBCCDDEEFF01C2 /* WebWorkspaceAgentLoop.swift */,
+				8C5AC0D2AABBCCDDEEFF03A2 /* WebWorkspaceLoginWindowController.swift */,
+				8C5AC0D2AABBCCDDEEFF04A2 /* TakeoverStatusView.swift */,
+				8C5AC0D2AABBCCDDEEFF02A2 /* CompanionAutomation.swift */,
+				8C5AC0D2AABBCCDDEEFF02B2 /* CompanionAutomationStore.swift */,
 				8C5AC0F6AABBCCDDEEFF00F6 /* TaskStepPlanner.swift */,
 				8C5AC0FAAABBCCDDEEFF00FA /* LayaDecisionEngine.swift */,
 				8C5AC0F8AABBCCDDEEFF00F8 /* TaskEgressValidator.swift */,
@@ -1395,7 +1416,6 @@
 				8C575B9B19E10ACC3272056D /* GlobalPushToTalkShortcutMonitor.swift in Sources */,
 				8C11DEF2F62EE1F9BDCADA90 /* ModelTurnResult.swift in Sources */,
 				8C23287116946CC5D862B0C8 /* ElevenLabsTTSClient.swift in Sources */,
-				8C866BABD6003D05D763CDC7 /* OpenAIAPI.swift in Sources */,
 				8C87D693A876E2B553C58D32 /* WindowPositionManager.swift in Sources */,
 				8CF6608A1260202F554DDE59 /* BuddyDictationManager.swift in Sources */,
 				8CDFCACD868202BD9F0A4287 /* BuddyAudioConversionSupport.swift in Sources */,
@@ -1455,6 +1475,14 @@
 				8C5AC0E1AABBCCDDEEFF00E1 /* AFMLunaCoordinationBridge.swift in Sources */,
 				8C5AC0F1AABBCCDDEEFF00F1 /* CanonicalTaskContract.swift in Sources */,
 				8C5AC0F3AABBCCDDEEFF00F3 /* TaskIngressGateway.swift in Sources */,
+				8C5AC0F3AABBCCDDEEFF00EA /* ExecutionRoutingGate.swift in Sources */,
+				8C5AC0D1AABBCCDDEEFF01A1 /* WebSiteAdapter.swift in Sources */,
+				8C5AC0D1AABBCCDDEEFF01B1 /* WebWorkspaceDOMService.swift in Sources */,
+				8C5AC0D1AABBCCDDEEFF01C1 /* WebWorkspaceAgentLoop.swift in Sources */,
+				8C5AC0D1AABBCCDDEEFF03A1 /* WebWorkspaceLoginWindowController.swift in Sources */,
+				8C5AC0D1AABBCCDDEEFF04A1 /* TakeoverStatusView.swift in Sources */,
+				8C5AC0D1AABBCCDDEEFF02A1 /* CompanionAutomation.swift in Sources */,
+				8C5AC0D1AABBCCDDEEFF02B1 /* CompanionAutomationStore.swift in Sources */,
 				8C5AC0F5AABBCCDDEEFF00F5 /* TaskStepPlanner.swift in Sources */,
 				8C5AC0F9AABBCCDDEEFF00F9 /* LayaDecisionEngine.swift in Sources */,
 				8C5AC0F7AABBCCDDEEFF00F7 /* TaskEgressValidator.swift in Sources */,

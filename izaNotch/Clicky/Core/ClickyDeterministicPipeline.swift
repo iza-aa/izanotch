@@ -243,17 +243,9 @@ public final class ClickyDeterministicPipeline: ObservableObject {
         let isClose = actionType == "tutup" || actionType == "close" || actionType == "quit"
         let isOpen = actionType == "buka" || actionType == "open" || actionType == "launch"
 
-        // 1. Activate agent arrow cursor
-        _ = try? await CuaDriverClient.shared.executeTool(name: "set_agent_cursor_enabled", arguments: ["enabled": true])
-
         // Convert AppKit point to CG screen coordinates (origin top-left)
         let screen = NSScreen.screens.first(where: { $0.frame.contains(point) }) ?? NSScreen.main ?? NSScreen.screens[0]
         let cgPoint = CGPoint(x: point.x, y: screen.frame.height - point.y)
-
-        // 2. Glide agent cursor to target
-        await CuaDriverClient.shared.glideAgentCursor(to: cgPoint)
-        try? await Task.sleep(for: .milliseconds(180))
-
         if isClose {
             let appName = ComputerUsePhysicalExecutor.resolveTargetAppName(appName: target, details: target) ?? workSurface?.appName ?? target
             ClickyLogger.info("[PIPELINE]", "Executing deterministic app close for: \(appName)")
@@ -274,9 +266,7 @@ public final class ClickyDeterministicPipeline: ObservableObject {
             await ComputerUsePhysicalExecutor.shared.executeMoveAndClick(at: cgPoint, button: .left, clickCount: 1)
         }
 
-        // 3. Hide agent arrow cursor
         try? await Task.sleep(for: .milliseconds(150))
-        _ = try? await CuaDriverClient.shared.executeTool(name: "set_agent_cursor_enabled", arguments: ["enabled": false])
     }
 
     /// Selective post-action visual verification

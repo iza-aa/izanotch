@@ -128,7 +128,7 @@ public final class TaskIngressGateway: @unchecked Sendable {
         _ rawPlan: AFMTaskDecomposition,
         connectedApps: [String]
     ) -> AFMTaskDecomposition {
-        let (tier, reason) = ExecutionRoutingGate.shared.resolveExecutionTier(
+        let (tier, reason, surfaceId) = ExecutionRoutingGate.shared.resolveExecutionTier(
             targetAppName: rawPlan.targetAppName,
             intentType: rawPlan.intentType,
             connectedApps: connectedApps,
@@ -137,9 +137,8 @@ public final class TaskIngressGateway: @unchecked Sendable {
 
         ClickyLogger.info(
             "[ROUTING]",
-            "Task '\(rawPlan.normalizedGoal)' -> tier=\(tier), reason='\(reason)' [targetApp=\(rawPlan.targetAppName), intentType=\(rawPlan.intentType), connectedApps=[\(connectedApps.joined(separator: ", "))]]"
+            "Task '\(rawPlan.normalizedGoal)' -> tier=\(tier), surface='\(surfaceId ?? "none")', reason='\(reason)' [targetApp=\(rawPlan.targetAppName), intentType=\(rawPlan.intentType), connectedApps=[\(connectedApps.joined(separator: ", "))]]"
         )
-
         return AFMTaskDecomposition(
             userIntent: rawPlan.userIntent,
             targetAppName: rawPlan.targetAppName,
@@ -156,7 +155,8 @@ public final class TaskIngressGateway: @unchecked Sendable {
             userLanguage: rawPlan.userLanguage,
             requiresTakeoverOnCompletion: rawPlan.requiresTakeoverOnCompletion,
             executionTier: tier,
-            routingReason: reason
+            routingReason: reason,
+            targetSurfaceId: surfaceId
         )
     }
 

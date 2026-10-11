@@ -366,7 +366,7 @@ extension HomeSpaceRootView {
         editMood = session.mood
         editAvatarLabExpression = session.currentExpressionKey ?? "neutral"
         editSelectedTemplateId = session.templateId
-        editWorkflowApps = session.workflowAppNames.isEmpty ? ["Mail", "Safari"] : session.workflowAppNames
+        editWorkflowApps = session.workflowAppNames
         editSafariDomains = session.allowedSafariDomains.isEmpty ? "google.com, github.com" : session.allowedSafariDomains.joined(separator: ", ")
         editSafariTabMode = session.safariTabAccessMode.isEmpty ? "whitelist_only" : session.safariTabAccessMode
         if let animKey = session.animationKey, let anim = CompanionAvatarLabCatalog.animation(byKey: animKey) {

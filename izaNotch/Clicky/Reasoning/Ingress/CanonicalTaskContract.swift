@@ -25,6 +25,9 @@ public struct AFMTaskDecomposition: Codable, Sendable {
     public let plannedSubGoals: [String]
     public let requiresCUA: Bool
     public let requiresTakeoverOnCompletion: Bool
+    public let executionTier: String // "web" | "native_cua"
+    public let routingReason: String?
+    public let targetSurfaceId: String?
 
     public var isConversational: Bool {
         return !requiresCUA || targetAppName.lowercased() == "none" || intentType.lowercased() == "conversational"
@@ -44,7 +47,10 @@ public struct AFMTaskDecomposition: Codable, Sendable {
         searchQuery: String? = nil,
         normalizedGoal: String = "",
         userLanguage: String = "id",
-        requiresTakeoverOnCompletion: Bool = false
+        requiresTakeoverOnCompletion: Bool = false,
+        executionTier: String = "native_cua",
+        routingReason: String? = nil,
+        targetSurfaceId: String? = nil
     ) {
         self.userIntent = userIntent
         self.targetAppName = targetAppName
@@ -60,6 +66,9 @@ public struct AFMTaskDecomposition: Codable, Sendable {
         self.normalizedGoal = normalizedGoal.isEmpty ? userIntent : normalizedGoal
         self.userLanguage = userLanguage
         self.requiresTakeoverOnCompletion = requiresTakeoverOnCompletion
+        self.executionTier = executionTier
+        self.routingReason = routingReason
+        self.targetSurfaceId = targetSurfaceId
     }
 
     public init(from decoder: Decoder) throws {
@@ -80,6 +89,9 @@ public struct AFMTaskDecomposition: Codable, Sendable {
         self.normalizedGoal = norm.isEmpty ? self.userIntent : norm
         self.userLanguage = try container.decodeIfPresent(String.self, forKey: .userLanguage) ?? "id"
         self.requiresTakeoverOnCompletion = try container.decodeIfPresent(Bool.self, forKey: .requiresTakeoverOnCompletion) ?? false
+        self.executionTier = try container.decodeIfPresent(String.self, forKey: .executionTier) ?? "native_cua"
+        self.routingReason = try container.decodeIfPresent(String.self, forKey: .routingReason)
+        self.targetSurfaceId = try container.decodeIfPresent(String.self, forKey: .targetSurfaceId)
     }
 }
 

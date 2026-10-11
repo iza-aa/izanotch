@@ -13,6 +13,7 @@ public struct HomeSpaceComputerCardView: View {
     public var isCollapsed: Binding<Bool>? = nil
 
     @ObservedObject private var streamService = CompanionWindowStreamService.shared
+    @ObservedObject private var vmController = CompanionVMViewportController.shared
     @State private var pulseAnimation: Bool = false
     @State private var isHovered: Bool = false
     @State private var internalIsCollapsed: Bool = false
@@ -94,17 +95,31 @@ public struct HomeSpaceComputerCardView: View {
                     .help(effectiveIsCollapsed ? "Expand Workspace" : "Collapse Workspace")
                 }
 
+                // Permanent On-Demand Takeover Toggle
                 Button(action: {
-                    onCardTapped?()
+                    ClickySoundEngine.shared.play(.open)
+                    withAnimation(.spring(response: 0.25)) {
+                        vmController.isTakeoverActive.toggle()
+                    }
+                    onTakeoverClicked?()
                 }) {
-                    Image(systemName: "arrow.up.left.and.arrow.down.right")
-                        .font(.system(size: 10, weight: .bold))
-                        .foregroundColor(.white.opacity(0.75))
-                        .frame(width: 26, height: 26)
-                        .background(Circle().fill(Color.white.opacity(0.08)))
+                    HStack(spacing: 4) {
+                        Image(systemName: vmController.isTakeoverActive ? "play.fill" : "hand.raised.fill")
+                            .font(.system(size: 9.5, weight: .bold))
+                        Text(vmController.isTakeoverActive ? "Resume" : "Takeover")
+                            .font(.system(size: 10, weight: .bold))
+                    }
+                    .foregroundColor(vmController.isTakeoverActive ? .black : Color(hex: "#F59E0B"))
+                    .padding(.horizontal, 9)
+                    .padding(.vertical, 4.5)
+                    .background(
+                        Capsule()
+                            .fill(vmController.isTakeoverActive ? Color(hex: "#34D399") : Color(hex: "#F59E0B").opacity(0.18))
+                            .overlay(Capsule().stroke(vmController.isTakeoverActive ? Color.clear : Color(hex: "#F59E0B").opacity(0.4), lineWidth: 0.6))
+                    )
                 }
                 .buttonStyle(.plain)
-                .help("Maximize Workspace")
+                .help(vmController.isTakeoverActive ? "Resume AI companion operation" : "Take over screen control manually on-demand")
             }
 
             if !effectiveIsCollapsed {
@@ -128,6 +143,7 @@ public struct HomeSpaceComputerCardView: View {
                                     : Color(hex: "#4B5563"),
                                 lineWidth: 2.5
                             )
+                            .allowsHitTesting(false)
                     )
                     .shadow(
                         color: Color.black.opacity(0.35),
@@ -167,35 +183,8 @@ public struct HomeSpaceComputerCardView: View {
                     )
                 }
 
-                // 5. Action Bar (Jika Takeover Diperlukan atau Window ID Tersedia)
-                if payload.status == .takeoverNeeded {
-                    Button(action: {
-                        onTakeoverClicked?()
-                    }) {
-                        HStack(spacing: 8) {
-                            Image(systemName: "hand.raised.fill")
-                                .font(.system(size: 12, weight: .bold))
-                            Text("Take Over Screen")
-                                .font(.system(size: 13, weight: .bold))
-                        }
-                        .foregroundColor(.black)
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 8)
-                        .background(
-                            Capsule()
-                                .fill(
-                                    LinearGradient(
-                                        colors: [Color(hex: "#FBBF24"), Color(hex: "#F59E0B")],
-                                        startPoint: .top,
-                                        endPoint: .bottom
-                                    )
-                                )
-                                .shadow(color: Color(hex: "#F59E0B").opacity(0.4), radius: 6, x: 0, y: 2)
-                        )
-                    }
-                    .buttonStyle(.plain)
-                    .padding(.top, 2)
-                }
+                // 5. Action Bar (Jika Takeover Diperlukan atau Sedang Aktif)
+                takeoverActionButton
             }
         }
         .padding(18)
@@ -211,9 +200,6 @@ public struct HomeSpaceComputerCardView: View {
         .scaleEffect(isHovered ? 1.008 : 1.0)
         .animation(.spring(response: 0.28, dampingFraction: 0.8), value: isHovered)
         .contentShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
-        .onTapGesture {
-            onCardTapped?()
-        }
         .onHover { hovering in
             isHovered = hovering
         }
@@ -226,7 +212,56 @@ public struct HomeSpaceComputerCardView: View {
             }
         }
     }
-
+    // MARK: - Takeover Action Button
+    @ViewBuilder
+    private var takeoverActionButton: some View {
+        if vmController.isTakeoverActive {
+            TakeoverStatusView(
+                isTakeoverActive: true,
+                title: "Human Takeover Active",
+                subtitle: "Direct mouse & keyboard control active. Click Resume when done.",
+                onToggleTakeover: {
+                    ClickySoundEngine.shared.play(.open)
+                    withAnimation(.spring(response: 0.25)) {
+                        vmController.isTakeoverActive = false
+                    }
+                    onTakeoverClicked?()
+                }
+            )
+            .padding(.top, 2)
+        } else if payload.status == .takeoverNeeded {
+            Button(action: {
+                ClickySoundEngine.shared.play(.open)
+                withAnimation(.spring(response: 0.25)) {
+                    vmController.isTakeoverActive = true
+                }
+                onTakeoverClicked?()
+            }) {
+                HStack(spacing: 8) {
+                    Image(systemName: "hand.raised.fill")
+                        .font(.system(size: 12, weight: .bold))
+                    Text("Take Over Screen")
+                        .font(.system(size: 13, weight: .bold))
+                }
+                .foregroundColor(.black)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 8)
+                .background(
+                    Capsule()
+                        .fill(
+                            LinearGradient(
+                                colors: [Color(hex: "#FBBF24"), Color(hex: "#F59E0B")],
+                                startPoint: .top,
+                                endPoint: .bottom
+                            )
+                        )
+                        .shadow(color: Color(hex: "#F59E0B").opacity(0.4), radius: 6, x: 0, y: 2)
+                )
+            }
+            .buttonStyle(.plain)
+            .padding(.top, 2)
+        }
+    }
     // MARK: - Status Capsule Pill
     @ViewBuilder
     private var statusPill: some View {
@@ -440,14 +475,28 @@ public struct HomeSpaceComputerCardView: View {
         ZStack {
             Color(hex: "#18191B")
 
-            if customImg != nil {
+            if payload.cardTitle == "Web Workspace" {
+                VMWebViewRepresentable(controller: vmController)
+                    .allowsHitTesting(vmController.isTakeoverActive)
+                    .simultaneousGesture(
+                        TapGesture().onEnded {
+                            if vmController.isTakeoverActive, let win = vmController.webView?.window ?? HomeSpaceWindowManager.shared.window {
+                                win.makeKey()
+                                if let wv = vmController.webView {
+                                    let shifted = win.makeFirstResponder(wv)
+                                    ClickyLogger.info("[TAKEOVER]", "User tapped active Web Workspace card: win.makeKey(), makeFirstResponder(wv)=\(shifted)")
+                                }
+                            }
+                        }
+                    )
+            } else if customImg != nil {
                 InteractiveVirtualDesktopView(
                     targetAppName: target,
                     slug: activeSlug,
                     customSnapshot: customImg,
-                    isInteractive: false
+                    isInteractive: vmController.isTakeoverActive
                 )
-                .allowsHitTesting(false)
+                .allowsHitTesting(vmController.isTakeoverActive)
             } else {
                 workspaceConnectionPlaceholder
             }

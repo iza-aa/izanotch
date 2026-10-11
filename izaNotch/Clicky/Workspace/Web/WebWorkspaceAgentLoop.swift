@@ -47,23 +47,27 @@ public final class WebWorkspaceAgentLoop: ObservableObject {
 
         ClickyLogger.info("[WEB_LOOP]", "Starting autonomous web task: '\(prompt)' [slug=\(slug), tier=\(taskPlan.executionTier)]")
 
-        // 1. Prepare and ensure WebKit Viewport is ready with dynamic provider resolution
+        // 1. Prepare and ensure WebKit Viewport is ready with single-chain resolution from routing gate
         let viewportController = CompanionVMViewportController.shared
-        viewportController.prepareViewport(slug: slug, app: appName, prompt: prompt)
+        let surfaceId = taskPlan.targetSurfaceId ?? viewportController.mailProvider
+        viewportController.prepareViewport(slug: slug, app: appName, preferredAdapterId: surfaceId, prompt: prompt)
 
         guard let webView = viewportController.webView else {
             throw NSError(domain: "WebWorkspace", code: -1, userInfo: [NSLocalizedDescriptionKey: "WebKit runtime unavailable"])
         }
 
-        // 2. Resolve Site Adapter based on current URL or provider ID
-        let adapter: WebSiteAdapter = {
-            if let url = webView.url, url.host != nil {
-                return WebSiteAdapterRegistry.shared.adapter(for: url)
-            }
-            return WebSiteAdapterRegistry.shared.adapter(forProviderId: viewportController.mailProvider)
-        }()
-        ClickyLogger.info("[WEB_LOOP]", "Resolved WebSiteAdapter: '\(adapter.id)' (\(adapter.name))")
+        // 2. Resolve Site Adapter directly from routing decision (Single Chain of Resolution)
+        let adapter = WebSiteAdapterRegistry.shared.adapter(forProviderId: surfaceId)
+        ClickyLogger.info("[WEB_LOOP]", "Resolved WebSiteAdapter: '\(adapter.id)' (\(adapter.name)) from routing surfaceId='\(surfaceId)'")
 
+        // Domain-Aware Navigation Check: if not on an authorized domain, re-navigate to adapter entryURL
+        let currentHost = webView.url?.host?.lowercased() ?? ""
+        let isAuthorizedDomain = adapter.domains.contains(where: { currentHost.contains($0) })
+        if !isAuthorizedDomain && adapter.id != "browser" {
+            ClickyLogger.warning("[WEB_LOOP]", "WebView currently on '\(currentHost)', which is NOT an authorized domain for \(adapter.name). Re-navigating to entryURL: \(adapter.entryURL)")
+            webView.load(URLRequest(url: adapter.entryURL))
+            await waitForPageLoad(webView: webView, timeoutSeconds: 8.0)
+        }
         // 3. Initialize Card Payload
         var queueItems = taskPlan.plannedSubGoals.map {
             ComputerCardQueueItem(name: $0, statusBadge: "Planned", isChecked: false)
@@ -157,6 +161,11 @@ public final class WebWorkspaceAgentLoop: ObservableObject {
                 viewportController.isTakeoverActive = false
                 return payload
             }
+        }
+        // On-Demand Takeover Pause: pause agent while user has manual takeover active
+        while viewportController.isTakeoverActive {
+            ClickyLogger.info("[WEB_LOOP]", "Agent paused: Human Takeover is active on card. Awaiting user release...")
+            try? await Task.sleep(nanoseconds: 1_000_000_000)
         }
 
         // 6. Execute Task Logic via DOM

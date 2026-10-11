@@ -208,122 +208,82 @@ public struct HomeSpaceInteractiveComputerModalView: View {
 
     // MARK: - Human Takeover Notification Banner (F-09)
     private var takeoverNotificationBanner: some View {
-        HStack(spacing: 12) {
-            Image(systemName: isTakeoverActive ? "hand.point.up.left.fill" : (payload.status == .takeoverNeeded ? "exclamationmark.triangle.fill" : "lock.shield.fill"))
-                .font(.system(size: 13, weight: .bold))
-                .foregroundColor(isTakeoverActive ? Color(hex: "#10B981") : (payload.status == .takeoverNeeded ? Color(hex: "#F59E0B") : Color(hex: "#38BDF8")))
-
-            VStack(alignment: .leading, spacing: 2) {
-                Text(isTakeoverActive ? "Takeover Mode: Direct Mouse & Keyboard" : (payload.status == .takeoverNeeded ? "Takeover Needed: Input Required" : "Viewing Mode: AI Operating Autonomously"))
-                    .font(.system(size: 12, weight: .bold))
-                    .foregroundColor(isTakeoverActive ? Color(hex: "#34D399") : (payload.status == .takeoverNeeded ? Color(hex: "#FCD34D") : Color(hex: "#BAE6FD")))
-
-                Text(isTakeoverActive ? "You have direct input control of \(selectedDockApp.capitalized)." : (payload.takeoverReason ?? (payload.status == .working ? "User interaction is disabled while AI is working." : "View-only mode. Click 'Take Over Screen' to interact.")))
-                    .font(.system(size: 10.5, weight: .medium))
-                    .foregroundColor(.white.opacity(0.85))
-                    .lineLimit(1)
-            }
-
-            Spacer()
-
-            if !isTakeoverActive {
-                Button(action: {
+        TakeoverStatusView(
+            isTakeoverActive: isTakeoverActive,
+            title: isTakeoverActive ? "Takeover Mode: Direct Input" : (payload.status == .takeoverNeeded ? "Takeover Needed: Input Required" : "Viewing Mode: Autonomous Operation"),
+            subtitle: isTakeoverActive ? "Direct input control active." : (payload.takeoverReason ?? "View-only mode. Click 'Take Over Screen' to interact."),
+            onToggleTakeover: {
+                if isTakeoverActive {
+                    isTakeoverActive = false
+                    ClickySoundEngine.shared.play(.open)
+                } else {
                     isTakeoverActive = true
                     let targetApp = companion.activeBuddy.workflowAppNames.first(where: { $0.lowercased() == selectedDockApp }) ?? selectedDockApp.capitalized
                     streamService.startStreaming(appName: targetApp, slug: companion.activeBuddy.slug)
                     streamService.launchOrFocusWorkflowApp(appName: targetApp)
                     ClickySoundEngine.shared.play(.open)
-                }) {
-                    HStack(spacing: 5) {
-                        Image(systemName: "hand.raised.fill")
-                            .font(.system(size: 11, weight: .bold))
-                        Text("Take Over Screen")
-                            .font(.system(size: 11.5, weight: .bold))
-                    }
-                    .foregroundColor(.black)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 6)
-                    .background(
-                        Capsule().fill(Color(hex: "#F59E0B"))
-                    )
-                    .shadow(color: Color(hex: "#F59E0B").opacity(0.3), radius: 4, x: 0, y: 1)
                 }
-                .buttonStyle(.plain)
-            } else {
-                Button(action: {
-                    isTakeoverActive = false
-                    ClickySoundEngine.shared.play(.done)
-                }) {
-                    HStack(spacing: 5) {
-                        Image(systemName: "play.fill")
-                            .font(.system(size: 10))
-                        Text("Return to AI View")
-                            .font(.system(size: 11.5, weight: .bold))
-                    }
-                    .foregroundColor(.white)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 6)
-                    .background(
-                        Capsule().fill(Color(hex: "#10B981"))
-                    )
-                    .shadow(color: Color(hex: "#10B981").opacity(0.3), radius: 4, x: 0, y: 1)
-                }
-                .buttonStyle(.plain)
             }
-        }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 8)
-        .background(
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .fill(Color(hex: "#141517").opacity(0.92))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 12, style: .continuous)
-                        .stroke(isTakeoverActive ? Color(hex: "#10B981").opacity(0.4) : (payload.status == .takeoverNeeded ? Color(hex: "#F59E0B").opacity(0.4) : Color.white.opacity(0.12)), lineWidth: 0.8)
-                )
-                .shadow(color: Color.black.opacity(0.5), radius: 8, x: 0, y: 4)
         )
     }
 
     // MARK: - Floating Mini macOS Dock (Workflow App Switcher)
+    @ViewBuilder
     private var miniDock: some View {
-        let apps = companion.activeBuddy.workflowAppNames.isEmpty ? ["Mail", "Safari"] : companion.activeBuddy.workflowAppNames
-        return HStack(spacing: 14) {
-            ForEach(apps, id: \.self) { appName in
-                let cleanApp = appName.lowercased()
-                Button(action: {
-                    selectedDockApp = cleanApp
-                    if !companion.activeBuddy.isSandboxedVM {
-                        streamService.switchTargetApp(appName: appName, slug: companion.activeBuddy.slug)
+        let apps = companion.activeBuddy.workflowAppNames
+        if apps.isEmpty {
+            Text(String(localized: "Belum ada aplikasi terhubung"))
+                .font(.system(size: 11, weight: .medium))
+                .foregroundColor(Color.white.opacity(0.55))
+                .padding(.horizontal, 16)
+                .padding(.vertical, 8)
+                .background(
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        .fill(Color.black.opacity(0.65))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                .stroke(Color.white.opacity(0.12), lineWidth: 0.8)
+                        )
+                )
+        } else {
+            HStack(spacing: 14) {
+                ForEach(apps, id: \.self) { appName in
+                    let cleanApp = appName.lowercased()
+                    Button(action: {
+                        selectedDockApp = cleanApp
+                        if !companion.activeBuddy.isSandboxedVM {
+                            streamService.switchTargetApp(appName: appName, slug: companion.activeBuddy.slug)
+                        }
+                    }) {
+                        ZStack {
+                            AppSystemIconView(appName: appName, size: 40)
+                        }
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                .stroke(selectedDockApp == cleanApp ? Color(hex: "#60A5FA") : Color.clear, lineWidth: 2)
+                        )
+                        .scaleEffect(hoveredDockApp == cleanApp ? 1.14 : (selectedDockApp == cleanApp ? 1.05 : 1.0))
+                        .animation(.spring(response: 0.25, dampingFraction: 0.7), value: hoveredDockApp)
+                        .animation(.spring(response: 0.25, dampingFraction: 0.7), value: selectedDockApp)
                     }
-                }) {
-                    ZStack {
-                        AppSystemIconView(appName: appName, size: 40)
+                    .buttonStyle(.plain)
+                    .onHover { isHovered in
+                        hoveredDockApp = isHovered ? cleanApp : nil
                     }
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 10, style: .continuous)
-                            .stroke(selectedDockApp == cleanApp ? Color(hex: "#60A5FA") : Color.clear, lineWidth: 2)
-                    )
-                    .scaleEffect(hoveredDockApp == cleanApp ? 1.14 : (selectedDockApp == cleanApp ? 1.05 : 1.0))
-                    .animation(.spring(response: 0.25, dampingFraction: 0.7), value: hoveredDockApp)
-                    .animation(.spring(response: 0.25, dampingFraction: 0.7), value: selectedDockApp)
-                }
-                .buttonStyle(.plain)
-                .onHover { isHovered in
-                    hoveredDockApp = isHovered ? cleanApp : nil
                 }
             }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 8)
+            .background(
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .fill(Color.black.opacity(0.65))
+                    .background(.ultraThinMaterial)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 16, style: .continuous)
+                            .stroke(Color.white.opacity(0.18), lineWidth: 0.8)
+                    )
+                    .shadow(color: Color.black.opacity(0.6), radius: 10, x: 0, y: 4)
+            )
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 8)
-        .background(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(Color.black.opacity(0.65))
-                .background(.ultraThinMaterial)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 16, style: .continuous)
-                        .stroke(Color.white.opacity(0.18), lineWidth: 0.8)
-                )
-                .shadow(color: Color.black.opacity(0.6), radius: 10, x: 0, y: 4)
-        )
     }
 }

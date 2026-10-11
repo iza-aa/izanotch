@@ -99,7 +99,7 @@ public final class WebSiteAdapterRegistry: @unchecked Sendable {
                 emailRow: "tr.zA",
                 inboxSelector: "tr.zA, [role='main'] [role='row'], [gh='cm'], [aria-label*='Inbox'], [aria-label*='Kotak Masuk'], .UI tr",
                 loginMarkers: ["sign in", "choose an account", "pilih akun", "masuk ke akun", "login", "create account", "identifierid", "input[type='email']", "input[type='password']"],
-                dismissSelectors: ["button[aria-label*='Dismiss']", "button[aria-label*='Tutup']", ".bBe", "[role='alertdialog'] button"]
+                dismissSelectors: ["button[aria-label*='Dismiss']", "button[aria-label*='Tutup']", ".bBe", "[role='alertdialog'] button", "[aria-label*='Tidak, terima kasih']", "[aria-label*='No thanks']", ".gb_Vd button", ".gb_Wd", "#gb a[role='button']"]
             )
         ),
         WebSiteAdapter(
@@ -148,7 +148,7 @@ public final class WebSiteAdapterRegistry: @unchecked Sendable {
             domains: ["google.com", "bing.com", "duckduckgo.com"],
             entryURL: URL(string: "https://www.google.com")!,
             supportedAppIdentifiers: ["safari", "chrome", "edge", "browser", "web"],
-            supportedIntentTypes: ["browse", "search", "inspect", "read", "interact"],
+            supportedIntentTypes: ["browse", "search"],
             selectors: WebSiteSelectorMap(
                 toField: "input[type='text'], input[type='search'], textarea",
                 subjectField: "input[type='text'], input[type='search']",
@@ -157,7 +157,7 @@ public final class WebSiteAdapterRegistry: @unchecked Sendable {
                 sendButton: "button[type='submit']",
                 listItems: "[role='article'], h3, a",
                 emailRow: "a",
-                inboxSelector: "body",
+                inboxSelector: "",
                 loginMarkers: ["sign in", "log in", "masuk"],
                 dismissSelectors: [".cookie-banner button", "[aria-label*='dismiss']", "[aria-label*='close']", ".modal-close"]
             )
@@ -201,6 +201,10 @@ public final class WebSiteAdapterRegistry: @unchecked Sendable {
     public func adapter(forProviderId providerId: String) -> WebSiteAdapter {
         let clean = providerId.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
         return adapters.first(where: { $0.id == clean }) ?? defaultAdapter
+    }
+    /// Single Source of Truth for provider resolution from email host or domain
+    public func adapter(forEmailHost host: String) -> WebSiteAdapter {
+        return adapter(forEmailOrDomain: host)
     }
 
     /// Single Source of Truth for provider resolution from email addresses, domains, or prompt text

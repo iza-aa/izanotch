@@ -125,22 +125,8 @@ public final class ComputerUsePhysicalExecutor {
                     try? await Task.sleep(for: .milliseconds(180))
                 }
 
-                // Try background typing via Cua Driver first if available
-                var typedViaCua = false
-                if let pid = targetPid, CuaDriverClient.shared.isAvailable {
-                    if let success = try? await CuaDriverClient.shared.typeText(pid: pid, text: text), success {
-                        typedViaCua = true
-                    }
-                }
-
-                // Fallback to natural physical keystrokes
-                if !typedViaCua {
-                    executeTypeText(text, autoSendReturn: true)
-                } else {
-                    // Send return key to commit/send text in messaging apps
-                    try? await Task.sleep(for: .milliseconds(60))
-                    executeNamedKeyCombo("return")
-                }
+                // Execute natural physical keystrokes directly (Official Native Pipeline)
+                executeTypeText(text, autoSendReturn: true)
             }
 
         case .keyCombo:
@@ -173,23 +159,10 @@ public final class ComputerUsePhysicalExecutor {
     // MARK: - Smart Element Target Resolving
 
     private func resolveSmartClickTarget(for pid: Int32) async -> CGPoint? {
-        // 1. Try CuaDriver to inspect windows of that PID
-        if CuaDriverClient.shared.isAvailable,
-           let windows = try? await CuaDriverClient.shared.listWindows(pid: pid),
-           let mainWin = windows.first(where: { $0.isOnScreen && $0.bounds.width > 200 }) {
-            // For chat apps (WhatsApp, Telegram, Slack, Messages), input field is at bottom
-            let b = mainWin.bounds
-            let inputX = b.origin.x + b.width * 0.5
-            let inputY = b.origin.y + b.height - 45
-            return CGPoint(x: inputX, y: inputY)
-        }
-
-        // 2. Try ActiveWorkSurface
         if let ws = ActiveWorkSurfaceManager.getActiveWorkSurface() {
             let f = ws.frame
             return CGPoint(x: f.origin.x + f.width * 0.5, y: f.origin.y + f.height - 45)
         }
-
         return nil
     }
 
@@ -348,17 +321,13 @@ public final class ComputerUsePhysicalExecutor {
         }
 
         if let closePoint = targetClosePoint {
-            ClickyLogger.info("[COMPUTER_USE]", "Found on-screen window for \(app.localizedName ?? appName). Moving CuaDriver cursor overlay to close button at: \(closePoint)")
+            ClickyLogger.info("[COMPUTER_USE]", "Found on-screen window for \(app.localizedName ?? appName) at close point: \(closePoint)")
             CompanionUIHostRegistry.shared?.hideOverlay() ?? OverlayWindowManager.shared.hideOverlay()
-            _ = try? await CuaDriverClient.shared.moveCursor(x: closePoint.x, y: closePoint.y)
-            try? await Task.sleep(for: .milliseconds(500))
             ClickySoundEngine.shared.play(.send)
         }
 
-        // 2. Perform termination via Cua Driver native kill_app + AppKit fallback
-        _ = try? await CuaDriverClient.shared.killApp(pid: app.processIdentifier)
+        // 2. Perform native termination via AppKit
         _ = app.terminate()
-
         // 3. Poll for termination confirmation (up to 1.5 seconds in 100ms steps)
         var isDead = false
         for _ in 0..<15 {
@@ -391,13 +360,7 @@ public final class ComputerUsePhysicalExecutor {
             isDead = app.isTerminated
         }
 
-        // 6. Fallback 3: Cua Driver kill_app
-        if !isDead && CuaDriverClient.shared.isAvailable {
-            _ = try? await CuaDriverClient.shared.executeTool(name: "kill_app", arguments: ["pid": app.processIdentifier])
-            try? await Task.sleep(for: .milliseconds(200))
-            isDead = app.isTerminated
-        }
-
+        // Verification of termination
         if isDead {
             ClickyLogger.success("[COMPUTER_USE]", "Successfully verified application termination: \(app.localizedName ?? appName) (PID: \(app.processIdentifier))")
         } else {
