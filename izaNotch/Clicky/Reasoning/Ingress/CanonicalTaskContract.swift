@@ -300,6 +300,101 @@ public struct ApprovalRequest: Codable, Sendable, Identifiable, Equatable {
     }
 }
 
+// MARK: - ApprovalManager (PRD §A12, MT-19: 10-Minute Expiry & Safe Retry Flow)
+
+public final class ApprovalManager: @unchecked Sendable {
+    public static let shared = ApprovalManager()
+
+    private let lock = NSLock()
+    private var requests: [String: ApprovalRequest] = [:]
+
+    private init() {}
+
+    /// Submits a new approval request with ~10-minute expiry
+    @discardableResult
+    public func requestApproval(
+        operation: String,
+        inputs: [String: String],
+        source: String = "routine",
+        expirySeconds: TimeInterval = 600
+    ) -> ApprovalRequest {
+        lock.lock()
+        defer { lock.unlock() }
+
+        let req = ApprovalRequest(
+            actionId: UUID().uuidString,
+            operation: operation,
+            inputs: inputs,
+            options: ["allow_once", "always_allow", "deny"],
+            source: source,
+            expiresAt: Date().addingTimeInterval(expirySeconds),
+            status: "pending"
+        )
+        requests[req.actionId] = req
+        ClickyLogger.info("[APPROVAL]", "Created approval request '\(req.actionId)' for '\(operation)' (expires in \(Int(expirySeconds))s)")
+        return req
+    }
+
+    /// Evaluates status with automatic expiry enforcement
+    public func evaluateStatus(actionId: String, at date: Date = Date()) -> String {
+        lock.lock()
+        defer { lock.unlock() }
+
+        guard var req = requests[actionId] else { return "not_found" }
+        if date > req.expiresAt && req.status == "pending" {
+            req.status = "expired"
+            requests[actionId] = req
+            ClickyLogger.warning("[APPROVAL]", "Approval request '\(actionId)' has EXPIRED. Operation '\(req.operation)' halted.")
+        }
+        return req.status
+    }
+
+    /// Checks if action is permitted to execute. Returns false if expired, pending, or denied!
+    public func canExecuteAction(actionId: String, at date: Date = Date()) -> Bool {
+        let status = evaluateStatus(actionId: actionId, at: date)
+        let allowed = (status == "allow_once" || status == "allowed_once" || status == "always_allow" || status == "always_allowed")
+        if !allowed {
+            ClickyLogger.warning("[APPROVAL]", "Action '\(actionId)' blocked by approval gate (status: '\(status)')")
+        }
+        return allowed
+    }
+
+    /// Resolves an approval (allow_once, always_allow, deny)
+    public func resolveApproval(actionId: String, decision: String, at date: Date = Date()) -> (success: Bool, message: String) {
+        lock.lock()
+        defer { lock.unlock() }
+
+        guard var req = requests[actionId] else {
+            return (false, "Permintaan approval tidak ditemukan.")
+        }
+        if date > req.expiresAt {
+            req.status = "expired"
+            requests[actionId] = req
+            return (false, "Approval telah kadaluarsa (~10 menit). Aksi dibatalkan secara aman.")
+        }
+
+        req.status = decision
+        requests[actionId] = req
+        ClickyLogger.info("[APPROVAL]", "Resolved approval '\(actionId)' -> '\(decision)'")
+        return (true, "Approval berhasil diperbarui.")
+    }
+
+    /// Retries an expired approval by issuing a fresh 10-minute request
+    public func retryExpiredApproval(actionId: String) -> ApprovalRequest? {
+        lock.lock()
+        let oldReq = requests[actionId]
+        lock.unlock()
+
+        guard let old = oldReq else { return nil }
+        return requestApproval(operation: old.operation, inputs: old.inputs, source: old.source)
+    }
+
+    public func getRequest(actionId: String) -> ApprovalRequest? {
+        lock.lock()
+        defer { lock.unlock() }
+        return requests[actionId]
+    }
+}
 // MARK: - TrustDesignEngine (PRD §A8, §A12, MT-08: Trust Design & Test Run Gate)
 
 final class ManagedAtomicSet: @unchecked Sendable {
