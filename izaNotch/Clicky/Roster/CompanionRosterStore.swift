@@ -332,6 +332,11 @@ public final class CompanionRosterStore: ObservableObject {
     }
 
     public func deleteCompanion(id: UUID) {
+        let auth = TeamRoleManager.shared.validateAction(.delete)
+        guard auth.allowed else {
+            ClickyLogger.warning("[ROSTER]", "Delete rejected: \(auth.rejectionReason ?? "Unauthorized")")
+            return
+        }
         guard allCompanions.count > 1 else { return }
         let warningNotice = "Berkas pada direktori workspace komputer bot ini mungkin masih tersisa di disk."
         ClickyLogger.warning("[ROSTER]", "Peringatan Hapus: \(warningNotice)")
@@ -725,5 +730,69 @@ public final class CompanionTemplateService: ObservableObject {
 
         ClickyLogger.info("[TEMPLATE]", "Imported template '\(template.templateId)' as clean companion '\(effectiveName)' (slug: \(cleanSlug)).")
         return profile
+    }
+}
+// MARK: - Team Roles & Privilege Separation (PRD §A11, MT-40)
+
+public enum TeamMemberRole: String, Codable, CaseIterable, Sendable {
+    case owner = "owner"
+    case manager = "manager"
+    case member = "member"
+}
+
+public enum TeamBotAction: String, Sendable {
+    case editSetup = "edit_setup"
+    case publish = "publish"
+    case delete = "delete"
+}
+
+public final class TeamRoleManager: @unchecked Sendable {
+    public static let shared = TeamRoleManager()
+
+    private let lock = NSLock()
+    public private(set) var currentRole: TeamMemberRole = .owner
+
+    private init() {}
+
+    public func setRole(_ role: TeamMemberRole) {
+        lock.lock()
+        currentRole = role
+        lock.unlock()
+        ClickyLogger.info("[TEAM_ROLES]", "User team role switched to '\(role.rawValue)'")
+    }
+
+    /// Evaluates if an action is permitted under the given role
+    /// Enforces: Manager can edit setup, but Publish & Delete are strictly locked to Owner!
+    public func validateAction(_ action: TeamBotAction, by role: TeamMemberRole? = nil) -> (allowed: Bool, rejectionReason: String?) {
+        lock.lock()
+        let activeRole = role ?? currentRole
+        lock.unlock()
+
+        switch action {
+        case .editSetup:
+            if activeRole == .owner || activeRole == .manager {
+                return (true, nil)
+            } else {
+                return (false, "Hanya Owner dan Manager yang dapat mengubah setup bot ini.")
+            }
+
+        case .publish:
+            if activeRole == .owner {
+                return (true, nil)
+            } else {
+                let reason = "Hanya pemilik (Owner) yang dapat mempublikasikan bot tim ini."
+                ClickyLogger.warning("[TEAM_ROLES]", "Action '\(action.rawValue)' rejected for role '\(activeRole.rawValue)': \(reason)")
+                return (false, reason)
+            }
+
+        case .delete:
+            if activeRole == .owner {
+                return (true, nil)
+            } else {
+                let reason = "Hanya pemilik (Owner) yang dapat menghapus bot tim ini."
+                ClickyLogger.warning("[TEAM_ROLES]", "Action '\(action.rawValue)' rejected for role '\(activeRole.rawValue)': \(reason)")
+                return (false, reason)
+            }
+        }
     }
 }
