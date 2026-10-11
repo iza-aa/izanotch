@@ -12,47 +12,11 @@ import AppKit
 import CoreGraphics
 import Foundation
 
-public struct CuaApp: Identifiable {
-    public var id: String { "\(pid)_\(bundleId ?? name)" }
-    public let name: String
-    public let pid: Int32
-    public let bundleId: String?
-    public let isActive: Bool
-    public let isRunning: Bool
-}
-
-public struct CuaWindow: Identifiable {
-    public var id: Int64 { windowId }
-    public let windowId: Int64
-    public let pid: Int32
-    public let appName: String
-    public let title: String
-    public let bounds: CGRect
-    public let isOnScreen: Bool
-    public let onCurrentSpace: Bool
-    public let zIndex: Int
-}
-
-public struct CuaElement: Identifiable {
-    public var id: String { elementToken }
-    public let elementToken: String
-    public let role: String
-    public let label: String
-    public let value: String?
-    public let frame: CGRect
-}
-
-public struct CuaWindowState {
-    public let elements: [CuaElement]
-    public let treeMarkdown: String
-    public let screenshotPath: String?
-}
-
 // MARK: - Dedicated Cua Driver Daemon & Persistent Transport (ExampleAgentHarness.swift)
 
-public final class CuaDriverTransport: @unchecked Sendable {
-    public static let defaultSession = "__cua_runtime_session"
-    public let driverPath: String
+final class CuaDriverTransport: @unchecked Sendable {
+    static let defaultSession = "__cua_runtime_session"
+    let driverPath: String
     private var daemonProcess: Process?
     private var proxyProcess: Process?
     private var currentSocketPath: String?
@@ -62,17 +26,17 @@ public final class CuaDriverTransport: @unchecked Sendable {
     private var requestCounter = 1
     private let transportLock = NSRecursiveLock()
 
-    public init(driverPath: String) {
+    init(driverPath: String) {
         self.driverPath = driverPath
     }
 
-    public var isRunning: Bool {
+    var isRunning: Bool {
         transportLock.lock()
         defer { transportLock.unlock() }
         return (proxyProcess?.isRunning ?? false) && (daemonProcess?.isRunning ?? false)
     }
 
-    public var socketPath: String? {
+    var socketPath: String? {
         transportLock.lock()
         defer { transportLock.unlock() }
         return currentSocketPath
@@ -82,7 +46,7 @@ public final class CuaDriverTransport: @unchecked Sendable {
         stop()
     }
 
-    public static func terminateAllOrphanInstances() {
+    static func terminateAllOrphanInstances() {
         let killProc = Process()
         killProc.executableURL = URL(fileURLWithPath: "/usr/bin/pkill")
         killProc.arguments = ["-9", "-f", "cua-driver"]
@@ -96,7 +60,7 @@ public final class CuaDriverTransport: @unchecked Sendable {
         }
     }
 
-    public func ensureRunning() throws {
+    func ensureRunning() throws {
         transportLock.lock()
         defer { transportLock.unlock() }
         try ensureRunningLocked()
@@ -303,14 +267,14 @@ public final class CuaDriverTransport: @unchecked Sendable {
         ClickyLogger.info("[CUA_DRIVER]", "Session revived successfully: \(Self.defaultSession)")
     }
 
-    public func ensureSessionActive() {
+    func ensureSessionActive() {
         transportLock.lock()
         defer { transportLock.unlock() }
         try? ensureRunningLocked()
         reviveSessionLocked()
     }
 
-    public func executeTool(name: String, arguments: [String: Any]) throws -> [String: Any] {
+    func executeTool(name: String, arguments: [String: Any]) throws -> [String: Any] {
         transportLock.lock()
         defer { transportLock.unlock() }
 
@@ -349,7 +313,7 @@ public final class CuaDriverTransport: @unchecked Sendable {
         return res
     }
 
-    public func listToolsRaw() throws -> [[String: Any]] {
+    func listToolsRaw() throws -> [[String: Any]] {
         transportLock.lock()
         defer { transportLock.unlock() }
 
@@ -366,7 +330,7 @@ public final class CuaDriverTransport: @unchecked Sendable {
         return res["tools"] as? [[String: Any]] ?? []
     }
 
-    public func stop() {
+    func stop() {
         transportLock.lock()
         defer { transportLock.unlock() }
         stopLocked()
@@ -695,98 +659,6 @@ public final class CuaDriverClient {
         }
         return (false, false)
     }
-
-    public func listApps() async throws -> [CuaApp] {
-        let res = try await executeTool(name: "list_apps", arguments: [:])
-        guard let sc = res["structuredContent"] as? [String: Any],
-              let apps = sc["apps"] as? [[String: Any]] else {
-            return []
-        }
-
-        return apps.compactMap { dict in
-            guard let name = dict["name"] as? String else { return nil }
-            let pid = (dict["pid"] as? NSNumber)?.int32Value ?? 0
-            let bundleId = dict["bundle_id"] as? String
-            let active = dict["active"] as? Bool ?? false
-            let running = dict["running"] as? Bool ?? false
-            return CuaApp(name: name, pid: pid, bundleId: bundleId, isActive: active, isRunning: running)
-        }
-    }
-
-    public func listWindows(pid: Int32? = nil) async throws -> [CuaWindow] {
-        var args: [String: Any] = [:]
-        if let p = pid { args["pid"] = p }
-        let res = try await executeTool(name: "list_windows", arguments: args)
-        guard let sc = res["structuredContent"] as? [String: Any],
-              let wins = sc["windows"] as? [[String: Any]] else {
-            return []
-        }
-
-        return wins.compactMap { dict in
-            guard let wid = (dict["window_id"] as? NSNumber)?.int64Value,
-                  let wpid = (dict["pid"] as? NSNumber)?.int32Value else { return nil }
-            let title = dict["title"] as? String ?? ""
-            let appName = dict["app_name"] as? String ?? ""
-            let onScreen = dict["is_on_screen"] as? Bool ?? false
-            let currentSpace = dict["on_current_space"] as? Bool ?? false
-            let z = (dict["z_index"] as? NSNumber)?.intValue ?? 0
-
-            var rect = CGRect.zero
-            if let b = dict["bounds"] as? [String: Any] {
-                let x = (b["x"] as? NSNumber)?.doubleValue ?? 0
-                let y = (b["y"] as? NSNumber)?.doubleValue ?? 0
-                let w = (b["width"] as? NSNumber)?.doubleValue ?? 0
-                let h = (b["height"] as? NSNumber)?.doubleValue ?? 0
-                rect = CGRect(x: x, y: y, width: w, height: h)
-            }
-
-            return CuaWindow(
-                windowId: wid,
-                pid: wpid,
-                appName: appName,
-                title: title,
-                bounds: rect,
-                isOnScreen: onScreen,
-                onCurrentSpace: currentSpace,
-                zIndex: z
-            )
-        }
-    }
-
-    public func getWindowState(pid: Int32, windowId: Int64) async throws -> CuaWindowState {
-        let args: [String: Any] = [
-            "pid": pid,
-            "window_id": windowId,
-            "session": Self.defaultSession
-        ]
-        let res = try await executeTool(name: "get_window_state", arguments: args)
-
-        var elements: [CuaElement] = []
-        if let sc = res["structuredContent"] as? [String: Any],
-           let rawElems = sc["elements"] as? [[String: Any]] {
-            for el in rawElems {
-                guard let token = el["element_token"] as? String,
-                      let role = el["role"] as? String else { continue }
-                let label = el["label"] as? String ?? ""
-                let val = el["value"] as? String
-
-                var frame = CGRect.zero
-                if let f = el["frame"] as? [String: Any] {
-                    let x = (f["x"] as? NSNumber)?.doubleValue ?? 0
-                    let y = (f["y"] as? NSNumber)?.doubleValue ?? 0
-                    let w = (f["width"] as? NSNumber)?.doubleValue ?? 0
-                    let h = (f["height"] as? NSNumber)?.doubleValue ?? 0
-                    frame = CGRect(x: x, y: y, width: w, height: h)
-                }
-                elements.append(CuaElement(elementToken: token, role: role, label: label, value: val, frame: frame))
-            }
-        }
-
-        let treeMd = res["tree_markdown"] as? String ?? ""
-        let shotPath = res["screenshot_file_path"] as? String
-        return CuaWindowState(elements: elements, treeMarkdown: treeMd, screenshotPath: shotPath)
-    }
-
     public func click(pid: Int32, elementToken: String? = nil, coordinate: CGPoint? = nil) async throws -> Bool {
         var args: [String: Any] = [
             "pid": pid,

@@ -242,11 +242,6 @@ struct AIUsageView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .animation(.easeInOut(duration: 0.35), value: isAppSwitching)
-        .onAppear {
-            if selectedApp == "DeepSeek" {
-                selectedApp = "Antigravity"
-            }
-        }
     }
     
     // MARK: - Disconnected State View (No Fake Usage)

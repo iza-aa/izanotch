@@ -69,20 +69,3 @@ public final class CuaActionCursorManager: ObservableObject {
     }
 }
 
-// MARK: - CuaDrive Action Cursor SwiftUI View (Decommissioned in favor of Native Cua-Driver Overlay)
-
-public struct CuaActionCursorView: View {
-    public init(screenFrame: CGRect) {}
-
-    public var body: some View {
-        EmptyView()
-    }
-}
-
-public struct CuaActionCursorTriangle: Shape {
-    public init() {}
-    public func path(in rect: CGRect) -> Path {
-        Path()
-    }
-}
-

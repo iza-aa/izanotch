@@ -50,7 +50,7 @@ Dokumen ini adalah Single Source of Truth untuk memantau status pengerjaan fitur
 | TASK-042 | Synchronous Turn Result Delivery & Complete Gemini Elimination | Selesai | - | Perbaikan race condition executeTanyaChain yang mengunci UI "Berpikir..." (ERR-106) dan eliminasi total dependensi Gemini menuju arsitektur 100% on-device AFM port 1976 |
 | TASK-043 | Connected Apps Sandbox Enforcement & Conversational Chain Isolation | Selesai | - | Validasi workflowAppNames pada executeAksiChain/executeKetikChain dan penyekatan splitChainedCommand pada kategori aksi murni (ERR-107) |
 | TASK-044 | Ground-Truth Oracle E2E Runner (Test Boleh Gagal, Sistem yang Dibenahi) | Selesai | [TASK_044.md](file:///Users/heizaaa/Desktop/cdev/iza-3/tasks/TASK_044_GROUND_TRUTH_ORACLE_E2E_RUNNER.md) | Runner E2E dengan tiga oracle independen (AX, Log, Visual), negative control validator bypass, debug-only command injection via DistributedNotificationCenter, dan Fail-Fix Loop anti test-tailoring (ERR-108) |
-
+| TASK-046 | Deterministic Surface Pivot — Routing Gate, Pembersihan Terledger & Web Workspace | Selesai | [TASK_046.md](file:///Users/heizaaa/Desktop/cdev/iza-3/tasks/TASK_046_DETERMINISTIC_SURFACE_PIVOT.md) | Pivot permukaan deterministik (Web Workspace WKWebView + DOM actions), routing gate di Ingress dengan log [ROUTING], pembersihan terledger dead code, dan bot automations terjadwal |
 ---
 
 ## Status Legenda
@@ -112,4 +112,10 @@ Berikut adalah daftar file, paket, dan pendekatan yang telah dihapus secara seng
 | `izaNotch/Clicky/Services/Models/GeminiBridgeClient.swift` | Eliminasi total dependensi cloud Gemini (Milestone 311) | 100% On-Device Apple Foundation Models (AFM On-Device NPU, port 1976) | Dilarang permanen |
 | String payload statis `"sistem berhasil dibuat"` di `CUATypeActionTool.swift` | Pelanggaran Zero Hardcoding; mengembalikan teks uji statis sebagai fallback pengetikan (ERR-109) | Ekstraksi payload dinamis murni dari kontrak tugas (`prompt` / `normalizedGoal`) | Dilarang permanen |
 | Kamus `tokenHints` `["to","cc","bcc",...]` di `CUATypeActionTool.swift` | Hardcoding nama field statis untuk deteksi token field (ERR-109) | Deteksi subrole native Accessibility `AXTokenField` (Invariant 18) | Dilarang permanen |
-
+| `izaNotch/Clicky/Services/Models/OpenAIAPI.swift` | Dead legacy cloud vision client (0 callers, external cloud dependency) | AFM On-Device & Web Workspace (Fase B TASK-046) | Dilarang permanen (2026-10-11) |
+| `izaNotch/utils/Logger.swift` | Untracked dead code violating Zero Emoji rule (0 callers) | `ClickyLogger` | Dilarang permanen (2026-10-11) |
+| `izaNotch/Clicky/Core/Contracts/CompanionSessionDelegate.swift` | Untracked dead protocol (0 callers) | `CompanionManager` internal actor state | Dilarang permanen (2026-10-11) |
+| `AstronacciDeterministicEngine.swift` (`evaluateConfluence`, `evaluateVetoGate`, `AstronacciEvaluationResult`, `AstronacciScoreBreakdown`, `AstronacciVetoCheck`, `AstronacciTradePlan`) | Legacy dead confluence evaluator & data structures (380 baris kode mati, 0 caller eksternal) | `FuturesScoutCoreAnalyst` modular analyst pipeline | Dilarang permanen (2026-10-11) |
+| `Astronacci*Engine.swift` (Cluster, Divergence, Quasimodo, Ephemeris, Calendar, Aspect) | Properti assign-only tak terpakai & modifier public redundan (43 temuan Periphery tuntas) | `FuturesScoutCoreAnalyst` data-driven interface | Dilarang permanen (2026-10-11) |
+| `CuaActionCursorManager.swift` (`CuaActionCursorView`, `CuaActionCursorTriangle`) | Decommissioned stub shape & views (0 callers) | Native Cua Driver cursor overlay | Dilarang permanen (2026-10-11) |
+| `CuaDriverClient.swift` (`CuaApp`, `CuaWindow`, `CuaElement`, `CuaWindowState`, `listApps()`, `listWindows()`, `getWindowState()`) | Dead prototype RPC structs & methods (0 callers) | Lean `CuaDriverClient` + direct MCP tool execution | Dilarang permanen (2026-10-11) |

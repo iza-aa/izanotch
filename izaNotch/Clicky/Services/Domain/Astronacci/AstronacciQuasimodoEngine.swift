@@ -17,59 +17,31 @@ public enum QMType: String, Equatable, Sendable {
 
 public struct AstronacciQMResult: Equatable, Sendable {
     public let type: QMType
-    public let isBullish: Bool
     public let leftShoulderPrice: Double
-    public let headPrice: Double
-    public let bosPrice: Double
-    public let retestTargetPrice: Double
-    public let invalidationPrice: Double
-    public let isLeftShoulderInGP: Bool
-    public let isRetestingNow: Bool
     public let description: String
 
     public init(
         type: QMType,
-        isBullish: Bool,
         leftShoulderPrice: Double,
-        headPrice: Double,
-        bosPrice: Double,
-        retestTargetPrice: Double,
-        invalidationPrice: Double,
-        isLeftShoulderInGP: Bool,
-        isRetestingNow: Bool,
         description: String
     ) {
         self.type = type
-        self.isBullish = isBullish
         self.leftShoulderPrice = leftShoulderPrice
-        self.headPrice = headPrice
-        self.bosPrice = bosPrice
-        self.retestTargetPrice = retestTargetPrice
-        self.invalidationPrice = invalidationPrice
-        self.isLeftShoulderInGP = isLeftShoulderInGP
-        self.isRetestingNow = isRetestingNow
         self.description = description
     }
 
     public static let none = AstronacciQMResult(
         type: .none,
-        isBullish: false,
         leftShoulderPrice: 0.0,
-        headPrice: 0.0,
-        bosPrice: 0.0,
-        retestTargetPrice: 0.0,
-        invalidationPrice: 0.0,
-        isLeftShoulderInGP: false,
-        isRetestingNow: false,
         description: "Tidak terdeteksi pola Quasimodo pada struktur kandel."
     )
 }
 
-public struct AstronacciQuasimodoEngine: Sendable {
-    public init() {}
+struct AstronacciQuasimodoEngine: Sendable {
+    init() {}
 
     /// Evaluates 4 specific pivot points to determine if they form a valid Quasimodo pattern
-    public func evaluatePattern(
+    func evaluatePattern(
         p1Price: Double, // Left Shoulder (Low 1 if bullish, High 1 if bearish)
         p1Index: Int,
         p2Price: Double, // Intermediate Swing (High 1 if bullish, Low 1 if bearish)
@@ -114,14 +86,7 @@ public struct AstronacciQuasimodoEngine: Sendable {
 
             return AstronacciQMResult(
                 type: .bullish,
-                isBullish: true,
                 leftShoulderPrice: p1Price,
-                headPrice: p3Price,
-                bosPrice: p4Price,
-                retestTargetPrice: p1Price,
-                invalidationPrice: p3Price,
-                isLeftShoulderInGP: isLeftShoulderInGP,
-                isRetestingNow: isRetestingNow,
                 description: desc
             )
         } else {
@@ -145,14 +110,7 @@ public struct AstronacciQuasimodoEngine: Sendable {
 
             return AstronacciQMResult(
                 type: .bearish,
-                isBullish: false,
                 leftShoulderPrice: p1Price,
-                headPrice: p3Price,
-                bosPrice: p4Price,
-                retestTargetPrice: p1Price,
-                invalidationPrice: p3Price,
-                isLeftShoulderInGP: isLeftShoulderInGP,
-                isRetestingNow: isRetestingNow,
                 description: desc
             )
         }
@@ -165,7 +123,7 @@ public struct AstronacciQuasimodoEngine: Sendable {
     }
 
     /// Detects Quasimodo pattern from a series of closed klines
-    public func detectQuasimodo(
+    func detectQuasimodo(
         klines: [AstronacciKline],
         currentPrice: Double,
         atr: Double,

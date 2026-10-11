@@ -40,5 +40,4 @@ public struct ModelTurnResult: Sendable {
 }
 
 // MARK: - Compatibility Aliases for Smooth Migration
-public typealias ClaudeToolCall = ModelToolCall
 public typealias ClaudeTurnResult = ModelTurnResult

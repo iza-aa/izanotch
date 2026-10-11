@@ -12,7 +12,7 @@
 
 import Foundation
 
-public enum LunarPhase: String, Equatable, Sendable {
+enum LunarPhase: String, Equatable, Sendable {
     case newMoon = "Bulan Baru (New Moon)"
     case waxingCrescent = "Bulan Sabit Awal (Waxing Crescent)"
     case firstQuarter = "Kuartal Pertama (First Quarter)"
@@ -23,56 +23,26 @@ public enum LunarPhase: String, Equatable, Sendable {
     case waningCrescent = "Bulan Sabit Akhir (Waning Crescent)"
 }
 
-public enum PlanetaryMotion: String, Equatable, Sendable {
+enum PlanetaryMotion: String, Equatable, Sendable {
     case direct = "Direct (Maju Normal)"
     case retrograde = "Retrograde (Mundur Semu)"
     case stationary = "Stationary (Stasioner / Berbalik Arah)"
 }
 
 public struct AstronacciAstroReport: Equatable, Sendable {
-    public let date: Date
-    public let lunarPhase: LunarPhase
-    public let moonAgeDays: Double
-    public let moonElongationDeg: Double
-    public let isNearNewOrFullMoon: Bool
-    public let mercuryMotion: PlanetaryMotion
-    public let mercuryVelocityDegPerDay: Double
     public let description: String
 
-    public init(
-        date: Date,
-        lunarPhase: LunarPhase,
-        moonAgeDays: Double,
-        moonElongationDeg: Double,
-        isNearNewOrFullMoon: Bool,
-        mercuryMotion: PlanetaryMotion,
-        mercuryVelocityDegPerDay: Double,
-        description: String
-    ) {
-        self.date = date
-        self.lunarPhase = lunarPhase
-        self.moonAgeDays = moonAgeDays
-        self.moonElongationDeg = moonElongationDeg
-        self.isNearNewOrFullMoon = isNearNewOrFullMoon
-        self.mercuryMotion = mercuryMotion
-        self.mercuryVelocityDegPerDay = mercuryVelocityDegPerDay
+    public init(description: String) {
         self.description = description
     }
 
     public static let standard = AstronacciAstroReport(
-        date: Date(),
-        lunarPhase: .waxingGibbous,
-        moonAgeDays: 12.0,
-        moonElongationDeg: 145.0,
-        isNearNewOrFullMoon: false,
-        mercuryMotion: .direct,
-        mercuryVelocityDegPerDay: 1.2,
         description: "Fase Bulan: Waxing Gibbous • Merkurius: Direct"
     )
 }
 
-public struct AstronacciEphemerisEngine: Sendable {
-    public init() {}
+struct AstronacciEphemerisEngine: Sendable {
+    init() {}
 
     private func toRad(_ deg: Double) -> Double { deg * .pi / 180.0 }
     private func toDeg(_ rad: Double) -> Double { rad * 180.0 / .pi }
@@ -83,7 +53,7 @@ public struct AstronacciEphemerisEngine: Sendable {
     }
 
     /// Converts Date to Julian Day Number (JD) in Universal Time (UT)
-    public func calculateJulianDay(date: Date) -> Double {
+    func calculateJulianDay(date: Date) -> Double {
         let calendar = Calendar(identifier: .gregorian)
         var utcCalendar = calendar
         utcCalendar.timeZone = TimeZone(secondsFromGMT: 0)!
@@ -112,7 +82,7 @@ public struct AstronacciEphemerisEngine: Sendable {
     }
 
     /// Calculates Solar Apparent Ecliptic Longitude (Meeus Chapter 25)
-    public func calculateSunLongitude(T: Double) -> Double {
+    func calculateSunLongitude(T: Double) -> Double {
         let L0 = normalizeDeg(280.46646 + 36000.76983 * T + 0.0003032 * T * T)
         let M = normalizeDeg(357.52911 + 35999.05029 * T - 0.0001537 * T * T)
         let C = (1.914602 - 0.004817 * T) * sin(toRad(M)) + (0.019993 - 0.000101 * T) * sin(toRad(2.0 * M)) + 0.000289 * sin(toRad(3.0 * M))
@@ -120,7 +90,7 @@ public struct AstronacciEphemerisEngine: Sendable {
     }
 
     /// Calculates Lunar Apparent Ecliptic Longitude (Meeus Chapter 47)
-    public func calculateMoonLongitude(T: Double) -> Double {
+    func calculateMoonLongitude(T: Double) -> Double {
         let Lp = normalizeDeg(218.3164477 + 481267.88123421 * T - 0.0015786 * T * T)
         let D = normalizeDeg(297.8501921 + 445267.5105277 * T - 0.0018819 * T * T)
         let M = normalizeDeg(357.5291092 + 35999.0502909 * T - 0.0001536 * T * T)
@@ -140,7 +110,7 @@ public struct AstronacciEphemerisEngine: Sendable {
     }
 
     /// Calculates Mercury Geocentric Ecliptic Longitude (Meeus Heliocentric reduction)
-    public func calculateMercuryGeocentricLongitude(jd: Double) -> Double {
+    func calculateMercuryGeocentricLongitude(jd: Double) -> Double {
         let T = (jd - 2451545.0) / 36525.0
 
         // Earth Keplerian orbit
@@ -172,7 +142,7 @@ public struct AstronacciEphemerisEngine: Sendable {
     }
 
     /// Evaluates the complete Astronomical Ephemeris report for the given Date
-    public func calculateAstroReport(date: Date) -> AstronacciAstroReport {
+    func calculateAstroReport(date: Date) -> AstronacciAstroReport {
         let jd = calculateJulianDay(date: date)
         let T = (jd - 2451545.0) / 36525.0
 
@@ -232,15 +202,6 @@ public struct AstronacciEphemerisEngine: Sendable {
         let retroIcon = motion == .retrograde ? "⚠️" : "🪐"
         let desc = "\(moonIcon) \(phase.rawValue) (Usia: \(String(format: "%.1f", moonAge)) hari) • \(retroIcon) Merkurius \(motion.rawValue)"
 
-        return AstronacciAstroReport(
-            date: date,
-            lunarPhase: phase,
-            moonAgeDays: moonAge,
-            moonElongationDeg: elongation,
-            isNearNewOrFullMoon: isNearPeak,
-            mercuryMotion: motion,
-            mercuryVelocityDegPerDay: velocity,
-            description: desc
-        )
+        return AstronacciAstroReport(description: desc)
     }
 }

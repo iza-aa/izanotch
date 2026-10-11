@@ -17,12 +17,12 @@ public enum DivergenceType: String, Equatable, Sendable, CaseIterable {
     case none = "Tidak Ada Divergensi"
 }
 
-public struct DivergencePivot: Equatable, Sendable {
-    public let barIndex: Int
-    public let price: Double
-    public let oscValue: Double
+struct DivergencePivot: Equatable, Sendable {
+    let barIndex: Int
+    let price: Double
+    let oscValue: Double
 
-    public init(barIndex: Int, price: Double, oscValue: Double) {
+    init(barIndex: Int, price: Double, oscValue: Double) {
         self.barIndex = barIndex
         self.price = price
         self.oscValue = oscValue
@@ -32,42 +32,30 @@ public struct DivergencePivot: Equatable, Sendable {
 public struct AstronacciDivergenceResult: Equatable, Sendable {
     public let type: DivergenceType
     public let isBullish: Bool
-    public let firstPivot: DivergencePivot?
-    public let secondPivot: DivergencePivot?
-    public let barsAgo: Int
     public let description: String
 
     public init(
         type: DivergenceType,
         isBullish: Bool,
-        firstPivot: DivergencePivot?,
-        secondPivot: DivergencePivot?,
-        barsAgo: Int,
         description: String
     ) {
         self.type = type
         self.isBullish = isBullish
-        self.firstPivot = firstPivot
-        self.secondPivot = secondPivot
-        self.barsAgo = barsAgo
         self.description = description
     }
 
     public static let none = AstronacciDivergenceResult(
         type: .none,
         isBullish: false,
-        firstPivot: nil,
-        secondPivot: nil,
-        barsAgo: 0,
         description: "Tidak terdeteksi divergensi pada Stochastic M15."
     )
 }
 
-public struct AstronacciDivergenceEngine: Sendable {
-    public init() {}
+struct AstronacciDivergenceEngine: Sendable {
+    init() {}
 
     /// Evaluates divergence between two low pivots (troughs)
-    public func evaluateLowPivotsDivergence(
+    func evaluateLowPivotsDivergence(
         first: DivergencePivot,
         second: DivergencePivot,
         currentBarIndex: Int,
@@ -83,9 +71,6 @@ public struct AstronacciDivergenceEngine: Sendable {
             return AstronacciDivergenceResult(
                 type: .regularBullish,
                 isBullish: true,
-                firstPivot: first,
-                secondPivot: second,
-                barsAgo: age,
                 description: "Regular Bullish Divergence (terkonfirmasi \(age) bar lalu): Harga membentuk Lower Low (\(String(format: "%.2f", first.price)) -> \(String(format: "%.2f", second.price))), namun Stochastic membentuk Higher Low (\(String(format: "%.1f", first.oscValue)) -> \(String(format: "%.1f", second.oscValue)))."
             )
         }
@@ -95,9 +80,6 @@ public struct AstronacciDivergenceEngine: Sendable {
             return AstronacciDivergenceResult(
                 type: .hiddenBullish,
                 isBullish: true,
-                firstPivot: first,
-                secondPivot: second,
-                barsAgo: age,
                 description: "Hidden Bullish Divergence (terkonfirmasi \(age) bar lalu): Harga membentuk Higher Low (\(String(format: "%.2f", first.price)) -> \(String(format: "%.2f", second.price))), namun Stochastic membentuk Lower Low (\(String(format: "%.1f", first.oscValue)) -> \(String(format: "%.1f", second.oscValue)))."
             )
         }
@@ -106,7 +88,7 @@ public struct AstronacciDivergenceEngine: Sendable {
     }
 
     /// Evaluates divergence between two high pivots (crests)
-    public func evaluateHighPivotsDivergence(
+    func evaluateHighPivotsDivergence(
         first: DivergencePivot,
         second: DivergencePivot,
         currentBarIndex: Int,
@@ -117,26 +99,18 @@ public struct AstronacciDivergenceEngine: Sendable {
             return .none
         }
 
-        // Price Higher High & Oscillator Lower High -> Regular Bearish
         if second.price > first.price && second.oscValue < first.oscValue {
             return AstronacciDivergenceResult(
                 type: .regularBearish,
                 isBullish: false,
-                firstPivot: first,
-                secondPivot: second,
-                barsAgo: age,
                 description: "Regular Bearish Divergence (terkonfirmasi \(age) bar lalu): Harga membentuk Higher High (\(String(format: "%.2f", first.price)) -> \(String(format: "%.2f", second.price))), namun Stochastic membentuk Lower High (\(String(format: "%.1f", first.oscValue)) -> \(String(format: "%.1f", second.oscValue)))."
             )
         }
 
-        // Price Lower High & Oscillator Higher High -> Hidden Bearish (Trend Continuation)
         if second.price < first.price && second.oscValue > first.oscValue {
             return AstronacciDivergenceResult(
                 type: .hiddenBearish,
                 isBullish: false,
-                firstPivot: first,
-                secondPivot: second,
-                barsAgo: age,
                 description: "Hidden Bearish Divergence (terkonfirmasi \(age) bar lalu): Harga membentuk Lower High (\(String(format: "%.2f", first.price)) -> \(String(format: "%.2f", second.price))), namun Stochastic membentuk Higher High (\(String(format: "%.1f", first.oscValue)) -> \(String(format: "%.1f", second.oscValue)))."
             )
         }
@@ -145,7 +119,7 @@ public struct AstronacciDivergenceEngine: Sendable {
     }
 
     /// Calculates bar-aligned Stochastic %K series
-    public func calculateStochasticSeries(
+    func calculateStochasticSeries(
         kPeriod: Int = 14,
         slowing: Int = 3,
         klines: [AstronacciKline]
@@ -175,10 +149,9 @@ public struct AstronacciDivergenceEngine: Sendable {
     }
 
     /// Detects divergences across klines using 3-bar or 5-bar pivot fractals
-    public func detectDivergence(
+    func detectDivergence(
         klines: [AstronacciKline],
         kPeriod: Int = 14,
-        dPeriod: Int = 3,
         slowing: Int = 3,
         maxLookback: Int = 60
     ) -> AstronacciDivergenceResult {

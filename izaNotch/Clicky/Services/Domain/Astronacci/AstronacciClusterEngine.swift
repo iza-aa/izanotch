@@ -3,9 +3,9 @@
 //  izaNotch (Izanotchy Futures Scout)
 //
 //  Mathematical Key Reversal Zone (KRZ) & Fibonacci Cluster Engine
-//  Canon (Prof. Dr. Gema Goeyardi - The Art of Fibonacci Trading):
-//  - Confluence between Major Swing (H1 61.8%) and Micro Swing (M15 50.0%, 61.8%, 78.6%)
-//  - Dynamic Tolerance: <= 0.25 * ATR(14) of M15
+//  - Confluence of H1 dominant Fibonacci Retracement (61.8%) and M15 Retracement (50.0%, 61.8%, 78.6%)
+//  - Distance tolerance dynamically derived: <= 0.25 * ATR(14) on M15
+//  - Anti-Off-by-One: Computes on closed candles exclusively
 //  - Pure Analyst Layer (Presentation & Chart Overlay, Zero Core Engine Mutation)
 //
 
@@ -15,32 +15,20 @@ public struct FibonacciClusterResult: Sendable, Codable, Equatable {
     public let hasCluster: Bool
     public let krzMin: Double
     public let krzMax: Double
-    public let h1LevelName: String
-    public let h1Price: Double
-    public let m15LevelName: String
-    public let m15Price: Double
-    public let distance: Double
-    public let toleranceUsed: Double
     public let label: String
 
     public static let empty = FibonacciClusterResult(
         hasCluster: false,
         krzMin: 0,
         krzMax: 0,
-        h1LevelName: "",
-        h1Price: 0,
-        m15LevelName: "",
-        m15Price: 0,
-        distance: 0,
-        toleranceUsed: 0,
         label: "Tidak ada Fibonacci Cluster KRZ terdeteksi"
     )
 }
 
-public struct AstronacciClusterEngine: Sendable {
+struct AstronacciClusterEngine: Sendable {
 
     /// Direct level evaluator with dynamic ATR tolerance
-    public static func evaluateLevels(
+    static func evaluateLevels(
         h1Levels: [(name: String, price: Double)],
         m15Levels: [(name: String, price: Double)],
         atr14M15: Double
@@ -84,18 +72,12 @@ public struct AstronacciClusterEngine: Sendable {
             hasCluster: true,
             krzMin: pMin,
             krzMax: pMax,
-            h1LevelName: match.h1Name,
-            h1Price: match.h1Price,
-            m15LevelName: match.m15Name,
-            m15Price: match.m15Price,
-            distance: match.dist,
-            toleranceUsed: tolerance,
             label: label
         )
     }
 
     /// Evaluates full multi-timeframe kline series to detect Key Reversal Zone cluster
-    public static func evaluateConfluence(
+    static func evaluateConfluence(
         klinesH1: [AstronacciKline],
         klinesM15: [AstronacciKline],
         atr14M15: Double,
@@ -117,15 +99,12 @@ public struct AstronacciClusterEngine: Sendable {
             return .empty
         }
 
-        let isBullish = (regime == .bullish)
-
-        // 3. Compute H1 Fib 61.8%
+        // 3. Compute H1 Fib 61.8% Level
+        let isBullish = regime == .bullish
         let h1Range = h1Pivots.swingHigh - h1Pivots.swingLow
         guard h1Range > 0 else { return .empty }
 
-        let h1Fib618: Double = isBullish
-            ? h1Pivots.swingHigh - (h1Range * 0.618)
-            : h1Pivots.swingLow + (h1Range * 0.618)
+        let h1Fib618: Double = isBullish ? h1Pivots.swingHigh - (h1Range * 0.618) : h1Pivots.swingLow + (h1Range * 0.618)
 
         let h1Levels: [(String, Double)] = [
             ("H1 61.8%", h1Fib618)

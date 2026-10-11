@@ -1,0 +1,1153 @@
+* Inspecting project...
+* Building izaNotch...
+* Indexing...
+* Analyzing...
+
+/Users/heizaaa/Desktop/cdev/iza-3/IzaNotchXPCHelper/IzaNotchXPCHelper.swift:15:16: warning: Unused function 'isAccessibilityAuthorized(with:)'
+/Users/heizaaa/Desktop/cdev/iza-3/IzaNotchXPCHelper/IzaNotchXPCHelper.swift:19:16: warning: Unused function 'requestAccessibilityAuthorization()'
+/Users/heizaaa/Desktop/cdev/iza-3/IzaNotchXPCHelper/IzaNotchXPCHelper.swift:24:16: warning: Unused function 'ensureAccessibilityAuthorization(_:with:)'
+/Users/heizaaa/Desktop/cdev/iza-3/IzaNotchXPCHelper/IzaNotchXPCHelper.swift:39:19: warning: Unused class 'KeyboardBrightnessClient'
+/Users/heizaaa/Desktop/cdev/iza-3/IzaNotchXPCHelper/IzaNotchXPCHelper.swift:89:24: warning: Unused property 'keyboardClient'
+/Users/heizaaa/Desktop/cdev/iza-3/IzaNotchXPCHelper/IzaNotchXPCHelper.swift:91:16: warning: Unused function 'isKeyboardBrightnessAvailable(with:)'
+/Users/heizaaa/Desktop/cdev/iza-3/IzaNotchXPCHelper/IzaNotchXPCHelper.swift:95:16: warning: Unused function 'currentKeyboardBrightness(with:)'
+/Users/heizaaa/Desktop/cdev/iza-3/IzaNotchXPCHelper/IzaNotchXPCHelper.swift:99:16: warning: Unused function 'setKeyboardBrightness(_:with:)'
+/Users/heizaaa/Desktop/cdev/iza-3/IzaNotchXPCHelper/IzaNotchXPCHelper.swift:104:16: warning: Unused function 'isScreenBrightnessAvailable(with:)'
+/Users/heizaaa/Desktop/cdev/iza-3/IzaNotchXPCHelper/IzaNotchXPCHelper.swift:109:16: warning: Unused function 'currentScreenBrightness(with:)'
+/Users/heizaaa/Desktop/cdev/iza-3/IzaNotchXPCHelper/IzaNotchXPCHelper.swift:127:16: warning: Unused function 'setScreenBrightness(_:with:)'
+/Users/heizaaa/Desktop/cdev/iza-3/IzaNotchXPCHelper/IzaNotchXPCHelper.swift:143:18: warning: Unused function 'displayServicesGetBrightness(displayID:out:)'
+/Users/heizaaa/Desktop/cdev/iza-3/IzaNotchXPCHelper/IzaNotchXPCHelper.swift:153:18: warning: Unused function 'displayServicesSetBrightness(displayID:value:)'
+/Users/heizaaa/Desktop/cdev/iza-3/IzaNotchXPCHelper/IzaNotchXPCHelper.swift:160:18: warning: Unused function 'ioServiceFor(displayID:)'
+/Users/heizaaa/Desktop/cdev/iza-3/IzaNotchXPCHelper/IzaNotchXPCHelper.swift:179:18: warning: Unused enum 'DisplayServicesHandle'
+/Users/heizaaa/Desktop/cdev/iza-3/IzaNotchXPCHelper/IzaNotchXPCHelperProtocol.swift:12:10: warning: Unused function 'isAccessibilityAuthorized(with:)'
+/Users/heizaaa/Desktop/cdev/iza-3/IzaNotchXPCHelper/IzaNotchXPCHelperProtocol.swift:13:10: warning: Unused function 'requestAccessibilityAuthorization()'
+/Users/heizaaa/Desktop/cdev/iza-3/IzaNotchXPCHelper/IzaNotchXPCHelperProtocol.swift:14:10: warning: Unused function 'ensureAccessibilityAuthorization(_:with:)'
+/Users/heizaaa/Desktop/cdev/iza-3/IzaNotchXPCHelper/IzaNotchXPCHelperProtocol.swift:16:10: warning: Unused function 'isKeyboardBrightnessAvailable(with:)'
+/Users/heizaaa/Desktop/cdev/iza-3/IzaNotchXPCHelper/IzaNotchXPCHelperProtocol.swift:17:10: warning: Unused function 'currentKeyboardBrightness(with:)'
+/Users/heizaaa/Desktop/cdev/iza-3/IzaNotchXPCHelper/IzaNotchXPCHelperProtocol.swift:18:10: warning: Unused function 'setKeyboardBrightness(_:with:)'
+/Users/heizaaa/Desktop/cdev/iza-3/IzaNotchXPCHelper/IzaNotchXPCHelperProtocol.swift:20:10: warning: Unused function 'isScreenBrightnessAvailable(with:)'
+/Users/heizaaa/Desktop/cdev/iza-3/IzaNotchXPCHelper/IzaNotchXPCHelperProtocol.swift:21:10: warning: Unused function 'currentScreenBrightness(with:)'
+/Users/heizaaa/Desktop/cdev/iza-3/IzaNotchXPCHelper/IzaNotchXPCHelperProtocol.swift:22:10: warning: Unused function 'setScreenBrightness(_:with:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Actions/CUAPhysicalActionTool.swift:42:16: warning: Assign-only property 'isSuccess' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Actions/CUAPhysicalActionTool.swift:50:17: warning: Redundant public accessibility for protocol 'CUAPhysicalActionTool' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Execution/CuaActionCursorManager.swift:20:20: warning: Unused class 'CuaActionCursorManager'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Execution/CuaActionCursorManager.swift:74:15: warning: Unused struct 'CuaActionCursorView'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Execution/CuaActionCursorManager.swift:82:15: warning: Unused struct 'CuaActionCursorTriangle'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Execution/CuaDriverClient.swift:15:15: warning: Unused struct 'CuaApp'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Execution/CuaDriverClient.swift:27:16: warning: Assign-only property 'pid' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Execution/CuaDriverClient.swift:28:16: warning: Assign-only property 'appName' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Execution/CuaDriverClient.swift:29:16: warning: Assign-only property 'title' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Execution/CuaDriverClient.swift:32:16: warning: Assign-only property 'onCurrentSpace' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Execution/CuaDriverClient.swift:33:16: warning: Assign-only property 'zIndex' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Execution/CuaDriverClient.swift:39:16: warning: Assign-only property 'role' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Execution/CuaDriverClient.swift:40:16: warning: Assign-only property 'label' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Execution/CuaDriverClient.swift:41:16: warning: Assign-only property 'value' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Execution/CuaDriverClient.swift:42:16: warning: Assign-only property 'frame' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Execution/CuaDriverClient.swift:45:15: warning: Unused struct 'CuaWindowState'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Execution/CuaDriverClient.swift:53:20: warning: Redundant public accessibility for class 'CuaDriverTransport' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Execution/CuaDriverClient.swift:54:23: warning: Redundant public accessibility for property 'defaultSession' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Execution/CuaDriverClient.swift:55:16: warning: Redundant public accessibility for property 'driverPath' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Execution/CuaDriverClient.swift:65:12: warning: Redundant public accessibility for initializer 'init(driverPath:)' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Execution/CuaDriverClient.swift:69:16: warning: Redundant public accessibility for property 'isRunning' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Execution/CuaDriverClient.swift:75:16: warning: Redundant public accessibility for property 'socketPath' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Execution/CuaDriverClient.swift:85:24: warning: Redundant public accessibility for function 'terminateAllOrphanInstances()' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Execution/CuaDriverClient.swift:99:17: warning: Redundant public accessibility for function 'ensureRunning()' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Execution/CuaDriverClient.swift:306:17: warning: Redundant public accessibility for function 'ensureSessionActive()' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Execution/CuaDriverClient.swift:313:17: warning: Redundant public accessibility for function 'executeTool(name:arguments:)' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Execution/CuaDriverClient.swift:352:17: warning: Redundant public accessibility for function 'listToolsRaw()' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Execution/CuaDriverClient.swift:369:17: warning: Redundant public accessibility for function 'stop()' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Execution/CuaDriverClient.swift:685:17: warning: Unused function 'checkPermissions()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Execution/CuaDriverClient.swift:699:17: warning: Unused function 'listApps()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Execution/CuaDriverClient.swift:756:17: warning: Unused function 'getWindowState(pid:windowId:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Execution/CuaDriverClient.swift:790:17: warning: Unused function 'click(pid:elementToken:coordinate:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Execution/CuaDriverClient.swift:839:17: warning: Unused function 'launchApp(bundleId:name:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Execution/CuaDriverClient.swift:880:17: warning: Unused function 'pressKey(pid:key:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Execution/CuaMotionEngine.swift:19:23: warning: Unused property 'zero'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Execution/CuaMotionEngine.swift:21:12: warning: Unused initializer 'init(x:y:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Execution/CuaMotionEngine.swift:31:16: warning: Unused property 'cgPoint'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Execution/CuaMotionEngine.swift:35:17: warning: Unused function 'hypot(to:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Execution/CuaMotionEngine.swift:44:15: warning: Unused struct 'CuaCubicBezier'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Execution/CuaMotionEngine.swift:192:13: warning: Redundant public accessibility for enum 'CuaSegType' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Execution/CuaMotionEngine.swift:282:14: warning: Redundant public accessibility for class 'CuaPathPlanner' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Execution/CuaMotionEngine.swift:378:24: warning: Redundant public accessibility for function 'plan(x0:y0:th0:x1:y1:th1:endVisualHeading:turnRadius:)' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Execution/CuaMotionEngine.swift:443:15: warning: Redundant public accessibility for struct 'CuaSpring' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Execution/CuaMotionEngine.swift:444:16: warning: Redundant public accessibility for property 'ox' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Execution/CuaMotionEngine.swift:445:16: warning: Redundant public accessibility for property 'oy' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Execution/CuaMotionEngine.swift:446:16: warning: Redundant public accessibility for property 'vx' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Execution/CuaMotionEngine.swift:447:16: warning: Redundant public accessibility for property 'vy' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Execution/CuaMotionEngine.swift:449:12: warning: Redundant public accessibility for initializer 'init(ox:oy:vx:vy:)' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Execution/CuaMotionEngine.swift:457:15: warning: Unused struct 'CuaMotionConfig'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Execution/CuaMotionEngine.swift:477:20: warning: Redundant public accessibility for class 'CuaMotionRunner' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Execution/CuaMotionEngine.swift:478:23: warning: Redundant public accessibility for property 'peakSpeed' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Execution/CuaMotionEngine.swift:479:23: warning: Redundant public accessibility for property 'minStartSpeed' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Execution/CuaMotionEngine.swift:480:23: warning: Redundant public accessibility for property 'minEndSpeed' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Execution/CuaMotionEngine.swift:481:23: warning: Redundant public accessibility for property 'springK' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Execution/CuaMotionEngine.swift:482:23: warning: Redundant public accessibility for property 'springC' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Execution/CuaMotionEngine.swift:483:23: warning: Redundant public accessibility for property 'springOvershoot' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Execution/CuaMotionEngine.swift:485:29: warning: Redundant public accessibility for property 'currentPosition' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Execution/CuaMotionEngine.swift:486:29: warning: Redundant public accessibility for property 'currentHeadingRadians' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Execution/CuaMotionEngine.swift:487:29: warning: Redundant public accessibility for property 'currentScale' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Execution/CuaMotionEngine.swift:488:29: warning: Assign-only property 'isCompleted' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Execution/CuaMotionEngine.swift:488:29: warning: Redundant public accessibility for property 'isCompleted' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Execution/CuaMotionEngine.swift:490:16: warning: Redundant public accessibility for property 'isSpringSettling' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Execution/CuaMotionEngine.swift:499:12: warning: Redundant public accessibility for initializer 'init(startPosition:startHeadingRadians:)' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Execution/CuaMotionEngine.swift:504:17: warning: Redundant public accessibility for function 'planFlight(to:endVisualHeading:)' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Execution/CuaMotionEngine.swift:524:17: warning: Redundant public accessibility for function 'tick(dt:)' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Grounding/ClickyHybridGroundingEngine.swift:24:16: warning: Assign-only property 'target' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Grounding/ClickyHybridGroundingEngine.swift:27:16: warning: Assign-only property 'confidence' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Grounding/ClickyHybridGroundingEngine.swift:104:9: warning: Unused parameter 'windowBounds'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Grounding/ClickyHybridGroundingEngine.swift:210:17: warning: Unused function 'locateViaAXUIElement(pid:targetQuery:windowBounds:actionType:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Grounding/ClickyUIObservationService.swift:16:15: warning: Unused struct 'UIObservationSnapshot'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Grounding/ClickyUIObservationService.swift:76:9: warning: Unused parameter 'appName'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Grounding/ClickyUIObservationService.swift:611:17: warning: Unused function 'findTargetAXApplication(appName:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Grounding/ClickyUIObservationService.swift:638:17: warning: Unused function 'extractAXElementTitles(from:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Grounding/CuaVisualGrounder.swift:22:16: warning: Assign-only property 'confidence' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Grounding/CuaVisualGrounder.swift:32:13: warning: Redundant public accessibility for enum 'CuaVisualGrounder' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Grounding/CuaVisualGrounder.swift:37:36: warning: Redundant public accessibility for function 'extractElements(windowId:windowBounds:cropNorm:)' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Grounding/CuaVisualGrounder.swift:107:36: warning: Redundant public accessibility for function 'locateInScreenshot(imagePath:matching:minNormY:maxNormY:)' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Grounding/CuaVisualGrounder.swift:168:36: warning: Unused function 'groundElement(matching:windowId:windowBounds:cropNorm:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Loop/CompanionVMAgentLoop.swift:16:16: warning: Assign-only property 'stepNumber' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Loop/CompanionVMAgentLoop.swift:17:16: warning: Assign-only property 'actionName' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Loop/CompanionVMAgentLoop.swift:18:16: warning: Assign-only property 'targetDescription' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Loop/CompanionVMAgentLoop.swift:19:16: warning: Assign-only property 'groundingMethod' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Loop/CompanionVMAgentLoop.swift:20:16: warning: Assign-only property 'coordinateX' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Loop/CompanionVMAgentLoop.swift:21:16: warning: Assign-only property 'coordinateY' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Loop/CompanionVMAgentLoop.swift:22:16: warning: Assign-only property 'observationResult' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Loop/CompanionVMAgentLoop.swift:43:15: warning: Redundant public accessibility for struct 'VMAgentDeliverableReceipt' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Loop/CompanionVMAgentLoop.swift:44:16: warning: Redundant public accessibility for property 'id' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Loop/CompanionVMAgentLoop.swift:45:16: warning: Assign-only property 'companionSlug' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Loop/CompanionVMAgentLoop.swift:45:16: warning: Redundant public accessibility for property 'companionSlug' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Loop/CompanionVMAgentLoop.swift:46:16: warning: Assign-only property 'taskPrompt' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Loop/CompanionVMAgentLoop.swift:46:16: warning: Redundant public accessibility for property 'taskPrompt' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Loop/CompanionVMAgentLoop.swift:47:16: warning: Assign-only property 'status' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Loop/CompanionVMAgentLoop.swift:47:16: warning: Redundant public accessibility for property 'status' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Loop/CompanionVMAgentLoop.swift:48:16: warning: Assign-only property 'summary' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Loop/CompanionVMAgentLoop.swift:48:16: warning: Redundant public accessibility for property 'summary' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Loop/CompanionVMAgentLoop.swift:49:16: warning: Assign-only property 'responseToUser' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Loop/CompanionVMAgentLoop.swift:49:16: warning: Redundant public accessibility for property 'responseToUser' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Loop/CompanionVMAgentLoop.swift:50:16: warning: Assign-only property 'timestamp' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Loop/CompanionVMAgentLoop.swift:50:16: warning: Redundant public accessibility for property 'timestamp' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Loop/CompanionVMAgentLoop.swift:51:16: warning: Assign-only property 'auditTrail' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Loop/CompanionVMAgentLoop.swift:51:16: warning: Redundant public accessibility for property 'auditTrail' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Loop/CompanionVMAgentLoop.swift:53:12: warning: Redundant public accessibility for initializer 'init(id:companionSlug:taskPrompt:status:summary:responseToUser:timestamp:auditTrail:)' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Loop/CompanionVMAgentLoop.swift:86:17: warning: Unused property 'sessionObservedElements'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Loop/CompanionVMAgentLoop.swift:93:24: warning: Unused function 'runSubprocessAsync(executable:arguments:timeoutSeconds:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Loop/CompanionVMAgentLoop.swift:1013:17: warning: Unused function 'inspectWorkspace(slug:appName:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Loop/CompanionVMAgentLoop.swift:1025:17: warning: Unused function 'groundAndClick(targetDescription:pid:snapshotPath:isSandboxed:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Loop/CompanionVMAgentLoop.swift:1061:17: warning: Unused function 'typeText(targetDescription:text:pid:snapshotPath:isSandboxed:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Loop/CompanionVMAgentLoop.swift:1130:18: warning: Unused function 'resolveCardIndices(newCards:previousItems:isAtTop:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Loop/CompanionVMAgentLoop.swift:1136:17: warning: Unused function 'readElements(targetDescription:pid:appName:snapshotPath:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Loop/CompanionVMAgentLoop.swift:1243:18: warning: Unused function 'extractAXToolbarControls(from:winPos:winSize:into:depth:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/CUA/Loop/CompanionVMBackgroundWatcher.swift:48:17: warning: Unused function 'stop()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/ActiveWorkSurfaceManager.swift:35:9: warning: Unused property 'titleBarCenter'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/ClickyAnalytics.swift:11:17: warning: Unused function 'configure()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/ClickyAnalytics.swift:15:17: warning: Unused function 'trackAppOpened()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/ClickyAnalytics.swift:19:17: warning: Unused function 'trackOnboardingStarted()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/ClickyAnalytics.swift:23:17: warning: Unused function 'trackOnboardingReplayed()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/ClickyEnums.swift:44:16: warning: Assign-only property 'targetWindowId' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/ClickyEnums.swift:50:16: warning: Assign-only property 'targetCoordinateX' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/ClickyEnums.swift:51:16: warning: Assign-only property 'targetCoordinateY' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/ClickyEnums.swift:55:16: warning: Assign-only property 'updatedAt' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/ClickyEnums.swift:262:16: warning: Assign-only property 'companionId' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/ClickyEnums.swift:264:16: warning: Assign-only property 'companionMood' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/ClickyEnums.swift:266:16: warning: Assign-only property 'ringColorHex' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/ClickyFunctionTool.swift:12:15: warning: Unused struct 'ClickyToolResult'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/ClickyFunctionTool.swift:29:13: warning: Unused enum 'ClickyToolCategory'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/ClickyFunctionTool.swift:38:15: warning: Unused struct 'CompanionExecutionContext'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/ClickyFunctionTool.swift:51:17: warning: Unused protocol 'ClickyFunctionTool'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/ClickyFunctionTool.swift:61:11: warning: Unused extension 'ClickyFunctionTool'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/ClickyFunctionTool.swift:76:15: warning: Unused struct 'GetCryptoMarketAnalysisTool'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/ClickyFunctionTool.swift:143:15: warning: Unused struct 'WorkspaceFileOperationTool'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/ClickyFunctionToolRegistry.swift:11:20: warning: Unused class 'ClickyFunctionToolRegistry'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/ClickyToolDispatcher.swift:13:15: warning: Unused struct 'ClickyToolCall'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/ClickyToolDispatcher.swift:30:38: warning: Unused property 'isExecuting'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/ClickyToolDispatcher.swift:35:17: warning: Unused function 'dispatch(toolCalls:context:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/CompanionManager+AIPipeline.swift:37:10: warning: Unused function 'flushHeldTextForFlight()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/CompanionManager+AIPipeline.swift:185:38: warning: Unused parameter 'expression'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/CompanionManager+ComputerUse.swift:482:17: warning: Unused function 'proposeAction(_:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/CompanionManager+FlightParser.swift:23:13: warning: Assign-only property 'candidateId' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/CompanionManager+FlightParser.swift:75:17: warning: Unused function 'enrichTargetExpression(_:workSurface:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/CompanionManager+FlightParser.swift:110:17: warning: Unused function 'mentionedRunningApp(in:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/CompanionManager+FlightParser.swift:164:61: warning: Unused parameter 'workSurface'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/CompanionManager+Lifecycle.swift:19:10: warning: Unused function 'setSelectedModel(_:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/CompanionManager+Lifecycle.swift:37:10: warning: Unused function 'submitEmail(_:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/CompanionManager+Lifecycle.swift:105:10: warning: Unused function 'triggerOnboarding()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/CompanionManager+Lifecycle.swift:127:10: warning: Unused function 'replayOnboarding()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/CompanionManager+Lifecycle.swift:137:10: warning: Unused function 'stopOnboardingMusic()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/CompanionManager+Lifecycle.swift:144:10: warning: Unused function 'startOnboardingMusic()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/CompanionManager+Lifecycle.swift:166:10: warning: Unused function 'fadeOutOnboardingMusic()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/CompanionManager+Lifecycle.swift:231:10: warning: Unused function 'stop()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/CompanionManager+Lifecycle.swift:299:10: warning: Unused function 'requestScreenContentPermission()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/CompanionManager+Lifecycle.swift:373:10: warning: Unused function 'promptForMicrophoneIfNotDetermined()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/CompanionManager+PayloadExtractors.swift:96:20: warning: Assign-only property 'id' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/CompanionManager+PayloadExtractors.swift:97:20: warning: Assign-only property 'timestamp' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/CompanionManager+PayloadExtractors.swift:98:20: warning: Assign-only property 'companion' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/CompanionManager+PayloadExtractors.swift:99:20: warning: Assign-only property 'goal' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/CompanionManager+PayloadExtractors.swift:100:20: warning: Assign-only property 'feature' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/CompanionManager+PayloadExtractors.swift:101:20: warning: Assign-only property 'reason' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/CompanionManager+Sessions.swift:220:17: warning: Unused function 'createNewBuddy(name:role:avatarColorHex:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/CompanionManager+Streaming.swift:171:93: warning: Unused parameter 'isCorrectionTurn'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/CompanionManager+Streaming.swift:257:10: warning: Unused function 'scheduleResponseBubbleHide(delay:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/CompanionManager+Streaming.swift:480:17: warning: Unused function 'navigateCursorTo(point:label:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/CompanionManager.swift:48:10: warning: Unused function 'openHomeSpace()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/CompanionManager.swift:59:27: warning: Redundant public accessibility for property 'pendingComputerUseRequest' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/CompanionManager.swift:117:9: warning: Unused property 'onboardingMusicPlayer'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/CompanionManager.swift:118:9: warning: Unused property 'onboardingMusicFadeTimer'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/CompanionManager.swift:135:16: warning: Redundant public accessibility for property 'isResponding' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/CompanionManager.swift:139:16: warning: Unused property 'currentStreamingResponse'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/CompanionManager.swift:154:16: warning: Redundant public accessibility for property 'activeE2ERunId' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/CompanionManager.swift:155:24: warning: Redundant public accessibility for function 'postE2EDone(runId:concluded:validatorIsDone:deliverableSaved:)' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/CompanionManager.swift:180:27: warning: Redundant public accessibility for property 'chatMessages' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/CompanionManager.swift:183:27: warning: Redundant public accessibility for property 'homeSpaceStreamingText' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/CompanionManager.swift:184:27: warning: Redundant public accessibility for property 'isHomeSpaceStreaming' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/CompanionManager.swift:213:16: warning: Redundant public accessibility for property 'ongoingTaskGoal' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/CompanionManager.swift:215:27: warning: Redundant public accessibility for property 'isTaskSessionPreApproved' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/CompanionManager.swift:224:16: warning: Redundant public accessibility for property 'isProcessingTask' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/CompanionManager.swift:228:16: warning: Redundant public accessibility for property 'isSiriAI' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/CompanionManager.swift:263:27: warning: Redundant public accessibility for property 'sessions' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/CompanionManager.swift:264:27: warning: Redundant public accessibility for property 'activeSessionID' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/CompanionManager.swift:267:27: warning: Redundant public accessibility for property 'activeComputerPayload' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/CompanionManager.swift:268:27: warning: Redundant public accessibility for property 'isWorkspaceCollapsed' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/CompanionManager.swift:270:16: warning: Redundant public accessibility for property 'activeBuddy' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/CompanionManager.swift:281:9: warning: Unused property 'lastGrounderExpression'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/CompanionManager.swift:302:20: warning: Unused property 'hasSubmittedEmail'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/CompanionManager.swift:312:34: warning: Unused property 'isRequestingScreenContent'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/CompanionManager.swift:313:27: warning: Redundant public accessibility for property 'activeCompanion' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/CompanionManager.swift:314:20: warning: Unused property 'selectedModel'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/Contracts/CompanionReportPresenter.swift:18:13: warning: Redundant public accessibility for enum 'CompanionReportPresenterRegistry' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/Contracts/CompanionReportPresenter.swift:19:28: warning: Redundant public accessibility for property 'shared' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/Contracts/CompanionUIHost.swift:19:9: warning: Unused property 'isOverlayVisible'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/Contracts/CompanionUIHost.swift:20:10: warning: Unused function 'showOverlay()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/Contracts/CompanionUIHost.swift:22:10: warning: Unused function 'fadeOutOverlay()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/Contracts/CompanionUIHost.swift:24:10: warning: Unused function 'showConsent(with:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/Contracts/CompanionUIHost.swift:25:10: warning: Unused function 'dismissConsent()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/Contracts/CompanionUIHost.swift:26:10: warning: Unused function 'hideResponseOverlay()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/Contracts/CompanionUIHost.swift:28:9: warning: Unused property 'activeAccountEmail'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/Contracts/CompanionUIHost.swift:29:9: warning: Unused property 'activeAccountPlan'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/Contracts/CompanionUIHost.swift:33:17: warning: Unused function 'fadeOutOverlay()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/Contracts/CompanionUIHost.swift:37:17: warning: Unused function 'showConsent(with:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/Contracts/CompanionUIHost.swift:38:17: warning: Unused function 'dismissConsent()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/Contracts/CompanionUIHost.swift:39:17: warning: Unused function 'hideResponseOverlay()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/Contracts/CompanionUIHost.swift:41:16: warning: Unused property 'activeAccountEmail'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/Contracts/CompanionUIHost.swift:42:16: warning: Unused property 'activeAccountPlan'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/Contracts/CompanionUIHost.swift:46:13: warning: Redundant public accessibility for enum 'CompanionUIHostRegistry' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/Contracts/CompanionUIHost.swift:47:28: warning: Redundant public accessibility for property 'shared' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/Contracts/DomainActionDispatcher.swift:17:13: warning: Redundant public accessibility for enum 'DomainActionDispatcherRegistry' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/Contracts/DomainActionDispatcher.swift:18:28: warning: Redundant public accessibility for property 'shared' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/InstalledApplicationsResolver.swift:14:16: warning: Assign-only property 'bundleIdentifier' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/InstalledApplicationsResolver.swift:17:18: warning: Redundant public accessibility for typealias 'DynamicAppResolver' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/MacOSDockManager.swift:12:8: warning: Unused struct 'DockItemLocation'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/MacOSDockManager.swift:21:6: warning: Unused enum 'MacOSDockManager'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Core/PCCGroundingEscalation.swift:21:6: warning: Unused enum 'PCCGroundingEscalation'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Reasoning/Ingress/CanonicalTaskContract.swift:28:16: warning: Assign-only property 'executionTier' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Reasoning/Ingress/CanonicalTaskContract.swift:29:16: warning: Assign-only property 'routingReason' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Reasoning/Ingress/CanonicalTaskContract.swift:144:16: warning: Assign-only property 'targetElement' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Reasoning/Ingress/CanonicalTaskContract.swift:146:16: warning: Assign-only property 'confidence' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Reasoning/Ingress/ExecutionRoutingGate.swift:16:16: warning: Assign-only property 'description' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Reasoning/Ingress/ExecutionRoutingGate.swift:53:17: warning: Unused function 'registerWebSurface(_:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Reasoning/Ingress/Policies/IngressPolicy.swift:11:13: warning: Redundant public accessibility for enum 'IngressPolicy' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Reasoning/Ingress/Policies/IngressPolicy.swift:14:23: warning: Redundant public accessibility for property 'systemInstructions' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Reasoning/Ingress/Policies/IngressPolicy.swift:55:24: warning: Redundant public accessibility for function 'formatPrompt(userPrompt:companionSlug:connectedAppsStr:)' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Reasoning/Planner/LayaDecisionEngine.swift:16:16: warning: Assign-only property 'probabilities' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Reasoning/Planner/LayaDecisionEngine.swift:144:9: warning: Unused parameter 'userGoal'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Reasoning/Planner/LayaDecisionEngine.swift:148:9: warning: Unused parameter 'scrollOffset'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Reasoning/Planner/LayaDecisionEngine.swift:307:17: warning: Unused function 'classifyInstructionIntent(prompt:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Reasoning/Planner/Policies/InspectStepPolicy.swift:11:15: warning: Redundant public accessibility for struct 'InspectStepPolicy' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Reasoning/Planner/Policies/InspectStepPolicy.swift:12:12: warning: Redundant public accessibility for initializer 'init()' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Reasoning/Planner/Policies/InspectStepPolicy.swift:14:17: warning: Redundant public accessibility for function 'buildInstructions(appName:targetIndexStr:targetContainer:)' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Reasoning/Planner/Policies/StepPolicyRegistry.swift:16:17: warning: Unused function 'buildInstructions(appName:targetIndexStr:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Reasoning/Planner/Policies/StepPolicyRegistry.swift:21:13: warning: Redundant public accessibility for enum 'StepPolicyRegistry' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Reasoning/Planner/Policies/StepPolicyRegistry.swift:22:24: warning: Redundant public accessibility for function 'policy(for:)' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Reasoning/Planner/Policies/StepPolicyRegistry.swift:32:15: warning: Redundant public accessibility for struct 'GeneralStepPolicy' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Reasoning/Planner/Policies/StepPolicyRegistry.swift:33:12: warning: Redundant public accessibility for initializer 'init()' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Reasoning/Planner/Policies/StepPolicyRegistry.swift:35:17: warning: Redundant public accessibility for function 'buildInstructions(appName:targetIndexStr:targetContainer:)' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Reasoning/Validator/Policies/ComposeValidationPolicy.swift:11:15: warning: Redundant public accessibility for struct 'ComposeValidationPolicy' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Reasoning/Validator/Policies/ComposeValidationPolicy.swift:12:12: warning: Redundant public accessibility for initializer 'init()' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Reasoning/Validator/Policies/ComposeValidationPolicy.swift:14:17: warning: Redundant public accessibility for function 'buildInstructions(appName:targetIndexStr:)' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Reasoning/Validator/Policies/InspectValidationPolicy.swift:11:15: warning: Redundant public accessibility for struct 'InspectValidationPolicy' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Reasoning/Validator/Policies/InspectValidationPolicy.swift:12:12: warning: Redundant public accessibility for initializer 'init()' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Reasoning/Validator/Policies/InspectValidationPolicy.swift:14:17: warning: Redundant public accessibility for function 'buildInstructions(appName:targetIndexStr:)' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Reasoning/Validator/Policies/ValidationPolicyRegistry.swift:15:13: warning: Redundant public accessibility for enum 'ValidationPolicyRegistry' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Reasoning/Validator/Policies/ValidationPolicyRegistry.swift:16:24: warning: Redundant public accessibility for function 'policy(for:)' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Reasoning/Validator/Policies/ValidationPolicyRegistry.swift:28:15: warning: Redundant public accessibility for struct 'GeneralValidationPolicy' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Reasoning/Validator/Policies/ValidationPolicyRegistry.swift:29:12: warning: Redundant public accessibility for initializer 'init()' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Reasoning/Validator/Policies/ValidationPolicyRegistry.swift:31:17: warning: Redundant public accessibility for function 'buildInstructions(appName:targetIndexStr:)' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Reasoning/Validator/TaskEgressValidator.swift:366:9: warning: Unused parameter 'appName'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Roster/CompanionProfile.swift:32:16: warning: Unused property 'ringColor'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Roster/CompanionProfile.swift:58:24: warning: Unused function 'matchTheme(cloudHex:ringHex:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Roster/CompanionProfile.swift:209:16: warning: Unused property 'ringColor'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Roster/CompanionRosterStore.swift:40:27: warning: Unused property 'isOverflowOpen'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Roster/CompanionRosterStore.swift:133:16: warning: Unused property 'railSlots'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Roster/CompanionRosterStore.swift:147:16: warning: Unused property 'overflowCompanions'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Roster/CompanionRosterStore.swift:233:17: warning: Unused function 'appendMessage(_:forSessionName:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Roster/CompanionRosterStore.swift:277:17: warning: Unused function 'swapIntoActiveSlot(id:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Roster/CompanionRosterStore.swift:396:17: warning: Unused function 'restoreDefaultCompanions()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Roster/CompanionRosterStore.swift:400:17: warning: Unused function 'toggleRailCollapse()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Roster/Onboarding/CompanionInterviewEngine.swift:222:60: warning: Unused parameter 'fallbackUserPrompt'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Roster/Onboarding/CompanionWorkspaceManager.swift:17:16: warning: Assign-only property 'snapshotsDirectory' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Roster/Onboarding/CompanionWorkspaceManager.swift:19:16: warning: Assign-only property 'cookiesDirectory' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Roster/Onboarding/CompanionWorkspaceManager.swift:20:16: warning: Assign-only property 'cacheDirectory' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Roster/Onboarding/CompanionWorkspaceManager.swift:24:16: warning: Assign-only property 'routinesFile' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Roster/Onboarding/CompanionWorkspaceManager.swift:65:16: warning: Unused property 'baseDirectory'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Roster/Onboarding/CompanionWorkspaceManager.swift:177:17: warning: Unused function 'openSharedWorkspaceInFinder()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Roster/Onboarding/CompanionWorkspaceManager.swift:193:17: warning: Unused function 'readMemory(for:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Roster/Onboarding/CompanionWorkspaceManager.swift:203:17: warning: Unused function 'updateMemoryPreference(for:key:value:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Roster/Onboarding/Policies/CompanionInterviewPolicy.swift:11:13: warning: Redundant public accessibility for enum 'CompanionInterviewPolicy' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Roster/Onboarding/Policies/CompanionInterviewPolicy.swift:14:23: warning: Redundant public accessibility for property 'systemPrompt' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Roster/Onboarding/Policies/CompanionInterviewPolicy.swift:52:24: warning: Redundant public accessibility for function 'promptForTurn(userAnswer:turnCount:isExplicitFinalize:)' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Audio/AppleSpeechTranscriptionProvider.swift:24:9: warning: Unused property 'isConfigured'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Audio/AppleSpeechTranscriptionProvider.swift:25:9: warning: Unused property 'unavailableExplanation'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Audio/BuddyDictationManager.swift:24:13: warning: Unused property 'displayText'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Audio/BuddyDictationManager.swift:39:13: warning: Unused property 'keyCapsuleLabels'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Audio/BuddyDictationManager.swift:97:16: warning: Unused property 'pushToTalkDisplayText'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Audio/BuddyDictationManager.swift:98:16: warning: Unused property 'pushToTalkTooltipText'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Audio/BuddyDictationManager.swift:245:9: warning: Unused property 'isActivelyRecordingAudio'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Audio/BuddyDictationManager.swift:249:9: warning: Unused property 'isMicrophoneButtonActivelyRecordingAudio'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Audio/BuddyDictationManager.swift:253:9: warning: Unused property 'isMicrophoneButtonSessionBusy'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Audio/BuddyDictationManager.swift:292:10: warning: Unused function 'updateContextualKeyterms(_:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Audio/BuddyDictationManager.swift:354:10: warning: Unused function 'requestInitialPushToTalkPermissionsIfNeeded()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Audio/BuddyDictationManager.swift:857:10: warning: Unused function 'openRelevantPrivacySettings()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Audio/BuddyTranscriptionProvider.swift:21:9: warning: Unused property 'isConfigured'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Audio/BuddyTranscriptionProvider.swift:22:9: warning: Unused property 'unavailableExplanation'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Audio/GlobalPushToTalkShortcutMonitor.swift:16:23: warning: Redundant public accessibility for property 'isSynthesizingInput' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Audio/GlobalPushToTalkShortcutMonitor.swift:31:16: warning: Redundant public accessibility for property 'onEscapePressed' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciClusterEngine.swift:18:16: warning: Assign-only property 'h1LevelName' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciClusterEngine.swift:19:16: warning: Assign-only property 'h1Price' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciClusterEngine.swift:20:16: warning: Assign-only property 'm15LevelName' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciClusterEngine.swift:21:16: warning: Assign-only property 'm15Price' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciClusterEngine.swift:22:16: warning: Assign-only property 'distance' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciClusterEngine.swift:23:16: warning: Assign-only property 'toleranceUsed' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciClusterEngine.swift:40:15: warning: Redundant public accessibility for struct 'AstronacciClusterEngine' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciClusterEngine.swift:43:24: warning: Redundant public accessibility for function 'evaluateLevels(h1Levels:m15Levels:atr14M15:)' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciClusterEngine.swift:98:24: warning: Redundant public accessibility for function 'evaluateConfluence(klinesH1:klinesM15:atr14M15:regime:)' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciDeterministicEngine.swift:72:16: warning: Unused property 'isReversal'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciDeterministicEngine.swift:143:16: warning: Assign-only property 'swingLow' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciDeterministicEngine.swift:144:16: warning: Assign-only property 'swingHigh' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciDeterministicEngine.swift:145:16: warning: Assign-only property 'fib0382' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciDeterministicEngine.swift:146:16: warning: Assign-only property 'fib0500' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciDeterministicEngine.swift:147:16: warning: Assign-only property 'fib0618' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciDeterministicEngine.swift:148:16: warning: Assign-only property 'fib0786' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciDeterministicEngine.swift:149:16: warning: Assign-only property 'expansion1272' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciDeterministicEngine.swift:150:16: warning: Assign-only property 'expansion1618' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciDeterministicEngine.swift:151:16: warning: Assign-only property 'atr14' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciDeterministicEngine.swift:152:16: warning: Assign-only property 'isInGoldenPocket' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciDeterministicEngine.swift:156:16: warning: Assign-only property 'regimePoints' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciDeterministicEngine.swift:157:16: warning: Assign-only property 'fibZonePoints' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciDeterministicEngine.swift:158:16: warning: Assign-only property 'candleTriggerPoints' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciDeterministicEngine.swift:159:16: warning: Assign-only property 'stochasticPoints' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciDeterministicEngine.swift:160:16: warning: Assign-only property 'sessionPoints' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciDeterministicEngine.swift:161:16: warning: Assign-only property 'newsPoints' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciDeterministicEngine.swift:162:16: warning: Assign-only property 'totalScore' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciDeterministicEngine.swift:166:16: warning: Unused property 'isPassed'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciDeterministicEngine.swift:167:16: warning: Assign-only property 'candleTriggerPassed' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciDeterministicEngine.swift:168:16: warning: Assign-only property 'rrPassed' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciDeterministicEngine.swift:169:16: warning: Assign-only property 'riskDistPassed' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciDeterministicEngine.swift:170:16: warning: Assign-only property 'swingRangePassed' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciDeterministicEngine.swift:171:16: warning: Assign-only property 'rejectionReason' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciDeterministicEngine.swift:173:12: warning: Unused initializer 'init(isPassed:candleTriggerPassed:rrPassed:riskDistPassed:swingRangePassed:rejectionReason:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciDeterministicEngine.swift:191:16: warning: Assign-only property 'direction' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciDeterministicEngine.swift:192:16: warning: Assign-only property 'entryPrice' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciDeterministicEngine.swift:193:16: warning: Assign-only property 'stopLossPrice' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciDeterministicEngine.swift:194:16: warning: Assign-only property 'takeProfit1' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciDeterministicEngine.swift:195:16: warning: Assign-only property 'takeProfit2' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciDeterministicEngine.swift:196:16: warning: Assign-only property 'riskRewardRatio' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciDeterministicEngine.swift:197:16: warning: Assign-only property 'positionSize' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciDeterministicEngine.swift:198:16: warning: Assign-only property 'feeBufferUsd' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciDeterministicEngine.swift:199:16: warning: Assign-only property 'assumedSlippageUsd' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciDeterministicEngine.swift:200:16: warning: Assign-only property 'notionalUsd' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciDeterministicEngine.swift:201:16: warning: Assign-only property 'isBGradeHalfSize' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciDeterministicEngine.swift:204:15: warning: Unused struct 'AstronacciEvaluationResult'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciDeterministicEngine.swift:219:16: warning: Assign-only property 'ema21' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciDeterministicEngine.swift:220:16: warning: Assign-only property 'ema34' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciDeterministicEngine.swift:221:16: warning: Assign-only property 'ema200' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciDeterministicEngine.swift:222:16: warning: Assign-only property 'lastClose' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciDeterministicEngine.swift:533:17: warning: Unused function 'evaluateConfluence(symbol:klinesH1:klinesM15:klinesM5:isNewsClear:isLondonNyOverlap:accountEquity:maxLeverage:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciDeterministicEngine.swift:869:24: warning: Unused function 'evaluateVetoGate(detectedRegime:candleTrigger:calculatedRR:riskDist:swingRange:atr14:totalScore:minRR:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciDivergenceEngine.swift:35:16: warning: Assign-only property 'firstPivot' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciDivergenceEngine.swift:36:16: warning: Assign-only property 'secondPivot' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciDivergenceEngine.swift:37:16: warning: Assign-only property 'barsAgo' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciDivergenceEngine.swift:66:15: warning: Redundant public accessibility for struct 'AstronacciDivergenceEngine' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciDivergenceEngine.swift:67:12: warning: Redundant public accessibility for initializer 'init()' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciDivergenceEngine.swift:70:17: warning: Redundant public accessibility for function 'evaluateLowPivotsDivergence(first:second:currentBarIndex:maxAgeBars:)' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciDivergenceEngine.swift:109:17: warning: Redundant public accessibility for function 'evaluateHighPivotsDivergence(first:second:currentBarIndex:maxAgeBars:)' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciDivergenceEngine.swift:148:17: warning: Redundant public accessibility for function 'calculateStochasticSeries(kPeriod:slowing:klines:)' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciDivergenceEngine.swift:178:17: warning: Redundant public accessibility for function 'detectDivergence(klines:kPeriod:dPeriod:slowing:maxLookback:)' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciDivergenceEngine.swift:181:9: warning: Unused parameter 'dPeriod'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciEconomicCalendarEngine.swift:17:16: warning: Assign-only property 'impact' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciEconomicCalendarEngine.swift:19:12: warning: Unused initializer 'init(name:date:timeET:impact:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciEconomicCalendarEngine.swift:28:16: warning: Assign-only property 'version' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciEconomicCalendarEngine.swift:29:16: warning: Assign-only property 'source' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciEconomicCalendarEngine.swift:30:16: warning: Assign-only property 'sources' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciEconomicCalendarEngine.swift:55:16: warning: Assign-only property 'eventDateUTC' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciEconomicCalendarEngine.swift:58:16: warning: Assign-only property 'alertBadge' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciEconomicCalendarEngine.swift:59:16: warning: Assign-only property 'advisoryText' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciEconomicCalendarEngine.swift:90:15: warning: Redundant public accessibility for struct 'AstronacciEconomicCalendarEngine' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciEconomicCalendarEngine.swift:91:16: warning: Assign-only property 'calendarData' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciEconomicCalendarEngine.swift:91:16: warning: Redundant public accessibility for property 'calendarData' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciEconomicCalendarEngine.swift:92:16: warning: Redundant public accessibility for property 'parsedEvents' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciEconomicCalendarEngine.swift:93:16: warning: Redundant public accessibility for property 'validUntilDate' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciEconomicCalendarEngine.swift:97:24: warning: Redundant public accessibility for function 'loadSingleSourceCalendar()' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciEconomicCalendarEngine.swift:130:12: warning: Redundant public accessibility for initializer 'init(jsonString:fileURL:)' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciEconomicCalendarEngine.swift:167:17: warning: Redundant public accessibility for function 'evaluateBuffer(currentDate:bufferMinutes:)' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciEphemerisEngine.swift:33:16: warning: Assign-only property 'date' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciEphemerisEngine.swift:34:16: warning: Assign-only property 'lunarPhase' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciEphemerisEngine.swift:35:16: warning: Assign-only property 'moonAgeDays' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciEphemerisEngine.swift:36:16: warning: Assign-only property 'moonElongationDeg' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciEphemerisEngine.swift:37:16: warning: Assign-only property 'isNearNewOrFullMoon' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciEphemerisEngine.swift:38:16: warning: Assign-only property 'mercuryMotion' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciEphemerisEngine.swift:39:16: warning: Assign-only property 'mercuryVelocityDegPerDay' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciEphemerisEngine.swift:74:15: warning: Redundant public accessibility for struct 'AstronacciEphemerisEngine' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciEphemerisEngine.swift:75:12: warning: Redundant public accessibility for initializer 'init()' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciEphemerisEngine.swift:86:17: warning: Redundant public accessibility for function 'calculateJulianDay(date:)' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciEphemerisEngine.swift:115:17: warning: Redundant public accessibility for function 'calculateSunLongitude(T:)' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciEphemerisEngine.swift:123:17: warning: Redundant public accessibility for function 'calculateMoonLongitude(T:)' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciEphemerisEngine.swift:143:17: warning: Redundant public accessibility for function 'calculateMercuryGeocentricLongitude(jd:)' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciEphemerisEngine.swift:175:17: warning: Redundant public accessibility for function 'calculateAstroReport(date:)' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciPlanetaryAspectEngine.swift:58:16: warning: Assign-only property 'body1' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciPlanetaryAspectEngine.swift:59:16: warning: Assign-only property 'body2' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciPlanetaryAspectEngine.swift:60:16: warning: Assign-only property 'aspectType' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciPlanetaryAspectEngine.swift:61:16: warning: Assign-only property 'angleDeg' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciPlanetaryAspectEngine.swift:62:16: warning: Assign-only property 'targetDeg' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciPlanetaryAspectEngine.swift:79:16: warning: Assign-only property 'signName' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciPlanetaryAspectEngine.swift:80:16: warning: Assign-only property 'degreeInSign' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciPlanetaryAspectEngine.swift:81:16: warning: Assign-only property 'isNearBoundary' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciPlanetaryAspectEngine.swift:94:16: warning: Assign-only property 'date' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciPlanetaryAspectEngine.swift:95:16: warning: Assign-only property 'allActiveAspects' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciPlanetaryAspectEngine.swift:98:16: warning: Assign-only property 'summaryText' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciPlanetaryAspectEngine.swift:117:15: warning: Redundant public accessibility for struct 'AstronacciPlanetaryAspectEngine' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciPlanetaryAspectEngine.swift:118:12: warning: Redundant public accessibility for initializer 'init()' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciPlanetaryAspectEngine.swift:135:17: warning: Redundant public accessibility for function 'calculateGeocentricLongitude(body:date:)' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciPlanetaryAspectEngine.swift:197:17: warning: Redundant public accessibility for function 'evaluateAspectReport(date:maxOrb:)' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciQuasimodoEngine.swift:20:16: warning: Assign-only property 'isBullish' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciQuasimodoEngine.swift:22:16: warning: Assign-only property 'headPrice' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciQuasimodoEngine.swift:23:16: warning: Assign-only property 'bosPrice' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciQuasimodoEngine.swift:24:16: warning: Assign-only property 'retestTargetPrice' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciQuasimodoEngine.swift:25:16: warning: Assign-only property 'invalidationPrice' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciQuasimodoEngine.swift:26:16: warning: Assign-only property 'isLeftShoulderInGP' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciQuasimodoEngine.swift:27:16: warning: Assign-only property 'isRetestingNow' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciQuasimodoEngine.swift:68:15: warning: Redundant public accessibility for struct 'AstronacciQuasimodoEngine' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciQuasimodoEngine.swift:69:12: warning: Redundant public accessibility for initializer 'init()' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciQuasimodoEngine.swift:72:17: warning: Redundant public accessibility for function 'evaluatePattern(p1Price:p1Index:p2Price:p2Index:p3Price:p3Index:p4Price:p4Index:currentPrice:atr:isBullishStructure:)' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/Astronacci/AstronacciQuasimodoEngine.swift:168:17: warning: Redundant public accessibility for function 'detectQuasimodo(klines:currentPrice:atr:lookbackBars:)' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/FuturesScout/BingXMarketDataEngine.swift:16:15: warning: Redundant public accessibility for struct 'BingXKlineResponse' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/FuturesScout/BingXMarketDataEngine.swift:17:16: warning: Assign-only property 'code' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/FuturesScout/BingXMarketDataEngine.swift:17:16: warning: Redundant public accessibility for property 'code' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/FuturesScout/BingXMarketDataEngine.swift:18:16: warning: Assign-only property 'msg' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/FuturesScout/BingXMarketDataEngine.swift:18:16: warning: Redundant public accessibility for property 'msg' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/FuturesScout/BingXMarketDataEngine.swift:19:16: warning: Redundant public accessibility for property 'data' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/FuturesScout/BingXMarketDataEngine.swift:86:17: warning: Unused function 'promptContextString()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/FuturesScout/BingXMarketDataEngine.swift:127:16: warning: Assign-only property 'isBullishRejection' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/FuturesScout/BingXMarketDataEngine.swift:128:16: warning: Assign-only property 'isBearishRejection' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/FuturesScout/BingXMarketDataEngine.swift:138:16: warning: Assign-only property 'ltf5m' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/FuturesScout/BingXMarketDataEngine.swift:251:17: warning: Unused function 'fetchAndAnalyze(symbol:interval:limit:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/FuturesScout/FuturesScoutBackgroundWatcher.swift:21:15: warning: Unused struct 'WatcherError'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/FuturesScout/FuturesScoutBackgroundWatcher.swift:45:16: warning: Assign-only property 'state' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/FuturesScout/FuturesScoutBackgroundWatcher.swift:47:12: warning: Unused initializer 'init(symbol:displaySymbol:addedAt:ttlSeconds:gpLow:gpHigh:lastAlertAt:state:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/FuturesScout/FuturesScoutBackgroundWatcher.swift:71:23: warning: Unused property 'maxSimultaneousSymbols'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/FuturesScout/FuturesScoutBackgroundWatcher.swift:126:17: warning: Unused function 'addSetup(symbol:gpLow:gpHigh:ttl:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/FuturesScout/FuturesScoutBackgroundWatcher.swift:164:17: warning: Unused function 'removeSetup(symbol:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/FuturesScout/FuturesScoutBackgroundWatcher.swift:171:17: warning: Unused function 'getMonitoredSetups()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/FuturesScout/FuturesScoutCoreAnalyst.swift:29:16: warning: Assign-only property 'state' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/FuturesScout/FuturesScoutCoreAnalyst.swift:30:16: warning: Assign-only property 'anchorIndex' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/FuturesScout/FuturesScoutCoreAnalyst.swift:31:16: warning: Assign-only property 'currentBarCount' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/FuturesScout/FuturesScoutCoreAnalyst.swift:35:16: warning: Assign-only property 'estimatedTargetDate' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/FuturesScout/FuturesScoutCoreAnalyst.swift:67:16: warning: Assign-only property 'exchangeSymbol' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/FuturesScout/FuturesScoutCoreAnalyst.swift:69:16: warning: Assign-only property 'referenceDate' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/FuturesScout/FuturesScoutCoreAnalyst.swift:73:16: warning: Assign-only property 'atrM5' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/FuturesScout/FuturesScoutCoreAnalyst.swift:83:16: warning: Assign-only property 'hasValidSwing' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/FuturesScout/FuturesScoutCoreAnalyst.swift:87:16: warning: Assign-only property 'targetReTest' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/FuturesScout/FuturesScoutCoreAnalyst.swift:94:16: warning: Assign-only property 'stochM5D' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/FuturesScout/FuturesScoutCoreAnalyst.swift:95:16: warning: Assign-only property 'isStochM5OversoldCross' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/FuturesScout/FuturesScoutCoreAnalyst.swift:96:16: warning: Assign-only property 'isStochM5OverboughtCross' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/FuturesScout/FuturesScoutCoreAnalyst.swift:240:16: warning: Assign-only property 'failureReason' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/TradingView/TradingViewActionDispatcher.swift:72:17: warning: Unused function 'isCurrentlyLocked()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/TradingView/TradingViewActionDispatcher.swift:89:23: warning: Unused property 'bundleIdentifier'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/TradingView/TradingViewActionDispatcher.swift:90:23: warning: Unused property 'appPath'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/TradingView/TradingViewActionDispatcher.swift:96:22: warning: Unused typealias 'MarketSession'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/TradingView/TradingViewActionDispatcher.swift:98:36: warning: Unused function 'getCurrentMarketSession(date:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/TradingView/TradingViewActionDispatcher.swift:253:17: warning: Unused function 'switchTimeframe(_:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/TradingView/TradingViewActionDispatcher.swift:258:17: warning: Unused function 'switchSymbol(_:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/TradingView/TradingViewActionDispatcher.swift:263:17: warning: Unused function 'toggleSidebar()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/TradingView/TradingViewActionDispatcher.swift:268:17: warning: Unused function 'maximizeWindow()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/TradingView/TradingViewActionDispatcher.swift:273:17: warning: Unused function 'resetChartScale()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/TradingView/TradingViewActionDispatcher.swift:277:17: warning: Unused function 'focusChartCanvas()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/TradingView/TradingViewActionDispatcher.swift:282:17: warning: Unused function 'clearDrawings()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/TradingView/TradingViewActionDispatcher.swift:287:17: warning: Unused function 'selectToolViaPalette(_:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/TradingView/TradingViewActionDispatcher.swift:519:38: warning: Unused parameter 'strategyUsed'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/TradingView/TradingViewCommandRouter.swift:13:13: warning: Redundant public accessibility for enum 'TradingViewCommandRouter' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/TradingView/TradingViewCommandRouter.swift:17:24: warning: Redundant public accessibility for function 'resolveTradingViewIntent(cleanSlash:rawTranscript:)' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/TradingView/TradingViewDrawingTool.swift:331:24: warning: Unused function 'resolvePoint(_:windowBounds:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/TradingView/TradingViewInputSupport.swift:139:36: warning: Unused function 'isChartDataSettled(windowId:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/TradingView/TradingViewLayoutTool.swift:372:17: warning: Unused function 'getChartCanvasRect(hasSidebar:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/TradingView/TradingViewNavigationTool.swift:273:17: warning: Unused function 'verifySymbolTitle(targetSymbol:timeout:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/TradingView/TradingViewVisualGrounder.swift:17:13: warning: Redundant public accessibility for enum 'TradingViewVisualGrounder' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/TradingView/TradingViewVisualGrounder.swift:22:36: warning: Redundant public accessibility for function 'isSymbolSearchDialogOpen(imagePath:)' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/TradingView/TradingViewVisualGrounder.swift:56:36: warning: Unused function 'isPineEditorOpenInScreenshot(imagePath:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/TradingView/TradingViewVisualGrounder.swift:79:36: warning: Redundant public accessibility for function 'groundSymbolPill(windowId:windowBounds:)' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/TradingView/TradingViewVisualGrounder.swift:106:36: warning: Redundant public accessibility for function 'groundTimeframeSelector(targetTf:windowId:windowBounds:)' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Domain/TradingView/TradingViewVisualGrounder.swift:142:36: warning: Redundant public accessibility for function 'groundPineEditor(windowId:windowBounds:)' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Models/IntegrationsManager.swift:29:16: warning: Assign-only property 'authType' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Models/ModelTurnResult.swift:16:12: warning: Unused initializer 'init(id:name:arguments:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Models/ModelTurnResult.swift:26:16: warning: Assign-only property 'stopReason' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Models/ModelTurnResult.swift:43:18: warning: Unused typealias 'ClaudeToolCall'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Models/OpenAIAPI.swift:9:7: warning: Unused class 'OpenAIAPI'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Models/Policies/SiriAIPolicy.swift:11:13: warning: Redundant public accessibility for enum 'SiriAIPolicy' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Models/Policies/SiriAIPolicy.swift:14:23: warning: Redundant public accessibility for property 'typingIntentSystemPrompt' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Models/Policies/SiriAIPolicy.swift:31:23: warning: Redundant public accessibility for property 'chainedInstructionsSystemPrompt' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Models/SiriAIEngine.swift:22:16: warning: Assign-only property 'model' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Models/SiriAIEngine.swift:135:9: warning: Unused parameter 'tools'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Vision/ChatGPTAccountMonitorWidget.swift:12:15: warning: Redundant public accessibility for struct 'ChatGPTAccountMonitorWidget' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Vision/ChatGPTAccountMonitorWidget.swift:19:12: warning: Redundant public accessibility for initializer 'init()' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Vision/ChatGPTAccountMonitorWidget.swift:21:16: warning: Redundant public accessibility for property 'body' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Vision/ChatGPTAccountPoolManager.swift:66:16: warning: Assign-only property 'lastUsed' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Vision/ChatGPTAccountPoolManager.swift:259:17: warning: Unused function 'markActiveAccountCooldown(durationSeconds:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Vision/ChatGPTAccountPoolManager.swift:301:17: warning: Unused function 'recordRequestSuccess()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Vision/ChatGPTCodexVisionService.swift:12:16: warning: Assign-only property 'target' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Vision/ChatGPTCodexVisionService.swift:17:12: warning: Unused initializer 'init(target:x:y:confidence:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Vision/ChatGPTCodexVisionService.swift:25:16: warning: Assign-only property 'windowTitle' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Vision/ChatGPTCodexVisionService.swift:32:12: warning: Unused initializer 'init(windowTitle:windowType:hasModalOrError:errorOrAlertMessage:formFields:visualSummary:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Vision/ChatGPTCodexVisionService.swift:49:13: warning: Redundant public accessibility for enum 'VisionServiceError' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Vision/ChatGPTCodexVisionService.swift:56:16: warning: Redundant public accessibility for property 'errorDescription' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Services/Vision/ChatGPTCodexVisionService.swift:93:23: warning: Unused property 'defaultReasoningEffort'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Avatars/CompanionAnimationEngine.swift:25:16: warning: Unused property 'currentStep'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Avatars/CompanionAnimationEngine.swift:73:17: warning: Unused function 'advanceStep()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Avatars/CompanionAnimationEngine.swift:79:17: warning: Unused function 'toggle(sequence:onStep:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Avatars/CompanionAvatarDefinition.swift:37:16: warning: Assign-only property 'name' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Avatars/CompanionAvatarDefinition.swift:42:16: warning: Assign-only property 'rotationX' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Avatars/CompanionAvatarDefinition.swift:43:16: warning: Assign-only property 'rotationY' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Avatars/CompanionAvatarDefinition.swift:44:16: warning: Assign-only property 'rotationZ' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Avatars/CompanionAvatarDefinition.swift:242:13: warning: Redundant public accessibility for enum 'CompanionLifecycleState' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Avatars/CompanionAvatarDefinition.swift:251:16: warning: Redundant public accessibility for property 'defaultExpressionName' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Avatars/CompanionAvatarDefinition.swift:266:16: warning: Assign-only property 'enabled' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Avatars/CompanionAvatarDefinition.swift:286:16: warning: Assign-only property 'schema' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Avatars/CompanionAvatarDefinition.swift:287:16: warning: Assign-only property 'schemaVersion' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Avatars/CompanionAvatarDefinition.swift:292:16: warning: Assign-only property 'animationOrder' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Avatars/CompanionAvatarLabCatalog.swift:15:16: warning: Assign-only property 'widthLeft' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Avatars/CompanionAvatarLabCatalog.swift:16:16: warning: Assign-only property 'widthRight' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Avatars/CompanionAvatarLabCatalog.swift:17:16: warning: Assign-only property 'heightLeft' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Avatars/CompanionAvatarLabCatalog.swift:18:16: warning: Assign-only property 'heightRight' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Avatars/CompanionAvatarLabCatalog.swift:19:16: warning: Assign-only property 'spacing' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Avatars/CompanionAvatarLabCatalog.swift:20:16: warning: Assign-only property 'positionXLeft' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Avatars/CompanionAvatarLabCatalog.swift:21:16: warning: Assign-only property 'positionXRight' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Avatars/CompanionAvatarLabCatalog.swift:22:16: warning: Assign-only property 'positionYLeft' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Avatars/CompanionAvatarLabCatalog.swift:23:16: warning: Assign-only property 'positionYRight' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Avatars/CompanionAvatarLabCatalog.swift:24:16: warning: Assign-only property 'leftAngle' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Avatars/CompanionAvatarLabCatalog.swift:25:16: warning: Assign-only property 'rightAngle' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Avatars/CompanionAvatarLabCatalog.swift:59:16: warning: Assign-only property 'defaultEyes' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Avatars/CompanionAvatarLabCatalog.swift:60:16: warning: Assign-only property 'iconName' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Avatars/CompanionAvatarLabCatalog.swift:123:16: warning: Assign-only property 'expressionId' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Avatars/CompanionAvatarLabCatalog.swift:124:16: warning: Assign-only property 'expressionIndex' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Avatars/CompanionAvatarLabCatalog.swift:158:16: warning: Unused property 'totalDurationMs'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Avatars/CompanionAvatarLabCatalog.swift:180:15: warning: Redundant public accessibility for struct 'CompanionAvatarLabCatalog' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Avatars/CompanionAvatarLabCatalog.swift:182:23: warning: Redundant public accessibility for property 'allTemplates' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Avatars/CompanionAvatarLabCatalog.swift:837:23: warning: Redundant public accessibility for property 'allPresets' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Avatars/CompanionAvatarLabCatalog.swift:1570:23: warning: Redundant public accessibility for property 'allAnimations' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Avatars/CompanionAvatarLabCatalog.swift:2373:24: warning: Unused function 'template(byName:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Avatars/CompanionAvatarLabCatalog.swift:2377:24: warning: Redundant public accessibility for function 'template(byId:)' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Avatars/CompanionAvatarLabCatalog.swift:2387:24: warning: Unused function 'preset(byIndex:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Avatars/CompanionAvatarLabCatalog.swift:2391:24: warning: Redundant public accessibility for function 'preset(byId:)' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Avatars/CompanionAvatarLabCatalog.swift:2395:24: warning: Redundant public accessibility for function 'animation(byKey:)' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Avatars/CompanionGazeTracker.swift:64:17: warning: Unused function 'stopTracking()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Avatars/CompanionGazeTracker.swift:112:17: warning: Unused function 'updateLocalGaze(normalizedX:normalizedY:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Avatars/CompanionProceduralAvatarView.swift:40:15: warning: Redundant public accessibility for struct 'Strobi3DMath' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Avatars/CompanionProceduralAvatarView.swift:41:23: warning: Redundant public accessibility for property 'RADIUS' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Avatars/CompanionProceduralAvatarView.swift:42:23: warning: Redundant public accessibility for property 'FOCAL_LENGTH' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Avatars/CompanionProceduralAvatarView.swift:43:23: warning: Redundant public accessibility for property 'QUARTER_ARC_SAMPLES' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Avatars/CompanionProceduralAvatarView.swift:46:24: warning: Redundant public accessibility for function 'radians(_:)' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Avatars/CompanionProceduralAvatarView.swift:50:24: warning: Redundant public accessibility for function 'quaternionFromAxisAngle(axis:angle:)' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Avatars/CompanionProceduralAvatarView.swift:56:24: warning: Redundant public accessibility for function 'multiplyQuaternions(_:_:)' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Avatars/CompanionProceduralAvatarView.swift:65:24: warning: Redundant public accessibility for function 'quaternionFromEuler(x:y:z:)' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Avatars/CompanionProceduralAvatarView.swift:72:24: warning: Redundant public accessibility for function 'rotateWithQuaternion(_:_:)' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Avatars/CompanionProceduralAvatarView.swift:83:24: warning: Redundant public accessibility for function 'canonicalFaceCoordinates(x:y:)' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Avatars/CompanionProceduralAvatarView.swift:89:24: warning: Redundant public accessibility for function 'ellipsoidFrontSample(x:y:radiusX:radiusY:radiusZ:)' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Avatars/CompanionProceduralAvatarView.swift:108:24: warning: Redundant public accessibility for function 'roundedRectangle(width:height:)' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Avatars/CompanionProceduralAvatarView.swift:144:24: warning: Redundant public accessibility for function 'sampleEye(expression:surface:orientation:side:blink:offset:)' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Avatars/CompanionProceduralAvatarView.swift:195:15: warning: Redundant public accessibility for struct 'ScreenCoordinateReader' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Avatars/CompanionProceduralAvatarView.swift:196:16: warning: Redundant public accessibility for property 'onPositionChange' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Avatars/CompanionProceduralAvatarView.swift:198:12: warning: Redundant public accessibility for initializer 'init(onPositionChange:)' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Avatars/CompanionProceduralAvatarView.swift:202:17: warning: Redundant public accessibility for function 'makeNSView(context:)' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Avatars/CompanionProceduralAvatarView.swift:208:17: warning: Redundant public accessibility for function 'updateNSView(_:context:)' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Avatars/CompanionProceduralAvatarView.swift:258:15: warning: Redundant public accessibility for struct 'CompanionProceduralAvatarView' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Avatars/CompanionProceduralAvatarView.swift:259:16: warning: Redundant public accessibility for property 'definition' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Avatars/CompanionProceduralAvatarView.swift:260:16: warning: Redundant public accessibility for property 'expressionName' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Avatars/CompanionProceduralAvatarView.swift:261:16: warning: Redundant public accessibility for property 'isBlinking' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Avatars/CompanionProceduralAvatarView.swift:262:16: warning: Redundant public accessibility for property 'autoBlink' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Avatars/CompanionProceduralAvatarView.swift:263:16: warning: Redundant public accessibility for property 'blinkConfig' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Avatars/CompanionProceduralAvatarView.swift:264:16: warning: Redundant public accessibility for property 'gazeOffset' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Avatars/CompanionProceduralAvatarView.swift:265:16: warning: Redundant public accessibility for property 'trackMouse' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Avatars/CompanionProceduralAvatarView.swift:266:16: warning: Redundant public accessibility for property 'size' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Avatars/CompanionProceduralAvatarView.swift:274:12: warning: Redundant public accessibility for initializer 'init(definition:expressionName:isBlinking:autoBlink:blinkConfig:gazeOffset:trackMouse:size:)' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Avatars/CompanionProceduralAvatarView.swift:323:16: warning: Redundant public accessibility for property 'body' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Avatars/CompanionProceduralAvatarView.swift:353:31: warning: Unused parameter 'isShaking'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Avatars/CompanionProceduralAvatarView.swift:585:15: warning: Redundant public accessibility for struct 'CompanionAvatarInspectorView' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Avatars/CompanionProceduralAvatarView.swift:609:12: warning: Redundant public accessibility for initializer 'init()' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Avatars/CompanionProceduralAvatarView.swift:611:16: warning: Redundant public accessibility for property 'body' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Common/CompanionResponseOverlay.swift:36:17: warning: Unused property 'cursorOffsetX'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Common/CompanionResponseOverlay.swift:38:17: warning: Unused property 'cursorOffsetY'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Common/CompanionResponseOverlay.swift:40:17: warning: Unused property 'overlayMaxWidth'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Common/CompanionResponseOverlay.swift:42:10: warning: Unused function 'showOverlayAndBeginStreaming()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Common/CompanionResponseOverlay.swift:47:10: warning: Unused function 'updateStreamingText(_:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Common/CompanionResponseOverlay.swift:51:10: warning: Unused function 'finishStreaming(spokenText:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Common/CompanionResponseOverlay.swift:66:18: warning: Unused function 'createOverlayPanelIfNeeded()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Common/CompanionResponseOverlay.swift:99:18: warning: Unused function 'startCursorTracking()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Common/CompanionResponseOverlay.swift:114:18: warning: Unused function 'repositionPanelNearCursor()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Common/CompanionResponseOverlay.swift:150:18: warning: Unused function 'resizePanelToFitContent()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Common/CompanionResponseOverlay.swift:167:18: warning: Unused function 'fadeOutAndHide()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Common/CompanionResponseOverlay.swift:180:18: warning: Unused function 'screenContainingPoint(_:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Common/CompanionResponseOverlay.swift:187:8: warning: Unused struct 'CompanionResponseOverlayView'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Common/CompanionUIHostBridge.swift:34:16: warning: Unused property 'isOverlayVisible'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Common/CompanionUIHostBridge.swift:38:17: warning: Unused function 'showOverlay()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Common/CompanionUIHostBridge.swift:46:17: warning: Unused function 'fadeOutOverlay()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Common/CompanionUIHostBridge.swift:50:17: warning: Unused function 'showConsent(with:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Common/CompanionUIHostBridge.swift:54:17: warning: Unused function 'dismissConsent()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Common/CompanionUIHostBridge.swift:58:17: warning: Unused function 'hideResponseOverlay()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Common/CompanionUIHostBridge.swift:62:16: warning: Unused property 'activeAccountEmail'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Common/CompanionUIHostBridge.swift:66:16: warning: Unused property 'activeAccountPlan'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Common/ComputerUseConsentCardView.swift:17:16: warning: Assign-only property 'category' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Common/ComputerUseConsentCardView.swift:19:16: warning: Assign-only property 'appIcon' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Common/ComputerUseConsentCardView.swift:172:15: warning: Redundant public accessibility for struct 'ComputerUseConsentCardView' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Common/ComputerUseConsentCardView.swift:173:16: warning: Redundant public accessibility for property 'request' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Common/ComputerUseConsentCardView.swift:174:16: warning: Redundant public accessibility for property 'onAllowOnce' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Common/ComputerUseConsentCardView.swift:175:16: warning: Redundant public accessibility for property 'onAlwaysAllow' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Common/ComputerUseConsentCardView.swift:176:16: warning: Redundant public accessibility for property 'onNotNow' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Common/ComputerUseConsentCardView.swift:177:16: warning: Redundant public accessibility for property 'onClose' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Common/ComputerUseConsentCardView.swift:178:16: warning: Redundant public accessibility for property 'onHistory' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Common/ComputerUseConsentCardView.swift:180:12: warning: Redundant public accessibility for initializer 'init(request:onAllowOnce:onAlwaysAllow:onNotNow:onClose:onHistory:)' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Common/ComputerUseConsentCardView.swift:197:12: warning: Redundant public accessibility for initializer 'init(action:onApprove:onReject:)' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Common/ComputerUseConsentCardView.swift:230:16: warning: Redundant public accessibility for property 'body' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Common/DesignSystem.swift:28:20: warning: Unused property 'background'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Common/DesignSystem.swift:79:20: warning: Unused property 'blue50'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Common/DesignSystem.swift:80:20: warning: Unused property 'blue100'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Common/DesignSystem.swift:81:20: warning: Unused property 'blue200'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Common/DesignSystem.swift:82:20: warning: Unused property 'blue300'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Common/DesignSystem.swift:84:20: warning: Unused property 'blue500'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Common/DesignSystem.swift:87:20: warning: Unused property 'blue800'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Common/DesignSystem.swift:88:20: warning: Unused property 'blue900'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Common/DesignSystem.swift:89:20: warning: Unused property 'blue950'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Common/DesignSystem.swift:108:20: warning: Unused property 'accentSubtle'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Common/DesignSystem.swift:116:20: warning: Unused property 'destructiveHover'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Common/DesignSystem.swift:123:20: warning: Unused property 'success'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Common/DesignSystem.swift:126:20: warning: Unused property 'warning'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Common/DesignSystem.swift:129:20: warning: Unused property 'warningText'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Common/DesignSystem.swift:134:20: warning: Unused property 'info'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Common/DesignSystem.swift:137:20: warning: Unused property 'codeText'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Common/DesignSystem.swift:151:20: warning: Unused property 'floatingGradientPurple'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Common/DesignSystem.swift:152:20: warning: Unused property 'floatingGradientPink'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Common/DesignSystem.swift:153:20: warning: Unused property 'floatingGradientOrange'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Common/DesignSystem.swift:160:20: warning: Unused property 'helpChatUserBubble'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Common/DesignSystem.swift:163:20: warning: Unused property 'helpChatUserBubbleHover'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Common/DesignSystem.swift:168:20: warning: Unused property 'helpChatBackdrop'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Common/DesignSystem.swift:176:20: warning: Unused property 'disabledBackground'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Common/DesignSystem.swift:181:20: warning: Unused property 'disabledText'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Common/DesignSystem.swift:188:10: warning: Unused enum 'Spacing'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Common/DesignSystem.swift:200:10: warning: Unused enum 'CornerRadius'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Common/DesignSystem.swift:219:20: warning: Unused property 'normal'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Common/DesignSystem.swift:221:20: warning: Unused property 'slow'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Common/DesignSystem.swift:230:20: warning: Unused property 'hover'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Common/DesignSystem.swift:232:20: warning: Unused property 'focus'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Common/DesignSystem.swift:236:20: warning: Unused property 'dragged'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Common/DesignSystem.swift:703:10: warning: Unused function 'dsPrimaryButtonStyle(isFullWidth:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Common/DesignSystem.swift:708:10: warning: Unused function 'dsSecondaryButtonStyle(isFullWidth:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Common/DesignSystem.swift:713:10: warning: Unused function 'dsTertiaryButtonStyle()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Common/DesignSystem.swift:718:10: warning: Unused function 'dsTextButtonStyle(fontSize:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Common/DesignSystem.swift:723:10: warning: Unused function 'dsOutlinedButtonStyle(isFullWidth:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Common/DesignSystem.swift:728:10: warning: Unused function 'dsDestructiveButtonStyle()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Common/DesignSystem.swift:735:10: warning: Unused function 'dsIconButtonStyle(size:isDestructiveOnHover:tooltip:tooltipAlignment:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Common/DesignSystem.swift:741:10: warning: Unused function 'pointerCursor(isEnabled:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Common/DesignSystem.swift:752:6: warning: Unused enum 'BuddyComposerVisualStyle'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Common/DesignSystem.swift:794:15: warning: Unused class 'IBeamCursorNSView'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Common/DesignSystem.swift:808:8: warning: Unused struct 'IBeamCursorView'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Common/DesignSystem.swift:825:16: warning: Unused struct 'NativeTooltipView'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Common/DesignSystem.swift:841:10: warning: Unused function 'nativeTooltip(_:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Common/DesignSystem.swift:884:15: warning: Redundant public accessibility for struct 'HeyClickyGelButtonStyle' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Common/DesignSystem.swift:885:16: warning: Assign-only property 'isProminent' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Common/DesignSystem.swift:885:16: warning: Redundant public accessibility for property 'isProminent' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Common/DesignSystem.swift:887:12: warning: Redundant public accessibility for initializer 'init(isProminent:)' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Common/DesignSystem.swift:891:17: warning: Redundant public accessibility for function 'makeBody(configuration:)' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Common/DesignSystem.swift:943:15: warning: Unused struct 'HeyClickySecondaryButtonStyle'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Common/DesignSystem.swift:968:15: warning: Unused struct 'HeyClickyDarkPillButtonStyle'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Common/OverlayWindow.swift:407:33: warning: Unused property 'homeSpaceManager'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Common/OverlayWindow.swift:1147:9: warning: Unused property 'isOverlayVisible'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Common/OverlayWindow.swift:1151:10: warning: Unused function 'rebuildOverlayWindows()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Common/OverlayWindow.swift:1155:10: warning: Unused function 'showAllOverlays()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Common/OverlayWindow.swift:1159:10: warning: Unused function 'hideAllOverlays()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Common/WorkSettingsViews.swift:449:35: warning: Unused parameter 'item'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Common/WorkSettingsViews.swift:469:24: warning: Unused property 'isTesting'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Floating/FloatingCompanionWindowManager.swift:23:17: warning: Unused function 'setup()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Floating/FloatingCompanionWindowManager.swift:47:17: warning: Unused function 'toggle()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Floating/FloatingCompanionWindowManager.swift:100:17: warning: Unused function 'setVerticalFraction(_:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/HomeSpace/CompanionVMViewportView.swift:15:15: warning: Unused struct 'VMWebViewRepresentable'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/HomeSpace/CompanionVMViewportView.swift:50:15: warning: Unused struct 'CompanionVMViewportView'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/HomeSpace/Components/HomeSpaceControlPills.swift:11:15: warning: Redundant public accessibility for struct 'ThemeSwatchButton' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/HomeSpace/Components/HomeSpaceControlPills.swift:12:16: warning: Redundant public accessibility for property 'theme' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/HomeSpace/Components/HomeSpaceControlPills.swift:13:16: warning: Redundant public accessibility for property 'isSelected' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/HomeSpace/Components/HomeSpaceControlPills.swift:14:16: warning: Redundant public accessibility for property 'onSelect' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/HomeSpace/Components/HomeSpaceControlPills.swift:16:12: warning: Redundant public accessibility for initializer 'init(theme:isSelected:onSelect:)' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/HomeSpace/Components/HomeSpaceControlPills.swift:22:16: warning: Redundant public accessibility for property 'body' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/HomeSpace/Components/HomeSpaceControlPills.swift:74:15: warning: Redundant public accessibility for struct 'FollowUpPillButton' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/HomeSpace/Components/HomeSpaceControlPills.swift:75:16: warning: Redundant public accessibility for property 'text' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/HomeSpace/Components/HomeSpaceControlPills.swift:76:16: warning: Redundant public accessibility for property 'action' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/HomeSpace/Components/HomeSpaceControlPills.swift:78:12: warning: Redundant public accessibility for initializer 'init(text:action:)' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/HomeSpace/Components/HomeSpaceControlPills.swift:83:16: warning: Redundant public accessibility for property 'body' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/HomeSpace/Components/HomeSpaceMarkdownViews.swift:36:13: warning: Redundant public accessibility for function 'parseMarkdownMessageBlocks(from:)' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/HomeSpace/Components/HomeSpaceMarkdownViews.swift:133:15: warning: Redundant public accessibility for struct 'MarkdownTableBlockView' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/HomeSpace/Components/HomeSpaceMarkdownViews.swift:134:16: warning: Redundant public accessibility for property 'data' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/HomeSpace/Components/HomeSpaceMarkdownViews.swift:137:12: warning: Redundant public accessibility for initializer 'init(data:)' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/HomeSpace/Components/HomeSpaceMarkdownViews.swift:141:16: warning: Redundant public accessibility for property 'body' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/HomeSpace/Components/HomeSpaceMarkdownViews.swift:310:15: warning: Redundant public accessibility for struct 'MarkdownFormattedMessageView' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/HomeSpace/Components/HomeSpaceMarkdownViews.swift:311:16: warning: Redundant public accessibility for property 'text' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/HomeSpace/Components/HomeSpaceMarkdownViews.swift:313:12: warning: Redundant public accessibility for initializer 'init(text:)' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/HomeSpace/Components/HomeSpaceMarkdownViews.swift:317:16: warning: Redundant public accessibility for property 'body' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/HomeSpace/Components/NotchUnifiedHuggingShape.swift:11:15: warning: Redundant public accessibility for struct 'NotchUnifiedHuggingShape' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/HomeSpace/Components/NotchUnifiedHuggingShape.swift:12:16: warning: Redundant public accessibility for property 'notchLeft' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/HomeSpace/Components/NotchUnifiedHuggingShape.swift:13:16: warning: Redundant public accessibility for property 'notchRight' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/HomeSpace/Components/NotchUnifiedHuggingShape.swift:14:16: warning: Redundant public accessibility for property 'notchHeight' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/HomeSpace/Components/NotchUnifiedHuggingShape.swift:15:16: warning: Redundant public accessibility for property 'earRadius' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/HomeSpace/Components/NotchUnifiedHuggingShape.swift:16:16: warning: Redundant public accessibility for property 'cornerRadius' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/HomeSpace/Components/NotchUnifiedHuggingShape.swift:18:12: warning: Redundant public accessibility for initializer 'init(notchLeft:notchRight:notchHeight:earRadius:cornerRadius:)' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/HomeSpace/Components/NotchUnifiedHuggingShape.swift:32:17: warning: Redundant public accessibility for function 'path(in:)' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/HomeSpace/HomeSpaceComputerCardView.swift:7:15: warning: Redundant public accessibility for struct 'HomeSpaceComputerCardView' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/HomeSpace/HomeSpaceComputerCardView.swift:8:16: warning: Redundant public accessibility for property 'payload' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/HomeSpace/HomeSpaceComputerCardView.swift:9:16: warning: Redundant public accessibility for property 'onTakeoverClicked' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/HomeSpace/HomeSpaceComputerCardView.swift:10:16: warning: Assign-only property 'onOpenWindowClicked' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/HomeSpace/HomeSpaceComputerCardView.swift:10:16: warning: Redundant public accessibility for property 'onOpenWindowClicked' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/HomeSpace/HomeSpaceComputerCardView.swift:11:16: warning: Redundant public accessibility for property 'onCardTapped' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/HomeSpace/HomeSpaceComputerCardView.swift:12:16: warning: Redundant public accessibility for property 'isCollapsible' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/HomeSpace/HomeSpaceComputerCardView.swift:13:16: warning: Redundant public accessibility for property 'isCollapsed' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/HomeSpace/HomeSpaceComputerCardView.swift:37:12: warning: Redundant public accessibility for initializer 'init(payload:onTakeoverClicked:onOpenWindowClicked:onCardTapped:isCollapsible:isCollapsed:)' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/HomeSpace/HomeSpaceComputerCardView.swift:53:16: warning: Redundant public accessibility for property 'body' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/HomeSpace/HomeSpaceComputerCardView.swift:503:17: warning: Unused property 'precisionGroundingOverlay'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/HomeSpace/HomeSpaceComputerCardView.swift:540:15: warning: Redundant public accessibility for struct 'HomeSpaceComputerReceiptView' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/HomeSpace/HomeSpaceComputerCardView.swift:541:16: warning: Redundant public accessibility for property 'payload' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/HomeSpace/HomeSpaceComputerCardView.swift:542:16: warning: Redundant public accessibility for property 'onTapped' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/HomeSpace/HomeSpaceComputerCardView.swift:546:12: warning: Unused initializer 'init(payload:onTapped:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/HomeSpace/HomeSpaceComputerCardView.swift:551:16: warning: Redundant public accessibility for property 'body' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/HomeSpace/HomeSpaceComputerCardView.swift:652:15: warning: Redundant public accessibility for struct 'HomeSpaceComputerStepsView' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/HomeSpace/HomeSpaceComputerCardView.swift:653:16: warning: Redundant public accessibility for property 'queueItems' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/HomeSpace/HomeSpaceComputerCardView.swift:654:16: warning: Redundant public accessibility for property 'status' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/HomeSpace/HomeSpaceComputerCardView.swift:655:16: warning: Redundant public accessibility for property 'isPastTurn' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/HomeSpace/HomeSpaceComputerCardView.swift:656:16: warning: Redundant public accessibility for property 'targetAppName' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/HomeSpace/HomeSpaceComputerCardView.swift:657:16: warning: Redundant public accessibility for property 'summary' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/HomeSpace/HomeSpaceComputerCardView.swift:658:16: warning: Redundant public accessibility for property 'onTapped' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/HomeSpace/HomeSpaceComputerCardView.swift:663:12: warning: Redundant public accessibility for initializer 'init(queueItems:status:isPastTurn:targetAppName:summary:onTapped:)' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/HomeSpace/HomeSpaceComputerCardView.swift:679:16: warning: Redundant public accessibility for property 'body' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/HomeSpace/HomeSpaceConnectedAppsView.swift:163:10: warning: Unused function 'editPromptFileName(for:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/HomeSpace/HomeSpaceConnectedAppsView.swift:170:10: warning: Unused function 'animationStepSummary(_:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/HomeSpace/HomeSpaceConnectedAppsView.swift:177:8: warning: Unused struct 'EditStudioPresetTile'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/HomeSpace/HomeSpaceConnectedAppsView.swift:223:8: warning: Unused struct 'EditStudioAnimationRow'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/HomeSpace/HomeSpaceEditCharacterStudioView.swift:498:10: warning: Unused function 'modeIcon(for:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/HomeSpace/HomeSpaceHeaderView.swift:16:9: warning: Unused property 'headerCenterSwitcher'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/HomeSpace/HomeSpaceInteractiveComputerModalView.swift:8:15: warning: Redundant public accessibility for struct 'HomeSpaceInteractiveComputerModalView' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/HomeSpace/HomeSpaceInteractiveComputerModalView.swift:9:16: warning: Redundant public accessibility for property 'payload' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/HomeSpace/HomeSpaceInteractiveComputerModalView.swift:10:16: warning: Redundant public accessibility for property 'onDismiss' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/HomeSpace/HomeSpaceInteractiveComputerModalView.swift:14:24: warning: Unused property 'hoveredDockApp'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/HomeSpace/HomeSpaceInteractiveComputerModalView.swift:18:12: warning: Redundant public accessibility for initializer 'init(payload:onDismiss:)' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/HomeSpace/HomeSpaceInteractiveComputerModalView.swift:27:16: warning: Redundant public accessibility for property 'body' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/HomeSpace/HomeSpaceInteractiveComputerModalView.swift:288:17: warning: Unused property 'miniDock'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/HomeSpace/HomeSpaceOnboardingAppearanceView.swift:297:10: warning: Unused function 'animationRowView(_:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/HomeSpace/HomeSpaceOnboardingAppearanceView.swift:349:10: warning: Unused function 'avatarLabPresetDisplayName(_:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/HomeSpace/HomeSpaceOnboardingAppearanceView.swift:441:10: warning: Unused function 'isThemeSelected(_:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/HomeSpace/HomeSpaceRootView.swift:284:9: warning: Unused property 'displayEmail'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/HomeSpace/HomeSpaceRootView.swift:293:9: warning: Unused property 'displayPlan'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Rail/CompanionOverflowSwitcherView.swift:10:15: warning: Redundant public accessibility for struct 'CompanionOverflowSwitcherView' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Rail/CompanionOverflowSwitcherView.swift:11:16: warning: Redundant public accessibility for property 'onSelect' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Rail/CompanionOverflowSwitcherView.swift:12:16: warning: Redundant public accessibility for property 'onDismiss' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Rail/CompanionOverflowSwitcherView.swift:17:12: warning: Unused initializer 'init(onSelect:onDismiss:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Rail/CompanionOverflowSwitcherView.swift:22:16: warning: Redundant public accessibility for property 'body' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Rail/CompanionPopoverCardView.swift:10:15: warning: Redundant public accessibility for struct 'CompanionPopoverCardView' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Rail/CompanionPopoverCardView.swift:11:16: warning: Redundant public accessibility for property 'companion' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Rail/CompanionPopoverCardView.swift:12:16: warning: Redundant public accessibility for property 'onClose' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Rail/CompanionPopoverCardView.swift:21:12: warning: Redundant public accessibility for initializer 'init(companion:onClose:)' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Rail/CompanionPopoverCardView.swift:26:16: warning: Redundant public accessibility for property 'body' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Rail/FloatingCompanionRailView.swift:12:15: warning: Redundant public accessibility for struct 'UnreadNotificationCircleBadge' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Rail/FloatingCompanionRailView.swift:13:16: warning: Redundant public accessibility for property 'badgeColor' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Rail/FloatingCompanionRailView.swift:14:16: warning: Redundant public accessibility for property 'borderColor' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Rail/FloatingCompanionRailView.swift:16:12: warning: Redundant public accessibility for initializer 'init(badgeColor:borderColor:)' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Rail/FloatingCompanionRailView.swift:21:16: warning: Redundant public accessibility for property 'body' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Rail/FloatingCompanionRailView.swift:38:15: warning: Redundant public accessibility for struct 'FloatingCompanionRailView' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Rail/FloatingCompanionRailView.swift:47:12: warning: Redundant public accessibility for initializer 'init()' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Rail/FloatingCompanionRailView.swift:77:16: warning: Redundant public accessibility for property 'body' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Rail/FloatingCompanionRailWindow.swift:11:20: warning: Redundant public accessibility for class 'FloatingCompanionRailPanel' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Rail/FloatingCompanionRailWindow.swift:12:12: warning: Redundant public accessibility for initializer 'init(contentRect:)' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Rail/FloatingCompanionRailWindow.swift:28:20: warning: Redundant public accessibility for class 'RailHostingView' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Rail/FloatingCompanionRailWindow.swift:29:26: warning: Redundant public accessibility for function 'hitTest(_:)' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Viewport/AppSystemIconView.swift:12:15: warning: Redundant public accessibility for struct 'AppSystemIconView' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Viewport/AppSystemIconView.swift:13:16: warning: Redundant public accessibility for property 'appName' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Viewport/AppSystemIconView.swift:14:16: warning: Redundant public accessibility for property 'size' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Viewport/AppSystemIconView.swift:16:12: warning: Redundant public accessibility for initializer 'init(appName:size:)' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Viewport/AppSystemIconView.swift:31:16: warning: Redundant public accessibility for property 'body' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Viewport/InteractiveVirtualDesktopView.swift:8:15: warning: Redundant public accessibility for struct 'InteractiveVirtualDesktopView' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Viewport/InteractiveVirtualDesktopView.swift:12:16: warning: Redundant public accessibility for property 'targetAppName' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Viewport/InteractiveVirtualDesktopView.swift:13:16: warning: Redundant public accessibility for property 'slug' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Viewport/InteractiveVirtualDesktopView.swift:14:16: warning: Redundant public accessibility for property 'customSnapshot' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Viewport/InteractiveVirtualDesktopView.swift:15:16: warning: Redundant public accessibility for property 'isInteractive' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Viewport/InteractiveVirtualDesktopView.swift:17:12: warning: Redundant public accessibility for initializer 'init(targetAppName:slug:customSnapshot:isInteractive:)' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Viewport/InteractiveVirtualDesktopView.swift:36:16: warning: Redundant public accessibility for property 'body' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Viewport/InteractiveVirtualDesktopView.swift:163:34: warning: Unused parameter 'size'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Viewport/InteractiveVirtualDesktopView.swift:200:9: warning: Assign-only property 'viewSize' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Viewport/InteractiveVirtualDesktopView.swift:300:15: warning: Redundant public accessibility for struct 'MascotAgentCursorView' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Viewport/InteractiveVirtualDesktopView.swift:301:16: warning: Redundant public accessibility for property 'isClicking' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Viewport/InteractiveVirtualDesktopView.swift:302:16: warning: Redundant public accessibility for property 'accentColor' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Viewport/InteractiveVirtualDesktopView.swift:304:12: warning: Unused initializer 'init(isClicking:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Viewport/InteractiveVirtualDesktopView.swift:309:12: warning: Redundant public accessibility for initializer 'init(isClicking:accentColor:)' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Viewport/InteractiveVirtualDesktopView.swift:314:16: warning: Redundant public accessibility for property 'body' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Viewport/InteractiveVirtualDesktopView.swift:337:15: warning: Redundant public accessibility for struct 'CursorArrowShape' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Viewport/InteractiveVirtualDesktopView.swift:338:12: warning: Redundant public accessibility for initializer 'init()' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/UI/Viewport/InteractiveVirtualDesktopView.swift:340:17: warning: Redundant public accessibility for function 'path(in:)' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Workspace/Streaming/CompanionScreenCaptureUtility.swift:26:9: warning: Unused property 'cgImage'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Workspace/Streaming/CompanionVMViewportController.swift:25:27: warning: Unused property 'vmCursorPosition'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Workspace/Streaming/CompanionVMViewportController.swift:26:27: warning: Unused property 'isClicking'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Workspace/Streaming/CompanionVMViewportController.swift:27:27: warning: Unused property 'isTakeoverActive'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Workspace/Streaming/CompanionVMViewportController.swift:29:27: warning: Unused property 'currentApp'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Workspace/Streaming/CompanionVMViewportController.swift:30:27: warning: Unused property 'mailProvider'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Workspace/Streaming/CompanionVMViewportController.swift:40:17: warning: Unused function 'prepareViewport(slug:app:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Workspace/Streaming/CompanionVMViewportController.swift:65:17: warning: Unused function 'setMailProvider(_:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Workspace/Streaming/CompanionVMViewportController.swift:70:17: warning: Unused function 'loadMailApp()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Workspace/Streaming/CompanionVMViewportController.swift:87:17: warning: Unused function 'loadSafariApp(urlString:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Workspace/Streaming/CompanionVMViewportController.swift:173:17: warning: Unused function 'simulateVMClick(at:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Workspace/Streaming/CompanionVMViewportController.swift:208:17: warning: Unused function 'simulateVMType(text:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Workspace/Streaming/CompanionVMViewportController.swift:234:17: warning: Unused function 'extractVMElements()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Workspace/Streaming/CompanionVMViewportController.swift:256:17: warning: Unused function 'extractLatestEmailContent()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Workspace/Streaming/CompanionWindowStreamService.swift:22:17: warning: Unused property 'isCapturingFallback'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Workspace/Streaming/CompanionWindowStreamService.swift:36:71: warning: Unused parameter 'targetBounds'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Workspace/Streaming/CompanionWindowStreamService.swift:134:17: warning: Unused function 'captureTargetWindow(appName:slug:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Workspace/Streaming/CompanionWindowStreamService.swift:231:17: warning: Unused function 'resolveRunningAppWindows(appNames:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Workspace/Streaming/CompanionWindowStreamService.swift:312:17: warning: Unused function 'detectBlockingDialog(appName:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Workspace/Streaming/CompanionWindowStreamService.swift:549:18: warning: Unused function 'findTargetWindow(appName:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Workspace/Streaming/CompanionWindowStreamService.swift:555:17: warning: Unused function 'findActiveSheetDialog(appName:parentBounds:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Workspace/Streaming/CompanionWindowStreamService.swift:584:17: warning: Unused function 'compositeSheetOnParentWindow(parentImage:parentBounds:sheetImage:sheetBounds:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Workspace/VirtualDisplay/MascotVirtualDesktopService.swift:25:27: warning: Unused property 'isHumanTakeoverActive'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Workspace/VirtualDisplay/MascotVirtualDesktopService.swift:39:17: warning: Assign-only property 'virtualDisplayObj' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Workspace/VirtualDisplay/MascotVirtualDesktopService.swift:42:17: warning: Unused property 'isCapturingFallback'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Workspace/VirtualDisplay/MascotVirtualDesktopService.swift:187:81: warning: Unused parameter 'intentType'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Workspace/VirtualDisplay/MascotVirtualDesktopService.swift:273:52: warning: Unused parameter 'appName'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Workspace/VirtualDisplay/MascotVirtualDesktopService.swift:511:17: warning: Unused function 'performCuaMove(normalizedPoint:pid:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Workspace/VirtualDisplay/MascotVirtualDesktopService.swift:594:17: warning: Unused function 'performCuaClick(normalizedPoint:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Workspace/VirtualDisplay/MascotVirtualDesktopService.swift:850:17: warning: Unused function 'performCuaKeyWithCommand(keyCode:pid:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Workspace/VirtualDisplay/MascotVirtualDesktopService.swift:907:17: warning: Unused function 'handleUserViewClick(viewPoint:viewSize:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Workspace/WindowManagement/WindowPositionManager.swift:22:24: warning: Unused property 'hasAttemptedScreenRecordingSystemPromptDuringCurrentLaunch'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Workspace/WindowManagement/WindowPositionManager.swift:28:17: warning: Unused function 'currentMacHasMultipleDisplays()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Workspace/WindowManagement/WindowPositionManager.swift:71:17: warning: Unused function 'revealAppInFinder()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Workspace/WindowManagement/WindowPositionManager.swift:105:17: warning: Unused function 'clearPreviouslyConfirmedScreenRecordingPermission()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Workspace/WindowManagement/WindowPositionManager.swift:113:17: warning: Unused function 'requestScreenRecordingPermission()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Workspace/WindowManagement/WindowPositionManager.swift:157:17: warning: Unused function 'pinMainWindowToRight(onDisplayID:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Workspace/WindowManagement/WindowPositionManager.swift:188:17: warning: Unused function 'shrinkOverlappingFocusedWindow(targetDisplayID:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Clicky/Workspace/WindowManagement/WindowPositionManager.swift:258:9: warning: Unused property 'displayID'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/ContentView.swift:46:17: warning: Unused property 'extendedHoverPadding'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/ContentView.swift:47:17: warning: Unused property 'zeroHeightHoverPadding'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/ContentView.swift:743:8: warning: Unused struct 'FullScreenDropDelegate'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/IzaViewCoordinator.swift:30:8: warning: Unused struct 'SharedSneakPeek'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/IzaViewCoordinator.swift:39:10: warning: Unused enum case 'safari'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/IzaViewCoordinator.swift:45:9: warning: Assign-only property 'value' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/IzaViewCoordinator.swift:70:17: warning: Unused property 'sneakPeekDispatch'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/IzaViewCoordinator.swift:71:17: warning: Unused property 'expandingViewDispatch'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/IzaViewCoordinator.swift:75:37: warning: Unused property 'showWhatsNew'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/IzaViewCoordinator.swift:89:35: warning: Unused property 'hudReplacement'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/IzaViewCoordinator.swift:106:20: warning: Unused property 'optionKeyPressed'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/IzaViewCoordinator.swift:107:17: warning: Assign-only property 'accessibilityObserver' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/IzaViewCoordinator.swift:184:16: warning: Unused function 'sneakPeekEvent(_:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/IzaViewCoordinator.swift:303:10: warning: Unused function 'showEmpty()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/MediaControllers/AppleMusicController.swift:60:10: warning: Unused function 'play()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/MediaControllers/AppleMusicController.swift:64:10: warning: Unused function 'pause()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/MediaControllers/MediaControllerProtocol.swift:18:10: warning: Unused function 'play()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/MediaControllers/MediaControllerProtocol.swift:19:10: warning: Unused function 'pause()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/MediaControllers/NowPlayingController.swift:58:17: warning: Unused property 'lastMusicItem'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/MediaControllers/NowPlayingController.swift:62:17: warning: Assign-only property 'mediaRemoteBundle' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/MediaControllers/NowPlayingController.swift:122:10: warning: Unused function 'play()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/MediaControllers/NowPlayingController.swift:126:10: warning: Unused function 'pause()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/MediaControllers/SpotifyController.swift:67:10: warning: Unused function 'play()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/MediaControllers/SpotifyController.swift:68:10: warning: Unused function 'pause()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/MediaControllers/YouTube Music Controller/YouTubeMusicAuthentication.swift:20:9: warning: Unused property 'currentToken'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/MediaControllers/YouTube Music Controller/YouTubeMusicAuthentication.swift:68:6: warning: Unused enum 'AuthenticationState'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/MediaControllers/YouTube Music Controller/YouTubeMusicController.swift:70:10: warning: Unused function 'play()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/MediaControllers/YouTube Music Controller/YouTubeMusicController.swift:72:10: warning: Unused function 'pause()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/MediaControllers/YouTube Music Controller/YouTubeMusicModels.swift:56:9: warning: Assign-only property 'rawData' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/MediaControllers/YouTube Music Controller/YouTubeMusicModels.swift:138:10: warning: Unused function 'with(elapsedSeconds:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/MediaControllers/YouTube Music Controller/YouTubeMusicNetworking.swift:70:10: warning: Unused function 'toggleDislike(token:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/MediaControllers/YouTube Music Controller/YouTubeMusicNetworking.swift:140:9: warning: Unused property 'isConnected'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Providers/CalendarServiceProviding.swift:13:10: warning: Redundant protocol 'CalendarServiceProviding' (never used as an existential type)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Providers/CalendarServiceProviding.swift:19:24: warning: Redundant protocol conformance 'CalendarServiceProviding'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Shortcuts/ShortcutConstants.swift:12:16: warning: Unused property 'clipboardHistoryPanel'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Shortcuts/ShortcutConstants.swift:13:16: warning: Unused property 'toggleMicrophone'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Shortcuts/ShortcutConstants.swift:14:16: warning: Unused property 'decreaseBacklight'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/Shortcuts/ShortcutConstants.swift:15:16: warning: Unused property 'increaseBacklight'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/XPCHelperClient/IzaNotchXPCHelperProtocol.swift:16:10: warning: Unused function 'isKeyboardBrightnessAvailable(with:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/XPCHelperClient/IzaNotchXPCHelperProtocol.swift:20:10: warning: Unused function 'isScreenBrightnessAvailable(with:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/XPCHelperClient/XPCHelperClient.swift:57:18: warning: Unused function 'getRemoteService()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/XPCHelperClient/XPCHelperClient.swift:94:9: warning: Unused property 'isMonitoring'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/XPCHelperClient/XPCHelperClient.swift:151:22: warning: Unused function 'isKeyboardBrightnessAvailable()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/XPCHelperClient/XPCHelperClient.swift:199:22: warning: Unused function 'isScreenBrightnessAvailable()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/animations/drop.swift:12:14: warning: Redundant public accessibility for class 'IzaAnimations' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/AnimatedFace.swift:490:39: warning: Unused parameter 'cardSize'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/AnimatedFace.swift:1155:9: warning: Assign-only property 'isHoveredUnit' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/Calendar/IzaCalendar.swift:17:9: warning: Assign-only property 'showsText' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/Calendar/IzaCalendar.swift:105:40: warning: Unused parameter 'isToday'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/Calendar/IzaCalendar.swift:141:32: warning: Unused parameter 'config'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/Calendar/IzaCalendar.swift:270:50: warning: Unused property 'autoScrollToNextEvent'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/CursorAssistant/AgentCloudShape.swift:13:16: warning: Unused property 'displayName'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/CursorAssistant/AgentCloudShape.swift:38:9: warning: Assign-only property 'leftEyeScale' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/CursorAssistant/AgentCloudShape.swift:39:9: warning: Assign-only property 'rightEyeScale' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/CursorAssistant/AgentCloudShape.swift:40:9: warning: Assign-only property 'gazeOffset' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/CursorAssistant/AgentCloudShape.swift:45:8: warning: Unused struct 'CloudFaceEyeAnimationOverride'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/CursorAssistant/AgentCloudShape.swift:52:8: warning: Unused struct 'AgentCloudFaceTraits'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/CursorAssistant/AgentCloudShape.swift:60:8: warning: Unused struct 'AgentCloudEyeShape'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/CursorAssistant/AgentCloudShape.swift:80:8: warning: Unused struct 'AgentCloudHappyEyeShape'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/CursorAssistant/AgentCloudShape.swift:131:15: warning: Unused struct 'ExpressionVectorIconView'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/CursorAssistant/AgentCloudShape.swift:219:8: warning: Unused struct 'AgentCloudSleepZShape'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/CursorAssistant/CursorMessageBubbleView.swift:5:8: warning: Unused struct 'CursorMessageBubbleSizePreferenceKey'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/CursorAssistant/CursorMessageBubbleView.swift:14:8: warning: Unused struct 'NavigationBubbleSizePreferenceKey'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/CursorAssistant/CursorMessageBubbleView.swift:23:8: warning: Unused struct 'CursorMessageBubbleWordRevealModifier'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/CursorAssistant/CursorMessageBubbleView.swift:34:8: warning: Unused struct 'CursorMessageBubbleView'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/CursorAssistant/HomeSpaceCloudFaceView.swift:18:8: warning: Unused struct 'ColorBlob'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/CursorAssistant/HomeSpaceCloudFaceView.swift:34:9: warning: Assign-only property 'expression' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/EmptyState.swift:11:24: warning: Unused property 'isVisible'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/Live activities/DownloadView.swift:12:10: warning: Unused enum case 'safari'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/Live activities/DownloadView.swift:13:10: warning: Unused enum case 'chrome'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/Live activities/DownloadView.swift:16:8: warning: Unused struct 'DownloadFile'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/Live activities/DownloadView.swift:24:20: warning: Unused property 'downloadFiles'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/Live activities/DownloadView.swift:27:8: warning: Unused struct 'DownloadArea'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/Live activities/IzaBattery.swift:182:24: warning: Unused property 'isPressed'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/Live activities/LiveActivityModifier.swift:11:10: warning: Unused enum case 'mediaPlayback'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/Live activities/LiveActivityModifier.swift:12:10: warning: Unused enum case 'charging'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/Live activities/LiveActivityModifier.swift:13:10: warning: Unused enum case 'download'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/Live activities/LiveActivityModifier.swift:16:8: warning: Unused struct 'LiveActivityModifier'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/Live activities/LiveActivityModifier.swift:36:10: warning: Unused function 'liveActivity(for:left:right:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/Live activities/SystemEventIndicatorModifier.swift:23:9: warning: Unused property 'showSlider'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/Live activities/SystemEventIndicatorModifier.swift:104:24: warning: Unused property 'dragOffset'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/Notch/IzaExtrasMenu.swift:10:8: warning: Unused struct 'IzaLargeButtons'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/Notch/IzaExtrasMenu.swift:30:8: warning: Unused struct 'IzaExtrasMenu'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/Notch/IzaNotchWindow.swift:10:7: warning: Unused class 'IzaNotchWindow'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/Notch/NotchClickyHoverSpace.swift:64:9: warning: Assign-only property 'onDismiss' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/Notch/NotchHomeView.swift:295:24: warning: Unused property 'sliderValue'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/Notch/NotchHomeView.swift:296:24: warning: Unused property 'dragging'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/Notch/NotchHomeView.swift:297:24: warning: Unused property 'lastDragged'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/Notch/NotchHomeView.swift:650:9: warning: Assign-only property 'elapsedTime' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/Notch/NotchHomeView.swift:651:9: warning: Assign-only property 'playbackRate' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/Notch/NotchHomeView.swift:652:9: warning: Assign-only property 'isPlaying' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/Notch/NotchShape.swift:253:5: warning: Unused initializer 'init(topCornerRadius:bottomCornerRadius:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/ProgressIndicator.swift:11:8: warning: Unused struct 'CircularProgressView'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/ProgressIndicator.swift:38:10: warning: Unused enum case 'circle'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/ProgressIndicator.swift:39:10: warning: Unused enum case 'text'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/ProgressIndicator.swift:44:8: warning: Unused struct 'ProgressIndicator'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/Settings/EditPanelView.swift:10:8: warning: Unused struct 'EditPanelView'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/Settings/MusicSlotConfigurationView.swift:168:18: warning: Unused function 'slotConfigRow(for:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/Settings/MusicSlotConfigurationView.swift:253:18: warning: Unused function 'slotBinding(for:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/Settings/SettingsView.swift:1255:11: warning: Unused typealias 'HeyClickySettingsView'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/Settings/SettingsView.swift:1337:35: warning: Unused property 'shelfTapToOpen'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/Settings/SettingsView.swift:1591:9: warning: Unused property 'icons'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/Settings/SettingsView.swift:1592:24: warning: Unused property 'selectedIcon'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/Settings/SettingsView.swift:2116:9: warning: Assign-only property 'isMulticolor' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/Settings/SettingsView.swift:2172:6: warning: Unused function 'proFeatureBadge()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/Settings/SettingsView.swift:2183:6: warning: Unused function 'comingSoonTag()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/Settings/SettingsView.swift:2203:6: warning: Unused function 'warningBadge(_:_:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/Shelf/Models/Bookmark.swift:65:17: warning: Unused function 'update(in:for:newBookmark:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/Shelf/Models/Bookmark.swift:79:10: warning: Unused function 'withAccess(_:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/Shelf/Models/Bookmark.swift:87:10: warning: Unused function 'withAccess(_:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/Shelf/Models/ShelfItem.swift:126:9: warning: Unused property 'URL'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/Shelf/Models/ShelfItem.swift:163:5: warning: Unused parameter 'symbolColor'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/Shelf/Services/ImageProcessingService.swift:22:13: warning: Unused property 'utType'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/Shelf/Services/ImageProcessingService.swift:55:17: warning: Unused property 'ciContext'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/Shelf/Services/QuickLookService.swift:22:17: warning: Unused property 'dataSource'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/Shelf/Services/QuickLookService.swift:24:17: warning: Unused property 'previewPanelObserver'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/Shelf/Services/QuickLookService.swift:26:54: warning: Unused parameter 'slideshow'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/Shelf/Services/QuickLookService.swift:50:10: warning: Unused function 'hide()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/Shelf/Services/QuickLookService.swift:77:10: warning: Unused function 'showQuickLook(urls:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/Shelf/Services/QuickLookService.swift:119:13: warning: Unused class 'QuickLookDataSource'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/Shelf/Services/QuickShareService.swift:27:17: warning: Assign-only property 'lifecycleDelegate' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/Shelf/Services/QuickShareService.swift:151:15: warning: Unused class 'SharingServiceDelegate'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/Shelf/Services/ShelfActionService.swift:29:17: warning: Unused function 'reveal(_:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/Shelf/Services/ShelfActionService.swift:36:17: warning: Unused function 'copyPath(_:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/Shelf/Services/TemporaryFileStorageService.swift:120:18: warning: Unused function 'createFile(at:data:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/Shelf/Services/ThumbnailService.swift:46:10: warning: Unused function 'clearCache()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/Shelf/Services/ThumbnailService.swift:50:10: warning: Unused function 'clearCache(for:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/Shelf/ViewModels/ShelfItemViewModel.swift:21:20: warning: Unused property 'isRenaming'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/Shelf/ViewModels/ShelfItemViewModel.swift:23:17: warning: Assign-only property 'sharingLifecycle' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/Shelf/ViewModels/ShelfItemViewModel.swift:24:17: warning: Unused property 'quickShareLifecycle'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/Shelf/ViewModels/ShelfItemViewModel.swift:48:10: warning: Unused function 'dragItemProvider()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/Shelf/ViewModels/ShelfItemViewModel.swift:56:18: warning: Unused function 'createItemProvider(for:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/Shelf/ViewModels/ShelfItemViewModel.swift:73:18: warning: Unused function 'createMultiItemProvider(for:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/Shelf/ViewModels/ShelfItemViewModel.swift:183:10: warning: Unused function 'loadOpenWithApps()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/Shelf/ViewModels/ShelfSelectionModel.swift:11:13: warning: Unused property '_shelfTypeAnchor'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/Shelf/ViewModels/ShelfSelectionModel.swift:27:9: warning: Unused property 'hasSelection'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/Shelf/ViewModels/ShelfSelectionModel.swift:29:9: warning: Unused property 'firstSelectedItem'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/Shelf/ViewModels/ShelfSelectionModel.swift:72:10: warning: Unused function 'ensureValidAnchor(in:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/Shelf/ViewModels/ShelfStateViewModel.swift:136:10: warning: Unused function 'resolveFileURLs(for:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/Shelf/Views/ShelfItemView.swift:20:24: warning: Unused property 'showStack'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/Shelf/Views/ShelfItemView.swift:228:18: warning: Assign-only property 'viewModel' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/Tabs/TabButton.swift:11:9: warning: Assign-only property 'label' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/TestView.swift:18:24: warning: Unused property 'isBeating'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/TestView.swift:81:17: warning: Unused property 'animation'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/TestView.swift:85:17: warning: Unused property 'percentage'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/Tips/TipStore.swift:55:8: warning: Unused struct 'TipsView'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/components/WhatsNewView.swift:10:8: warning: Unused struct 'WhatsNewView'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/enums/generic.swift:11:13: warning: Redundant public accessibility for enum 'Style' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/enums/generic.swift:13:10: warning: Unused enum case 'floating'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/enums/generic.swift:16:13: warning: Unused enum 'ContentType'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/enums/generic.swift:22:13: warning: Redundant public accessibility for enum 'NotchState' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/enums/generic.swift:27:13: warning: Redundant public accessibility for enum 'NotchViews' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/enums/generic.swift:34:6: warning: Unused enum 'SettingsEnum'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/enums/generic.swift:45:6: warning: Unused enum 'DownloadIndicatorStyle'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/enums/generic.swift:50:6: warning: Unused enum 'DownloadIconStyle'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/extensions/BundleInfos.swift:17:9: warning: Unused property 'releaseVersionNumberPretty'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/extensions/BundleInfos.swift:21:9: warning: Unused property 'iconFileName'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/extensions/BundleInfos.swift:31:8: warning: Unused struct 'BundleAppIcon'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/extensions/BundleInfos.swift:39:6: warning: Unused function 'isNewVersion()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/extensions/BundleInfos.swift:51:6: warning: Unused function 'isExtensionRunning(_:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/extensions/Button+Bouncing.swift:11:9: warning: Assign-only property 'vm' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/extensions/Button+Bouncing.swift:32:10: warning: Unused function 'bouncingStyle(vm:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/extensions/Color+AccentColor.swift:33:16: warning: Unused property 'effectiveAccent'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/extensions/Color+AccentColor.swift:43:16: warning: Unused property 'effectiveAccentBackground'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/extensions/DataTypes+Extensions.swift:13:16: warning: Unused property 'yesterday'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/extensions/DataTypes+Extensions.swift:14:16: warning: Unused property 'tomorrow'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/extensions/DataTypes+Extensions.swift:15:9: warning: Unused property 'dayBefore'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/extensions/DataTypes+Extensions.swift:18:9: warning: Unused property 'dayAfter'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/extensions/DataTypes+Extensions.swift:21:9: warning: Unused property 'noon'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/extensions/DataTypes+Extensions.swift:31:9: warning: Unused property 'month'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/extensions/DataTypes+Extensions.swift:37:10: warning: Unused function 'dayOfTheWeek(dayOfWeek:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/extensions/DataTypes+Extensions.swift:46:9: warning: Unused property 's'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/extensions/DataTypes+Extensions.swift:48:9: warning: Unused property 'aspectRatio'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/extensions/DataTypes+Extensions.swift:51:10: warning: Unused function 'scaled(by:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/extensions/DataTypes+Extensions.swift:58:9: warning: Unused property 's'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/extensions/DataTypes+Extensions.swift:61:9: warning: Unused property 'd'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/extensions/DataTypes+Extensions.swift:67:38: warning: Unused property 'intround'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/extensions/DataTypes+Extensions.swift:71:38: warning: Unused property 'i'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/extensions/DataTypes+Extensions.swift:75:9: warning: Unused property 'evenInt'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/extensions/DataTypes+Extensions.swift:82:38: warning: Unused property 'intround'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/extensions/DataTypes+Extensions.swift:86:38: warning: Unused property 'i'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/extensions/DataTypes+Extensions.swift:90:9: warning: Unused property 'evenInt'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/extensions/KeyboardShortcutsHelper.swift:15:17: warning: Unused function 'keyboardShortcut(_:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/extensions/KeyboardShortcutsHelper.swift:29:10: warning: Unused function 'toKeyEquivalent()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/extensions/KeyboardShortcutsHelper.swift:58:10: warning: Unused function 'toEventModifiers()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/extensions/MouseTracker.swift:11:16: warning: Unused property 'screenWithMouse'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/extensions/NSImage+Extensions.swift:108:10: warning: Unused function 'getBrightness()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/extensions/NSMenu+AssociatedObject.swift:11:9: warning: Assign-only property 'target' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/extensions/NSScreen+UUID.swift:31:27: warning: Unused property 'screensByUUID'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/extensions/NSScreen+UUID.swift:81:9: warning: Unused property 'allScreens'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/helpers/AppIcons.swift:11:8: warning: Unused struct 'AppIcons'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/helpers/ApplicationRelauncher.swift:10:13: warning: Redundant public accessibility for enum 'ApplicationRelauncher' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/helpers/ApplicationRelauncher.swift:11:24: warning: Redundant public accessibility for function 'restart()' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/helpers/AssociatedObject.swift:13:15: warning: Redundant public accessibility for struct 'AssociatedObject' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/helpers/AssociatedObject.swift:17:12: warning: Redundant public accessibility for initializer 'init(_:)' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/helpers/AssociatedObject.swift:24:12: warning: Redundant public accessibility for function 'subscript(_:)' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/helpers/SoundEffectHelper.swift:12:20: warning: Unused class 'ClickySoundEffects'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/izaNotchApp.swift:19:36: warning: Unused property 'openWindow'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/izaNotchApp.swift:71:9: warning: Unused property 'statusItem'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/izaNotchApp.swift:77:9: warning: Unused property 'quickShareService'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/izaNotchApp.swift:78:9: warning: Unused property 'whatsNewWindow'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/izaNotchApp.swift:79:9: warning: Unused property 'timer'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/izaNotchApp.swift:477:27: warning: Unused parameter 'notification'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/izaNotchApp.swift:487:29: warning: Unused parameter 'notification'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/izaNotchApp.swift:656:43: warning: Unused parameter 'screen'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/izaNotchApp.swift:701:74: warning: Unused parameter 'changeAlpha'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/izaNotchApp.swift:1130:10: warning: Unused function 'deviceHasNotch()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/izaNotchApp.swift:1235:16: warning: Unused function 'togglePopover(_:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/izaNotchApp.swift:1243:16: warning: Unused function 'showMenu()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/izaNotchApp.swift:1247:16: warning: Unused function 'quitAction()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/managers/AntigravityUsageManager.swift:18:16: warning: Assign-only property 'avatarColorHex' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/managers/AntigravityUsageManager.swift:19:16: warning: Assign-only property 'savedAtString' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/managers/AntigravityUsageManager.swift:32:16: warning: Assign-only property 'creditOveragesEnabled' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/managers/AntigravityUsageManager.swift:34:16: warning: Unused property 'initials'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/managers/AntigravityUsageManager.swift:47:15: warning: Redundant public accessibility for struct 'AntigravityProfileFile' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/managers/AntigravityUsageManager.swift:48:16: warning: Redundant public accessibility for property 'email' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/managers/AntigravityUsageManager.swift:49:16: warning: Redundant public accessibility for property 'displayName' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/managers/AntigravityUsageManager.swift:50:16: warning: Redundant public accessibility for property 'plan' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/managers/AntigravityUsageManager.swift:51:16: warning: Redundant public accessibility for property 'savedAt' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/managers/AntigravityUsageManager.swift:52:16: warning: Redundant public accessibility for property 'tokenPayload' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/managers/AntigravityUsageManager.swift:552:17: warning: Unused function 'restartLanguageServer()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/managers/AntigravityUsageManager.swift:562:17: warning: Unused function 'restartFullAntigravityApp()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/managers/BrightnessManager.swift:15:14: warning: Unused property 'visibleDuration'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/managers/BrightnessManager.swift:20:6: warning: Unused property 'shouldShowOverlay'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/managers/BrightnessManager.swift:76:14: warning: Unused property 'visibleDuration'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/managers/BrightnessManager.swift:81:6: warning: Unused property 'shouldShowOverlay'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/managers/BrightnessManager.swift:109:7: warning: Unused function 'setAbsolute(value:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/managers/GitHubManager.swift:17:16: warning: Assign-only property 'weekday' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/managers/GitHubManager.swift:18:16: warning: Assign-only property 'colorHex' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/managers/GitHubManager.swift:51:13: warning: Assign-only property 'totalContributions' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/managers/GitHubManager.swift:56:13: warning: Assign-only property 'firstDay' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/managers/GitHubManager.swift:81:9: warning: Assign-only property 'total' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/managers/GitHubManager.swift:102:17: warning: Assign-only property 'refreshTimer' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/managers/ImageService.swift:11:17: warning: Redundant protocol 'ImageServiceProtocol' (never used as an existential type)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/managers/ImageService.swift:15:34: warning: Redundant protocol conformance 'ImageServiceProtocol'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/managers/ImageService.swift:11:17: warning: Redundant public accessibility for protocol 'ImageServiceProtocol' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/managers/MusicManager.swift:25:29: warning: Redundant public accessibility for property 'isNowPlayingDeprecated' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/managers/MusicManager.swift:38:20: warning: Unused property 'animations'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/managers/MusicManager.swift:75:20: warning: Unused property 'isTransitioning'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/managers/MusicManager.swift:137:17: warning: Redundant public accessibility for function 'destroy()' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/managers/MusicManager.swift:339:18: warning: Unused function 'toggleAppleMusicFavorite()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/managers/MusicManager.swift:377:10: warning: Unused function 'dislikeCurrentTrack()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/managers/MusicManager.swift:706:17: warning: Redundant public accessibility for function 'estimatedPlaybackPosition(at:)' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/managers/MusicManager.swift:735:10: warning: Unused function 'playPause()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/managers/MusicManager.swift:741:10: warning: Unused function 'play()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/managers/MusicManager.swift:747:10: warning: Unused function 'pause()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/managers/NotchSpaceManager.swift:13:17: warning: Unused property 'eventTap'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/managers/NotchSpaceManager.swift:14:17: warning: Unused property 'runLoopSource'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/managers/VolumeManager.swift:20:9: warning: Unused property 'visibleDuration'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/managers/VolumeManager.swift:34:9: warning: Unused property 'shouldShowOverlay'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/managers/VolumeManager.swift:74:10: warning: Unused function 'refresh()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/managers/VolumeManager.swift:76:10: warning: Unused function 'adjustRelative(delta:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/managers/VolumeManager.swift:375:21: warning: Unused property 'average'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/managers/WebcamManager.swift:40:17: warning: Unused property 'isCleaningUp'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/managers/WebcamManager.swift:44:10: warning: Unused enum 'WebcamError'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/managers/WebcamManager.swift:239:46: warning: Unused parameter 'notification'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/managers/WebcamManager.swift:250:43: warning: Unused parameter 'notification'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/models/BatteryStatusViewModel.swift:10:17: warning: Unused property 'wasCharging'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/models/BatteryStatusViewModel.swift:11:17: warning: Unused property 'powerSourceChangedCallback'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/models/BatteryStatusViewModel.swift:12:17: warning: Unused property 'runLoopSource'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/models/BatteryStatusViewModel.swift:21:33: warning: Unused property 'isInitial'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/models/CalendarModel.swift:13:9: warning: Assign-only property 'account' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/models/CalendarModel.swift:16:9: warning: Assign-only property 'isSubscribed' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/models/Constants.swift:11:13: warning: Unused property 'availableDirectories'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/models/Constants.swift:14:5: warning: Unused property 'documentsDirectory'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/models/Constants.swift:15:5: warning: Unused property 'bundleIdentifier'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/models/Constants.swift:16:5: warning: Unused property 'appVersion'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/models/Constants.swift:18:5: warning: Unused property 'temporaryDirectory'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/models/Constants.swift:19:5: warning: Unused property 'spacing'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/models/Constants.swift:22:9: warning: Assign-only property 'UUID' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/models/Constants.swift:108:16: warning: Unused property 'tileShowLabels'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/models/Constants.swift:130:16: warning: Unused property 'showShuffleAndRepeat'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/models/Constants.swift:148:16: warning: Unused property 'enableDownloadListener'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/models/Constants.swift:149:16: warning: Unused property 'enableSafariDownloads'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/models/Constants.swift:150:16: warning: Unused property 'selectedDownloadIndicatorStyle'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/models/Constants.swift:151:16: warning: Unused property 'selectedDownloadIconStyle'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/models/Constants.swift:168:16: warning: Unused property 'shelfTapToOpen'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/models/EventModel.swift:18:9: warning: Assign-only property 'notes' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/models/EventModel.swift:19:9: warning: Assign-only property 'url' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/models/EventModel.swift:24:9: warning: Assign-only property 'timeZone' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/models/EventModel.swift:26:9: warning: Assign-only property 'priority' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/models/EventModel.swift:64:9: warning: Unused property 'isEvent'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/models/EventModel.swift:65:9: warning: Unused property 'isBirthday'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/models/EventModel.swift:81:9: warning: Unused property 'attendance'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/models/EventModel.swift:83:9: warning: Unused property 'isMeeting'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/models/EventModel.swift:115:9: warning: Assign-only property 'name' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/models/EventModel.swift:116:9: warning: Assign-only property 'status' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/models/EventModel.swift:117:9: warning: Assign-only property 'isOrganizer' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/models/EventModel.swift:118:9: warning: Assign-only property 'isCurrentUser' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/models/IzaViewModel.swift:19:20: warning: Unused property 'contentType'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/models/IzaViewModel.swift:31:20: warning: Unused property 'edgeAutoOpenActive'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/models/IzaViewModel.swift:219:10: warning: Unused function 'isMouseHovering(position:)'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/models/SharingStateManager.swift:38:7: warning: Unused function 'requestCloseIfReady()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/models/SharingStateManager.swift:72:6: warning: Assign-only property 'id' is assigned, but never used
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/observers/MediaKeyInterceptor.swift:37:10: warning: Unused function 'requestAccessibilityAuthorization()'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/private/CGSSpace.swift:15:20: warning: Redundant public accessibility for class 'CGSSpace' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/private/CGSSpace.swift:18:16: warning: Redundant public accessibility for property 'windows' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/private/CGSSpace.swift:33:12: warning: Redundant public accessibility for initializer 'init(level:)' (not used outside of izaNotch)
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/private/CGSSpace.swift:52:35: warning: Unused parameter 'cid'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/private/CGSSpace.swift:52:59: warning: Unused parameter 'unknown'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/private/CGSSpace.swift:52:75: warning: Unused parameter 'options'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/private/CGSSpace.swift:54:36: warning: Unused parameter 'cid'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/private/CGSSpace.swift:54:60: warning: Unused parameter 'space'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/private/CGSSpace.swift:56:45: warning: Unused parameter 'cid'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/private/CGSSpace.swift:56:69: warning: Unused parameter 'space'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/private/CGSSpace.swift:56:90: warning: Unused parameter 'level'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/private/CGSSpace.swift:58:42: warning: Unused parameter 'cid'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/private/CGSSpace.swift:58:66: warning: Unused parameter 'windows'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/private/CGSSpace.swift:58:86: warning: Unused parameter 'spaces'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/private/CGSSpace.swift:60:47: warning: Unused parameter 'cid'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/private/CGSSpace.swift:60:71: warning: Unused parameter 'windows'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/private/CGSSpace.swift:60:91: warning: Unused parameter 'spaces'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/private/CGSSpace.swift:62:34: warning: Unused parameter 'cid'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/private/CGSSpace.swift:62:58: warning: Unused parameter 'spaces'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/private/CGSSpace.swift:64:34: warning: Unused parameter 'cid'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/private/CGSSpace.swift:64:58: warning: Unused parameter 'spaces'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/sizing/matters.swift:12:5: warning: Unused property 'downloadSneakSize'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/sizing/matters.swift:13:5: warning: Unused property 'batterySneakSize'
+/Users/heizaaa/Desktop/cdev/iza-3/izaNotch/sizing/matters.swift:25:17: warning: Unused function 'getScreenFrame(_:)'

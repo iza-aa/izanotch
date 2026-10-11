@@ -260,13 +260,13 @@ struct NotchPerimeterBreathingGlowView: View {
         self.bottomCornerRadius = notchShape.bottomCornerRadius
     }
     
-    // Pure Gemini Blue Spectrum
-    private let geminiBlues = [
-        Color(red: 0.15, green: 0.55, blue: 1.00), // Vibrant Gemini Blue
-        Color(red: 0.35, green: 0.75, blue: 1.00), // Electric Azure
-        Color(red: 0.10, green: 0.42, blue: 0.98), // Deep Royal Blue
-        Color(red: 0.05, green: 0.30, blue: 0.88), // Deep Navy Blue
-        Color(red: 0.15, green: 0.55, blue: 1.00)  // Loop
+    // Electric Azure Spectrum
+    private let notchGlowBlues = [
+        Color(red: 0.15, green: 0.55, blue: 1.00),
+        Color(red: 0.35, green: 0.75, blue: 1.00),
+        Color(red: 0.10, green: 0.42, blue: 0.98),
+        Color(red: 0.05, green: 0.30, blue: 0.88),
+        Color(red: 0.15, green: 0.55, blue: 1.00)
     ]
     
     var body: some View {
@@ -281,7 +281,7 @@ struct NotchPerimeterBreathingGlowView: View {
             openShape
                 .stroke(
                     LinearGradient(
-                        colors: geminiBlues,
+                        colors: notchGlowBlues,
                         startPoint: isBreathing ? .topLeading : .topTrailing,
                         endPoint: isBreathing ? .bottomTrailing : .bottomLeading
                     ),
@@ -294,7 +294,7 @@ struct NotchPerimeterBreathingGlowView: View {
             openShape
                 .stroke(
                     LinearGradient(
-                        colors: geminiBlues,
+                        colors: notchGlowBlues,
                         startPoint: isBreathing ? .topLeading : .topTrailing,
                         endPoint: isBreathing ? .bottomTrailing : .bottomLeading
                     ),

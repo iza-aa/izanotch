@@ -26,14 +26,14 @@ public enum CelestialBody: String, CaseIterable, Equatable, Sendable {
     case saturn = "Saturnus"
 }
 
-public enum AspectType: String, CaseIterable, Equatable, Sendable {
+enum AspectType: String, CaseIterable, Equatable, Sendable {
     case conjunction = "Conjunction (0° - Titik Temu Siklus Baru)"
     case sextile = "Sextile (60° - Peluang Harmonis)"
     case square = "Square (90° - Tegangan / Potensi Titik Balik)"
     case trine = "Trine (120° - Momentum Selaras)"
     case opposition = "Opposition (180° - Polarisasi / Titik Jenuh)"
 
-    public var targetAngle: Double {
+    var targetAngle: Double {
         switch self {
         case .conjunction: return 0.0
         case .sextile: return 60.0
@@ -43,7 +43,7 @@ public enum AspectType: String, CaseIterable, Equatable, Sendable {
         }
     }
 
-    public var shortName: String {
+    var shortName: String {
         switch self {
         case .conjunction: return "Conjunction (0°)"
         case .sextile: return "Sextile (60°)"
@@ -55,20 +55,10 @@ public enum AspectType: String, CaseIterable, Equatable, Sendable {
 }
 
 public struct PlanetaryAspect: Equatable, Sendable {
-    public let body1: CelestialBody
-    public let body2: CelestialBody
-    public let aspectType: AspectType
-    public let angleDeg: Double
-    public let targetDeg: Double
     public let orbDeg: Double
     public let description: String
 
-    public init(body1: CelestialBody, body2: CelestialBody, aspectType: AspectType, angleDeg: Double, targetDeg: Double, orbDeg: Double, description: String) {
-        self.body1 = body1
-        self.body2 = body2
-        self.aspectType = aspectType
-        self.angleDeg = angleDeg
-        self.targetDeg = targetDeg
+    public init(orbDeg: Double, description: String) {
         self.orbDeg = orbDeg
         self.description = description
     }
@@ -76,47 +66,31 @@ public struct PlanetaryAspect: Equatable, Sendable {
 
 public struct ZodiacIngress: Equatable, Sendable {
     public let body: CelestialBody
-    public let signName: String
-    public let degreeInSign: Double
-    public let isNearBoundary: Bool
     public let description: String
 
-    public init(body: CelestialBody, signName: String, degreeInSign: Double, isNearBoundary: Bool, description: String) {
+    public init(body: CelestialBody, description: String) {
         self.body = body
-        self.signName = signName
-        self.degreeInSign = degreeInSign
-        self.isNearBoundary = isNearBoundary
         self.description = description
     }
 }
 
 public struct PlanetaryAspectReport: Equatable, Sendable {
-    public let date: Date
-    public let allActiveAspects: [PlanetaryAspect]
     public let topAspects: [PlanetaryAspect] // Capped to max 3 with smallest orb
     public let activeIngress: [ZodiacIngress]
-    public let summaryText: String
 
-    public init(date: Date, allActiveAspects: [PlanetaryAspect], topAspects: [PlanetaryAspect], activeIngress: [ZodiacIngress], summaryText: String) {
-        self.date = date
-        self.allActiveAspects = allActiveAspects
+    public init(topAspects: [PlanetaryAspect], activeIngress: [ZodiacIngress]) {
         self.topAspects = topAspects
         self.activeIngress = activeIngress
-        self.summaryText = summaryText
     }
 
     public static let standard = PlanetaryAspectReport(
-        date: Date(),
-        allActiveAspects: [],
         topAspects: [],
-        activeIngress: [],
-        summaryText: "Tidak ada aspek geometri planet mayor yang aktif (Orb ≤ 3.0°)."
+        activeIngress: []
     )
 }
 
-public struct AstronacciPlanetaryAspectEngine: Sendable {
-    public init() {}
-
+struct AstronacciPlanetaryAspectEngine: Sendable {
+    init() {}
     private static let zodiacSigns = [
         "Aries", "Taurus", "Gemini", "Cancer",
         "Leo", "Virgo", "Libra", "Scorpio",
@@ -132,7 +106,7 @@ public struct AstronacciPlanetaryAspectEngine: Sendable {
     }
 
     /// Calculates geocentric ecliptic longitude for any of the 7 supported bodies
-    public func calculateGeocentricLongitude(body: CelestialBody, date: Date) -> Double {
+    func calculateGeocentricLongitude(body: CelestialBody, date: Date) -> Double {
         let ephem = AstronacciEphemerisEngine()
         let jd = ephem.calculateJulianDay(date: date)
         let T = (jd - 2451545.0) / 36525.0
@@ -194,7 +168,7 @@ public struct AstronacciPlanetaryAspectEngine: Sendable {
 
     /// Evaluates all aspects and zodiac ingresses for the given date.
     /// Caps top aspects to 3 with smallest orb to preserve card readability.
-    public func evaluateAspectReport(date: Date, maxOrb: Double = 3.0) -> PlanetaryAspectReport {
+    func evaluateAspectReport(date: Date, maxOrb: Double = 3.0) -> PlanetaryAspectReport {
         let bodies = CelestialBody.allCases
         var longitudes: [CelestialBody: Double] = [:]
         var ingresses: [ZodiacIngress] = []
@@ -210,7 +184,7 @@ public struct AstronacciPlanetaryAspectEngine: Sendable {
 
             if isNear {
                 let desc = "\(b.rawValue) mendekati batas zodiak \(signName) (\(String(format: "%.1f", degInSign))°)"
-                ingresses.append(ZodiacIngress(body: b, signName: signName, degreeInSign: degInSign, isNearBoundary: true, description: desc))
+                ingresses.append(ZodiacIngress(body: b, description: desc))
             }
         }
 
@@ -233,15 +207,7 @@ public struct AstronacciPlanetaryAspectEngine: Sendable {
 
                     if orb <= maxOrb {
                         let desc = "\(b1.rawValue)–\(b2.rawValue) \(aspect.shortName) • Orb: \(String(format: "%.2f", orb))°"
-                        let pAspect = PlanetaryAspect(
-                            body1: b1,
-                            body2: b2,
-                            aspectType: aspect,
-                            angleDeg: diff,
-                            targetDeg: target,
-                            orbDeg: orb,
-                            description: desc
-                        )
+                        let pAspect = PlanetaryAspect(orbDeg: orb, description: desc)
                         activeAspects.append(pAspect)
                     }
                 }
@@ -252,20 +218,10 @@ public struct AstronacciPlanetaryAspectEngine: Sendable {
         let sortedAspects = activeAspects.sorted(by: { $0.orbDeg < $1.orbDeg })
         let top3 = Array(sortedAspects.prefix(3))
 
-        let summary: String
-        if top3.isEmpty {
-            summary = "Tidak ada aspek mayor aktif (Orb ≤ \(String(format: "%.1f", maxOrb))°)."
-        } else {
-            let aspectStrings = top3.map { "• \($0.description)" }.joined(separator: "\n")
-            summary = "Aspek Geometri Terkuat (Orb ≤ \(String(format: "%.1f", maxOrb))°):\n\(aspectStrings)"
-        }
 
         return PlanetaryAspectReport(
-            date: date,
-            allActiveAspects: sortedAspects,
             topAspects: top3,
-            activeIngress: ingresses,
-            summaryText: summary
+            activeIngress: ingresses
         )
     }
 }
