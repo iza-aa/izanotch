@@ -137,4 +137,5 @@ __pycache__/
 .zed/
 .commandcode/
 .nodeterm/
+.zcode/
 *.sublime-workspace
