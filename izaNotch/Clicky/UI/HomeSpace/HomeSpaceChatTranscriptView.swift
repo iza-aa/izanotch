@@ -433,8 +433,57 @@ extension HomeSpaceRootView {
                                 .buttonStyle(.plain)
                                 .help(companion.buddyDictationManager.isRecordingFromMicrophoneButton ? "Click to stop recording" : "Click to dictate voice or hold Control + Option")
 
-                                // Input Pill & Staged Attachments (MT-03)
+                                // Input Pill & Staged Attachments & Teach Mode (MT-03, MT-06)
                                 VStack(alignment: .leading, spacing: 4) {
+                                    if CompanionTeachModeEngine.shared.isRecording {
+                                        HStack(spacing: 8) {
+                                            Circle()
+                                                .fill(Color(hex: "#EF4444"))
+                                                .frame(width: 8, height: 8)
+                                            Text("Merekam: '\(CompanionTeachModeEngine.shared.taskName)' (\(CompanionTeachModeEngine.shared.recordedSteps.count) langkah)")
+                                                .font(.system(size: 11, weight: .bold))
+                                                .foregroundStyle(.white)
+                                            Spacer()
+                                            Button(action: {
+                                                withAnimation(.spring(response: 0.25, dampingFraction: 0.8)) {
+                                                    CompanionTeachModeEngine.shared.finishTeaching()
+                                                }
+                                            }) {
+                                                Text("Selesai")
+                                                    .font(.system(size: 10.5, weight: .bold))
+                                                    .foregroundStyle(Color(hex: "#0F172A"))
+                                                    .padding(.horizontal, 9)
+                                                    .padding(.vertical, 4)
+                                                    .background(Capsule().fill(Color(hex: "#34D399")))
+                                            }
+                                            .buttonStyle(.plain)
+
+                                            Button(action: {
+                                                withAnimation(.spring(response: 0.25, dampingFraction: 0.8)) {
+                                                    CompanionTeachModeEngine.shared.cancelTeaching()
+                                                }
+                                            }) {
+                                                Text("Batal")
+                                                    .font(.system(size: 10.5, weight: .medium))
+                                                    .foregroundStyle(.white.opacity(0.6))
+                                                    .padding(.horizontal, 7)
+                                                    .padding(.vertical, 4)
+                                            }
+                                            .buttonStyle(.plain)
+                                        }
+                                        .padding(.horizontal, 10)
+                                        .padding(.vertical, 5)
+                                        .background(
+                                            Capsule().fill(Color(hex: "#EF4444").opacity(0.18))
+                                                .overlay(Capsule().stroke(Color(hex: "#EF4444").opacity(0.35), lineWidth: 0.8))
+                                        )
+                                        .padding(.bottom, 2)
+                                    }
+
+                                    if CompanionTeachModeEngine.shared.activeDraftSkill != nil {
+                                        HomeSpaceDraftSkillReviewView()
+                                            .padding(.bottom, 4)
+                                    }
                                     if let err = attachmentErrorMessage {
                                         HStack(spacing: 6) {
                                             Image(systemName: "exclamationmark.triangle.fill")

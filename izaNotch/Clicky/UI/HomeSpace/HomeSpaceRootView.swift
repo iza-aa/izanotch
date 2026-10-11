@@ -369,6 +369,26 @@ struct HomeSpaceRootView: View {
             return
         }
 
+        // MT-06: Teach-by-Demonstration Trigger (/teach <task-name>)
+        if clean.lowercased().hasPrefix("/teach") {
+            let taskName = clean.dropFirst(6).trimmingCharacters(in: .whitespacesAndNewlines)
+            let effectiveName = taskName.isEmpty ? "Tugas Terbimbing" : taskName
+            CompanionTeachModeEngine.shared.startTeaching(name: effectiveName)
+            inputText = ""
+            isTypingMode = false
+
+            let userMsg = HomeSpaceChatMessage(isUser: true, text: clean)
+            companion.appendChatMessage(userMsg)
+
+            let teachStartNotice = HomeSpaceChatMessage(
+                isUser: false,
+                text: "Mode Mengajar Aktif: Mulai demonstrasikan alur '\(effectiveName)'. Setiap aksi terekam menjadi draft skill 6-field."
+            )
+            companion.appendChatMessage(teachStartNotice)
+            ClickySoundEngine.shared.play(.open)
+            return
+        }
+
         // Autonomous Task Decomposition Stage (AFM On-Device Reasoner)
         // Replaces all rigid hardcoded app keyword matching (isEmailAction, isSafariAction)
         ClickySoundEngine.shared.play(.send)

@@ -473,3 +473,78 @@ public final class CompanionSkillLibrary: @unchecked Sendable {
         }
     }
 }
+// MARK: - CompanionTeachModeEngine (PRD §A8, MT-06: Teach-by-Demonstration Engine)
+
+public final class CompanionTeachModeEngine: ObservableObject, @unchecked Sendable {
+    public static let shared = CompanionTeachModeEngine()
+
+    @Published public var isRecording: Bool = false
+    @Published public var taskName: String = ""
+    @Published public var recordedSteps: [String] = []
+    @Published public var activeDraftSkill: CompanionSkill? = nil
+    @Published public var recordingStartTime: Date? = nil
+
+    private init() {}
+
+    public func startTeaching(name: String) {
+        taskName = name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? "Tugas Terbimbing" : name
+        recordedSteps = []
+        isRecording = true
+        recordingStartTime = Date()
+        activeDraftSkill = nil
+        ClickyLogger.info("[TEACH_MODE]", "Started Teach Mode session for '\(taskName)'")
+    }
+
+    public func recordAction(description: String) {
+        guard isRecording else { return }
+        let clean = description.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !clean.isEmpty else { return }
+        recordedSteps.append(clean)
+        ClickyLogger.info("[TEACH_MODE]", "Recorded step #\(recordedSteps.count): \(clean)")
+    }
+
+    @discardableResult
+    public func finishTeaching(outputGoal: String = "") -> CompanionSkill {
+        isRecording = false
+        let safeName = taskName.isEmpty ? "skill-\(UUID().uuidString.prefix(6))" : taskName
+        let cleanSteps = recordedSteps.isEmpty ? ["Jalankan tugas sesuai panduan alur kerja."] : recordedSteps
+
+        let draftSkill = CompanionSkill(
+            name: safeName,
+            whenToUse: "Digunakan saat pengguna meminta menjalankan tugas '\(safeName)'.",
+            requiredInputs: [],
+            access: ["Desktop Workspace", "Target App"],
+            steps: cleanSteps,
+            validation: "Setiap langkah eksekusi selesai tanpa kegagalan tidak tertangani.",
+            output: outputGoal.isEmpty ? "Hasil penyelesaian alur tugas \(safeName)." : outputGoal,
+            approvalBoundary: [],
+            origin: "teach-mode",
+            draft: true
+        )
+
+        activeDraftSkill = draftSkill
+        CompanionSkillLibrary.shared.saveSkill(draftSkill)
+        ClickyLogger.info("[TEACH_MODE]", "Finished Teach Mode. Compiled draft skill '\(safeName)' with \(cleanSteps.count) steps.")
+        return draftSkill
+    }
+
+    @discardableResult
+    public func finalizeDraftSkill(_ skill: CompanionSkill) -> CompanionSkill {
+        var finalized = skill
+        finalized.draft = false
+        CompanionSkillLibrary.shared.saveSkill(finalized)
+        activeDraftSkill = nil
+        isRecording = false
+        ClickyLogger.info("[TEACH_MODE]", "Finalized draft skill '\(finalized.name)' (draft=false). Saved to library.")
+        return finalized
+    }
+
+    public func cancelTeaching() {
+        isRecording = false
+        taskName = ""
+        recordedSteps = []
+        activeDraftSkill = nil
+        recordingStartTime = nil
+        ClickyLogger.info("[TEACH_MODE]", "Cancelled Teach Mode session.")
+    }
+}

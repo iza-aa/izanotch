@@ -816,3 +816,284 @@ public struct HomeSpaceDeliverableCardView: View {
         }
     }
 }
+// MARK: - HomeSpaceDraftSkillReviewView (PRD §A8, MT-06: Draft Skill Review & Finalization)
+public struct HomeSpaceDraftSkillReviewView: View {
+    @ObservedObject var teachEngine = CompanionTeachModeEngine.shared
+
+    @State private var skillName: String = ""
+    @State private var whenToUse: String = ""
+    @State private var steps: [String] = []
+    @State private var newStepText: String = ""
+    @State private var validationRule: String = ""
+    @State private var outputDescription: String = ""
+    @State private var approvalBoundary: String = ""
+    @State private var isSavedMessage: String? = nil
+
+    public var onDismiss: (() -> Void)? = nil
+
+    public init(onDismiss: (() -> Void)? = nil) {
+        self.onDismiss = onDismiss
+    }
+
+    public var body: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            // Header
+            HStack(spacing: 8) {
+                Image(systemName: "graduationcap.fill")
+                    .font(.system(size: 15, weight: .bold))
+                    .foregroundStyle(Color(hex: "#F59E0B"))
+
+                Text("Tinjau Draft Skill")
+                    .font(.system(size: 15, weight: .bold))
+                    .foregroundStyle(.white)
+
+                Text("DRAFT")
+                    .font(.system(size: 9.5, weight: .bold, design: .monospaced))
+                    .foregroundStyle(Color(hex: "#F59E0B"))
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 2.5)
+                    .background(Capsule().fill(Color(hex: "#F59E0B").opacity(0.18)))
+
+                Spacer()
+
+                Button(action: {
+                    teachEngine.cancelTeaching()
+                    onDismiss?()
+                }) {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 11, weight: .bold))
+                        .foregroundStyle(.white.opacity(0.6))
+                        .padding(6)
+                        .background(Circle().fill(Color.white.opacity(0.06)))
+                }
+                .buttonStyle(.plain)
+            }
+
+            ScrollView {
+                VStack(alignment: .leading, spacing: 12) {
+                    // 1. Nama Skill
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Nama Skill")
+                            .font(.system(size: 11, weight: .semibold))
+                            .foregroundStyle(.white.opacity(0.6))
+                        TextField("Nama skill...", text: $skillName)
+                            .textFieldStyle(.plain)
+                            .font(.system(size: 12.5, weight: .medium))
+                            .foregroundStyle(.white)
+                            .padding(8)
+                            .background(RoundedRectangle(cornerRadius: 8).fill(Color.white.opacity(0.06)))
+                    }
+
+                    // 2. Kapan Digunakan
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Kapan Digunakan (Trigger Rule)")
+                            .font(.system(size: 11, weight: .semibold))
+                            .foregroundStyle(.white.opacity(0.6))
+                        TextField("Kondisi kapan skill ini dieksekusi...", text: $whenToUse)
+                            .textFieldStyle(.plain)
+                            .font(.system(size: 12))
+                            .foregroundStyle(.white)
+                            .padding(8)
+                            .background(RoundedRectangle(cornerRadius: 8).fill(Color.white.opacity(0.06)))
+                    }
+
+                    // 3. Urutan Langkah Kerja (Recorded Steps)
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("Urutan Langkah Kerja (\(steps.count) langkah terekam)")
+                            .font(.system(size: 11, weight: .semibold))
+                            .foregroundStyle(.white.opacity(0.6))
+
+                        ForEach(steps.indices, id: \.self) { idx in
+                            HStack(spacing: 6) {
+                                Text("\(idx + 1).")
+                                    .font(.system(size: 11, weight: .bold, design: .monospaced))
+                                    .foregroundStyle(Color(hex: "#38BDF8"))
+                                    .frame(width: 20, alignment: .leading)
+
+                                TextField("Langkah...", text: $steps[idx])
+                                    .textFieldStyle(.plain)
+                                    .font(.system(size: 11.5))
+                                    .foregroundStyle(.white.opacity(0.92))
+
+                                Button(action: { steps.remove(at: idx) }) {
+                                    Image(systemName: "trash")
+                                        .font(.system(size: 10))
+                                        .foregroundStyle(.white.opacity(0.4))
+                                }
+                                .buttonStyle(.plain)
+                            }
+                            .padding(7)
+                            .background(RoundedRectangle(cornerRadius: 6).fill(Color.white.opacity(0.04)))
+                        }
+
+                        // Add Step Field
+                        HStack(spacing: 6) {
+                            TextField("Tambah langkah baru...", text: $newStepText)
+                                .textFieldStyle(.plain)
+                                .font(.system(size: 11))
+                                .foregroundStyle(.white)
+
+                            Button(action: {
+                                let clean = newStepText.trimmingCharacters(in: .whitespacesAndNewlines)
+                                if !clean.isEmpty {
+                                    steps.append(clean)
+                                    newStepText = ""
+                                }
+                            }) {
+                                Image(systemName: "plus.circle.fill")
+                                    .font(.system(size: 13))
+                                    .foregroundStyle(Color(hex: "#38BDF8"))
+                            }
+                            .buttonStyle(.plain)
+                        }
+                        .padding(7)
+                        .background(RoundedRectangle(cornerRadius: 6).fill(Color.white.opacity(0.03)))
+                    }
+
+                    // 4. Validasi Hasil
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Aturan Validasi")
+                            .font(.system(size: 11, weight: .semibold))
+                            .foregroundStyle(.white.opacity(0.6))
+                        TextField("Kondisi verifikasi keberhasilan...", text: $validationRule)
+                            .textFieldStyle(.plain)
+                            .font(.system(size: 12))
+                            .foregroundStyle(.white)
+                            .padding(8)
+                            .background(RoundedRectangle(cornerRadius: 8).fill(Color.white.opacity(0.06)))
+                    }
+
+                    // 5. Output
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Output yang Diharapkan")
+                            .font(.system(size: 11, weight: .semibold))
+                            .foregroundStyle(.white.opacity(0.6))
+                        TextField("Format atau artefak output...", text: $outputDescription)
+                            .textFieldStyle(.plain)
+                            .font(.system(size: 12))
+                            .foregroundStyle(.white)
+                            .padding(8)
+                            .background(RoundedRectangle(cornerRadius: 8).fill(Color.white.opacity(0.06)))
+                    }
+
+                    // 6. Batasan Approval (Approval Boundary)
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Batasan Approval (Tindakan Wajib Konfirmasi)")
+                            .font(.system(size: 11, weight: .semibold))
+                            .foregroundStyle(Color(hex: "#F59E0B").opacity(0.8))
+                        TextField("Contoh: Pengiriman eksternal, penghapusan...", text: $approvalBoundary)
+                            .textFieldStyle(.plain)
+                            .font(.system(size: 12))
+                            .foregroundStyle(.white)
+                            .padding(8)
+                            .background(RoundedRectangle(cornerRadius: 8).fill(Color(hex: "#F59E0B").opacity(0.08)))
+                    }
+                }
+                .padding(.vertical, 4)
+            }
+            .frame(maxHeight: 280)
+
+            // Action Toolbar
+            HStack(spacing: 8) {
+                // Finalize Button
+                Button(action: finalizeSkill) {
+                    HStack(spacing: 5) {
+                        Image(systemName: "checkmark.seal.fill")
+                            .font(.system(size: 11))
+                        Text("Finalisasi Skill")
+                            .font(.system(size: 12, weight: .bold))
+                    }
+                    .foregroundStyle(Color(hex: "#0F172A"))
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 7)
+                    .background(
+                        Capsule().fill(Color(hex: "#34D399"))
+                    )
+                }
+                .buttonStyle(.plain)
+
+                // Save as Draft Button
+                Button(action: saveAsDraft) {
+                    HStack(spacing: 4) {
+                        Image(systemName: "doc.badge.plus")
+                            .font(.system(size: 11))
+                        Text("Simpan sebagai Draf")
+                            .font(.system(size: 11.5, weight: .medium))
+                    }
+                    .foregroundStyle(.white.opacity(0.85))
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 6)
+                    .background(Capsule().fill(Color.white.opacity(0.08)))
+                }
+                .buttonStyle(.plain)
+
+                Spacer()
+
+                if let msg = isSavedMessage {
+                    Text(msg)
+                        .font(.system(size: 11, weight: .semibold))
+                        .foregroundStyle(Color(hex: "#34D399"))
+                }
+            }
+        }
+        .padding(14)
+        .background(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(Color(hex: "#111827").opacity(0.96))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .stroke(Color(hex: "#F59E0B").opacity(0.35), lineWidth: 1)
+                )
+        )
+        .frame(maxWidth: 540, alignment: .leading)
+        .onAppear {
+            populateFromDraft()
+        }
+    }
+
+    private func populateFromDraft() {
+        if let draft = teachEngine.activeDraftSkill {
+            skillName = draft.name
+            whenToUse = draft.whenToUse
+            steps = draft.steps
+            validationRule = draft.validation
+            outputDescription = draft.output
+            approvalBoundary = draft.approvalBoundary.joined(separator: ", ")
+        }
+    }
+
+    private func compiledSkill(isDraft: Bool) -> CompanionSkill {
+        let boundaries = approvalBoundary.split(separator: ",").map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }.filter { !$0.isEmpty }
+        return CompanionSkill(
+            name: skillName.isEmpty ? "skill-\(UUID().uuidString.prefix(6))" : skillName,
+            whenToUse: whenToUse,
+            requiredInputs: [],
+            access: ["Desktop Workspace", "Target App"],
+            steps: steps,
+            validation: validationRule,
+            output: outputDescription,
+            approvalBoundary: boundaries,
+            origin: "teach-mode",
+            draft: isDraft
+        )
+    }
+
+    private func finalizeSkill() {
+        let skill = compiledSkill(isDraft: false)
+        teachEngine.finalizeDraftSkill(skill)
+        isSavedMessage = "Skill difinalisasi!"
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
+            onDismiss?()
+        }
+    }
+
+    private func saveAsDraft() {
+        let skill = compiledSkill(isDraft: true)
+        CompanionSkillLibrary.shared.saveSkill(skill)
+        teachEngine.activeDraftSkill = nil
+        isSavedMessage = "Draf tersimpan!"
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
+            onDismiss?()
+        }
+    }
+}
