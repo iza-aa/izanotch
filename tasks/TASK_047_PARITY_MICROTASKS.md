@@ -87,13 +87,13 @@ Prasyarat masuk TASK-047: 8 skenario `scenarios.fasec.json` lulus + 8 bloker B1-
 
 ### FASE 7 — BOT LIFECYCLE & IDENTITY PARITY (PRD §A4; sumber S2)
 
-| ID | [Tipe] | Scope | Baca | Bukti review |
-|---|---|---|---|---|
-| MT-23 | [UI] | Pembuatan companion via percakapan (pola interview: jelaskan job → profil terbentuk; template 8 arketipe use-case sebagai pilihan) | S2-bots, S1 | Companion baru terbentuk lewat percakapan; profil terisi |
-| MT-24 | [UI] | Edit Profile penuh: nama/label/description/avatar; description = aturan durable yang di-inject ke prompt sistem | S2-bots | Perubahan description mengubah perilaku (uji boundary) |
-| MT-25 | [UI] | Pin/Hide/Duplicate (profil+skills+routines ikut, history TIDAK) + Delete dengan peringatan files tersisa | S2-bots | Keempat operasi berfungsi; duplicate tanpa history |
-| MT-26 | [UI] | Share template (strip secrets/customer data) + Import dari template | S2-bots | Template diekspor tanpa secrets; import membuat salinan bersih |
-| MT-27 | [non-UI] | Marketplace & skill library: discover/install packaged skills + connector catalog UI | S2-skills | Library tampil; instal mengaktifkan skill |
+| ID | [Tipe] | Scope | Baca | Bukti review | Status |
+|---|---|---|---|---|---|
+| MT-23 | [UI] | Pembuatan companion via percakapan (pola interview: jelaskan job → profil terbentuk; template 8 arketipe use-case sebagai pilihan) | S2-bots, S1 | Companion baru terbentuk lewat percakapan; profil terisi | LULUS |
+| MT-24 | [UI] | Edit Profile penuh: nama/label/description/avatar; description = aturan durable yang di-inject ke prompt sistem | S2-bots | Perubahan description mengubah perilaku (uji boundary) | LULUS |
+| MT-25 | [UI] | Pin/Hide/Duplicate (profil+skills+routines ikut, history TIDAK) + Delete dengan peringatan files tersisa | S2-bots | Keempat operasi berfungsi; duplicate tanpa history | LULUS |
+| MT-26 | [UI] | Share template (strip secrets/customer data) + Import dari template | S2-bots | Template diekspor tanpa secrets; import membuat salinan bersih | LULUS |
+| MT-27 | [non-UI] | Marketplace & skill library: discover/install packaged skills + connector catalog UI | S2-skills | Library tampil; instal mengaktifkan skill | LULUS |
 
 ### FASE 8 — VOICE & COLLABORATION STACK (PRD §A7; sumber S2)
 
