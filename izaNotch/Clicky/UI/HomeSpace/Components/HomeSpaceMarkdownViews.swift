@@ -1413,3 +1413,254 @@ public struct HomeSpaceLiveVoiceChatCardView: View {
         .frame(maxWidth: 420, alignment: .leading)
     }
 }
+// MARK: - HomeSpaceSearchPaletteView (PRD §A7, MT-30: Cmd+K Global Search Palette)
+
+public enum PaletteItemCategory: String, CaseIterable, Identifiable {
+    case all = "Semua"
+    case companions = "Bots"
+    case messages = "Pesan"
+    case files = "Berkas"
+    case routines = "Routines"
+    public var id: String { rawValue }
+}
+
+public struct PaletteSearchResultItem: Identifiable {
+    public let id: String
+    public let title: String
+    public let subtitle: String
+    public let category: PaletteItemCategory
+    public let iconSystemName: String
+    public let action: () -> Void
+}
+
+public struct HomeSpaceSearchPaletteView: View {
+    @Binding public var isOpen: Bool
+    public var onSelectCompanion: ((UUID) -> Void)? = nil
+
+    @State private var queryText: String = ""
+    @State private var selectedCategory: PaletteItemCategory = .all
+
+    public init(isOpen: Binding<Bool>, onSelectCompanion: ((UUID) -> Void)? = nil) {
+        self._isOpen = isOpen
+        self.onSelectCompanion = onSelectCompanion
+    }
+
+    private var searchResults: [PaletteSearchResultItem] {
+        let cleanQuery = queryText.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        var items: [PaletteSearchResultItem] = []
+
+        // 1. Search Companions / Bots
+        if selectedCategory == .all || selectedCategory == .companions {
+            for comp in CompanionRosterStore.shared.allCompanions {
+                if cleanQuery.isEmpty || comp.name.lowercased().contains(cleanQuery) || comp.role.lowercased().contains(cleanQuery) || comp.summary.lowercased().contains(cleanQuery) {
+                    items.append(PaletteSearchResultItem(
+                        id: "bot-\(comp.id.uuidString)",
+                        title: comp.name,
+                        subtitle: comp.role,
+                        category: .companions,
+                        iconSystemName: "person.circle.fill",
+                        action: {
+                            onSelectCompanion?(comp.id)
+                            isOpen = false
+                        }
+                    ))
+                }
+            }
+        }
+
+        // 2. Search Messages
+        if selectedCategory == .all || selectedCategory == .messages {
+            for comp in CompanionRosterStore.shared.allCompanions {
+                for msg in comp.messages {
+                    if !msg.text.isEmpty && (cleanQuery.isEmpty ? false : msg.text.lowercased().contains(cleanQuery)) {
+                        items.append(PaletteSearchResultItem(
+                            id: "msg-\(msg.id.uuidString)",
+                            title: String(msg.text.prefix(60)),
+                            subtitle: "\(comp.name) • \(msg.timestamp.formatted(date: .omitted, time: .shortened))",
+                            category: .messages,
+                            iconSystemName: "bubble.left.fill",
+                            action: {
+                                onSelectCompanion?(comp.id)
+                                isOpen = false
+                            }
+                        ))
+                    }
+                }
+            }
+        }
+
+        // 3. Search Routines / Automations
+        if selectedCategory == .all || selectedCategory == .routines {
+            for auto in CompanionAutomationStore.shared.automations {
+                if cleanQuery.isEmpty || auto.name.lowercased().contains(cleanQuery) || auto.prompt.lowercased().contains(cleanQuery) {
+                    items.append(PaletteSearchResultItem(
+                        id: "routine-\(auto.id)",
+                        title: auto.name,
+                        subtitle: "Routine • \(auto.owningCompanion) (\(auto.prompt.prefix(40)))",
+                        category: .routines,
+                        iconSystemName: "clock.arrow.circlepath",
+                        action: {
+                            if let comp = CompanionRosterStore.shared.allCompanions.first(where: { $0.slug == auto.owningCompanion }) {
+                                onSelectCompanion?(comp.id)
+                            }
+                            isOpen = false
+                        }
+                    ))
+                }
+            }
+        }
+
+        // 4. Search Files / Artifacts
+        if selectedCategory == .all || selectedCategory == .files {
+            let home = FileManager.default.homeDirectoryForCurrentUser
+            for comp in CompanionRosterStore.shared.allCompanions {
+                let deliverablesDir = home.appendingPathComponent(".izanotchy/companions/\(comp.slug)/workspace/deliverables")
+                if let files = try? FileManager.default.contentsOfDirectory(atPath: deliverablesDir.path) {
+                    for f in files where !f.hasPrefix(".") {
+                        if cleanQuery.isEmpty || f.lowercased().contains(cleanQuery) {
+                            let filePath = deliverablesDir.appendingPathComponent(f).path
+                            items.append(PaletteSearchResultItem(
+                                id: "file-\(comp.slug)-\(f)",
+                                title: f,
+                                subtitle: "\(comp.name) / deliverables",
+                                category: .files,
+                                iconSystemName: "doc.fill",
+                                action: {
+                                    NSWorkspace.shared.open(URL(fileURLWithPath: filePath))
+                                    isOpen = false
+                                }
+                            ))
+                        }
+                    }
+                }
+            }
+        }
+
+        return items
+    }
+
+    public var body: some View {
+        VStack(spacing: 0) {
+            // Search Input Bar
+            HStack(spacing: 10) {
+                Image(systemName: "magnifyingglass")
+                    .font(.system(size: 14, weight: .bold))
+                    .foregroundStyle(Color(hex: "#38BDF8"))
+
+                TextField("Cari bot, pesan, berkas, atau routine (Cmd+K)...", text: $queryText)
+                    .textFieldStyle(.plain)
+                    .font(.system(size: 13.5, weight: .medium))
+                    .foregroundStyle(.white)
+
+                if !queryText.isEmpty {
+                    Button(action: { queryText = "" }) {
+                        Image(systemName: "xmark.circle.fill")
+                            .font(.system(size: 12))
+                            .foregroundStyle(.white.opacity(0.5))
+                    }
+                    .buttonStyle(.plain)
+                }
+
+                Button(action: { isOpen = false }) {
+                    Text("ESC")
+                        .font(.system(size: 9.5, weight: .bold, design: .monospaced))
+                        .foregroundStyle(.white.opacity(0.5))
+                        .padding(.horizontal, 5)
+                        .padding(.vertical, 2)
+                        .background(Capsule().fill(Color.white.opacity(0.08)))
+                }
+                .buttonStyle(.plain)
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 12)
+            .background(Color(hex: "#1E293B"))
+
+            // Category Chips Bar
+            HStack(spacing: 6) {
+                ForEach(PaletteItemCategory.allCases) { cat in
+                    Button(action: { selectedCategory = cat }) {
+                        Text(cat.rawValue)
+                            .font(.system(size: 11, weight: selectedCategory == cat ? .bold : .medium))
+                            .foregroundStyle(selectedCategory == cat ? Color(hex: "#0F172A") : Color.white.opacity(0.75))
+                            .padding(.horizontal, 9)
+                            .padding(.vertical, 4)
+                            .background(
+                                Capsule().fill(selectedCategory == cat ? Color(hex: "#38BDF8") : Color.white.opacity(0.06))
+                            )
+                    }
+                    .buttonStyle(.plain)
+                }
+                Spacer()
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 8)
+            .background(Color(hex: "#0F172A").opacity(0.95))
+
+            Divider().background(Color.white.opacity(0.08))
+
+            // Results List
+            ScrollView {
+                VStack(spacing: 2) {
+                    if searchResults.isEmpty {
+                        VStack(spacing: 6) {
+                            Image(systemName: "questionmark.folder")
+                                .font(.system(size: 22))
+                                .foregroundStyle(.white.opacity(0.3))
+                            Text("Tidak ada hasil yang cocok")
+                                .font(.system(size: 12))
+                                .foregroundStyle(.white.opacity(0.45))
+                        }
+                        .padding(.vertical, 32)
+                    } else {
+                        ForEach(searchResults) { item in
+                            Button(action: item.action) {
+                                HStack(spacing: 10) {
+                                    Image(systemName: item.iconSystemName)
+                                        .font(.system(size: 13))
+                                        .foregroundStyle(Color(hex: "#38BDF8"))
+                                        .frame(width: 20)
+
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text(item.title)
+                                            .font(.system(size: 12.5, weight: .medium))
+                                            .foregroundStyle(.white)
+                                            .lineLimit(1)
+                                        Text(item.subtitle)
+                                            .font(.system(size: 10.5))
+                                            .foregroundStyle(.white.opacity(0.5))
+                                            .lineLimit(1)
+                                    }
+
+                                    Spacer()
+
+                                    Text(item.category.rawValue)
+                                        .font(.system(size: 9, weight: .semibold))
+                                        .foregroundStyle(.white.opacity(0.4))
+                                        .padding(.horizontal, 5)
+                                        .padding(.vertical, 2)
+                                        .background(Capsule().fill(Color.white.opacity(0.05)))
+                                }
+                                .padding(.horizontal, 14)
+                                .padding(.vertical, 8)
+                                .background(RoundedRectangle(cornerRadius: 8).fill(Color.white.opacity(0.03)))
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                }
+                .padding(8)
+            }
+            .frame(maxHeight: 260)
+        }
+        .frame(width: 520)
+        .background(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(Color(hex: "#0F172A"))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .stroke(Color(hex: "#38BDF8").opacity(0.35), lineWidth: 1)
+                )
+        )
+        .shadow(color: Color.black.opacity(0.6), radius: 24, y: 12)
+    }
+}

@@ -39,7 +39,7 @@ struct HomeSpaceRootView: View {
     @ObservedObject var interviewEngine = CompanionInterviewEngine.shared
     @State var stagedAttachments: [ChatAttachment] = []
     @State var attachmentErrorMessage: String? = nil
-
+    @State var isSearchPaletteOpen: Bool = false
     // Character Editing State
     @State var isEditingCharacter: Bool = false
     @State var editName: String = ""
@@ -162,6 +162,29 @@ struct HomeSpaceRootView: View {
             .frame(width: 900, height: 580)
             .offset(y: notchHeight)
 
+            if isSearchPaletteOpen {
+                Color.black.opacity(0.45)
+                    .ignoresSafeArea()
+                    .onTapGesture {
+                        withAnimation(.spring(response: 0.25, dampingFraction: 0.8)) {
+                            isSearchPaletteOpen = false
+                        }
+                    }
+                    .zIndex(190)
+
+                HomeSpaceSearchPaletteView(
+                    isOpen: $isSearchPaletteOpen,
+                    onSelectCompanion: { id in
+                        companion.selectSession(id: id)
+                        withAnimation(.spring(response: 0.25, dampingFraction: 0.8)) {
+                            isSearchPaletteOpen = false
+                        }
+                    }
+                )
+                .padding(.top, notchHeight + 35)
+                .zIndex(200)
+                .transition(.opacity.combined(with: .scale(scale: 0.96)))
+            }
         }
         .frame(width: 900, height: totalHeight)
         .background(
@@ -261,6 +284,11 @@ struct HomeSpaceRootView: View {
                 let name = URL(fileURLWithPath: artifactPath).lastPathComponent
                 inputText = "Revisi artifact \(name): "
                 isTypingMode = true
+            }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: Notification.Name("HomeSpaceToggleSearchPalette"))) { _ in
+            withAnimation(.spring(response: 0.28, dampingFraction: 0.82)) {
+                isSearchPaletteOpen.toggle()
             }
         }
     }
