@@ -44,12 +44,12 @@ Prasyarat masuk TASK-047: 8 skenario `scenarios.fasec.json` lulus + 8 bloker B1-
 
 ### FASE 2 — SKILLS & ROUTINES (PRD §A8, §C4-C5; sumber S1, S2)
 
-| ID | [Tipe] | Scope | Baca | Bukti review |
-|---|---|---|---|---|
-| MT-05 | [non-UI] | Skill schema 6-field (C4): whenToUse/inputs/access/steps/validation/output/approvalBoundary + library per semua companion | S1-skills, S2 | Schema tersimpan; skill bisa direferensikan `/` |
-| MT-06 | [UI] | Teach mode: rekam aksi companion (dari action log yang sudah ada) → skill draft → review pengguna → finalisasi | S2-teach | Satu demonstrasi menghasilkan skill draft yang lulus uji safe example |
-| MT-07 | [non-UI] | Routine scheduler penuh: timezone per companion, event trigger narrow, limits (50/bot, 20 run records, min 5 menit), run history | S2-routines | Routine 5-menit terjadwal jalan; history tersimpan; routine ke-51 ditolak dengan pesan |
-| MT-08 | [non-UI] | Test run mode ("real work" warning) + trust design: otomatisasi preparation dulu, approval untuk send/purchase/delete/publish/production, no-data/stale-data policy, retry idempotent | S2-trust | Test run menyentuh input aman; aksi berisiko berhenti di approval |
+| ID | [Tipe] | Scope | Baca | Bukti review | Status |
+|---|---|---|---|---|---|
+| MT-05 | [non-UI] | Skill schema 6-field (C4): whenToUse/inputs/access/steps/validation/output/approvalBoundary + library per semua companion | S1-skills, S2 | Schema tersimpan; skill bisa direferensikan `/` | LULUS |
+| MT-06 | [UI] | Teach mode: rekam aksi companion (dari action log yang sudah ada) → skill draft → review pengguna → finalisasi | S2-teach | Satu demonstrasi menghasilkan skill draft yang lulus uji safe example | LULUS |
+| MT-07 | [non-UI] | Routine scheduler penuh: timezone per companion, event trigger narrow, limits (50/bot, 20 run records, min 5 menit), run history | S2-routines | Routine 5-menit terjadwal jalan; history tersimpan; routine ke-51 ditolak dengan pesan | LULUS |
+| MT-08 | [non-UI] | Test run mode ("real work" warning) + trust design: otomatisasi preparation dulu, approval untuk send/purchase/delete/publish/production, no-data/stale-data policy, retry idempotent | S2-trust | Test run menyentuh input aman; aksi berisiko berhenti di approval | LULUS |
 
 ### FASE 3 — CONNECTORS & API TIER (PRD §A15-G8/G15, §F5; sumber S5)
 
