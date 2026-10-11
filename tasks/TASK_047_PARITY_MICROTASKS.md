@@ -80,10 +80,10 @@ Prasyarat masuk TASK-047: 8 skenario `scenarios.fasec.json` lulus + 8 bloker B1-
 
 ### FASE 6 — MODEL CAPABILITY CHECK (PRD §B; sumber S1, S6)
 
-| ID | [Tipe] | Scope | Baca | Bukti review |
-|---|---|---|---|---|
-| MT-21 | [non-UI] | Benchmark tiap lapisan otak (Ingress/planner/egress) terhadap kontrak §B — suite terukur; laporan capaian per lapisan | PRD §B, S6 | Laporan benchmark + keputusan: AFM sanggup / butuh eskalasi model |
-| MT-22 | [non-UI] | Jika ada lapisan gagal: siapkan spesifikasi kebutuhan model pengganti (lokal) — DILARANG pindah ke cloud | PRD §B | Dokumen kebutuhan model diserahkan pengguna |
+| ID | [Tipe] | Scope | Baca | Bukti review | Status |
+|---|---|---|---|---|---|
+| MT-21 | [non-UI] | Benchmark tiap lapisan otak (Ingress/planner/egress) terhadap kontrak §B — suite terukur; laporan capaian per lapisan | PRD §B, S6 | Laporan benchmark + keputusan: AFM sanggup / butuh eskalasi model | LULUS |
+| MT-22 | [non-UI] | Jika ada lapisan gagal: siapkan spesifikasi kebutuhan model pengganti (lokal) — DILARANG pindah ke cloud | PRD §B | Dokumen kebutuhan model diserahkan pengguna | LULUS |
 
 ### FASE 7 — BOT LIFECYCLE & IDENTITY PARITY (PRD §A4; sumber S2)
 
