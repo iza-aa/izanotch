@@ -239,6 +239,10 @@ public final class IntegrationsManager: ObservableObject {
 
     // MARK: - Filtering
 
+    public func isIntegrationConnected(id: String) -> Bool {
+        return items.first(where: { $0.id.lowercased() == id.lowercased() })?.isConnected ?? false
+    }
+
     public var connectedIntegrations: [IntegrationItem] {
         items.filter { $0.isConnected && matchesSearch($0) }
     }
@@ -270,5 +274,120 @@ public final class IntegrationsManager: ObservableObject {
         }
 
         return nil
+    }
+}
+// MARK: - ConnectorProvider & Declarative Connector Account (Schema C1 / PRD §A11, §A15)
+
+public enum ConnectorProvider: String, Codable, CaseIterable, Sendable {
+    case gmail = "gmail"
+    case googleCalendar = "google_calendar"
+    case googleDrive = "google_drive"
+    case outlook = "outlook"
+    case mcp = "custom_mcp"
+}
+
+public struct ConnectorAccount: Codable, Sendable, Identifiable, Equatable {
+    public var id: String { "\(provider.rawValue):\(email ?? "default")" }
+    public let provider: ConnectorProvider
+    public let email: String?
+    public var isConnected: Bool
+    public var grantedScopes: [String]
+    public var connectedAt: Date?
+    public var actsAsTheAsker: Bool
+
+    public init(
+        provider: ConnectorProvider,
+        email: String? = nil,
+        isConnected: Bool = true,
+        grantedScopes: [String] = [],
+        connectedAt: Date? = Date(),
+        actsAsTheAsker: Bool = true
+    ) {
+        self.provider = provider
+        self.email = email
+        self.isConnected = isConnected
+        self.grantedScopes = grantedScopes
+        self.connectedAt = connectedAt
+        self.actsAsTheAsker = actsAsTheAsker
+    }
+}
+
+// MARK: - ConnectorRegistry (PRD §A5, §A15, MT-12: Declarative Account-Wide Connector Registry)
+
+public final class ConnectorRegistry: @unchecked Sendable {
+    public static let shared = ConnectorRegistry()
+
+    private let lock = NSLock()
+    private var accounts: [ConnectorProvider: ConnectorAccount] = [:]
+    private let vaultURL: URL
+
+    private init() {
+        let home = FileManager.default.homeDirectoryForCurrentUser
+        let baseDir = home.appendingPathComponent(".izanotchy", isDirectory: true)
+        try? FileManager.default.createDirectory(at: baseDir, withIntermediateDirectories: true)
+        self.vaultURL = baseDir.appendingPathComponent("connectors_vault.json")
+        restoreFromVault()
+    }
+
+    public func isConnected(provider: ConnectorProvider) -> Bool {
+        lock.lock()
+        defer { lock.unlock() }
+        if let acc = accounts[provider], acc.isConnected {
+            return true
+        }
+        return false
+    }
+
+    public func activeAccount(for provider: ConnectorProvider) -> ConnectorAccount? {
+        lock.lock()
+        defer { lock.unlock() }
+        return accounts[provider]
+    }
+
+    public func connect(account: ConnectorAccount) {
+        lock.lock()
+        accounts[account.provider] = account
+        lock.unlock()
+        saveToVault()
+        ClickyLogger.info("[CONNECTOR_REGISTRY]", "Connected provider '\(account.provider.rawValue)' (scopes: \(account.grantedScopes.joined(separator: ", ")), actsAsTheAsker=\(account.actsAsTheAsker))")
+    }
+
+    public func disconnect(provider: ConnectorProvider) {
+        lock.lock()
+        accounts.removeValue(forKey: provider)
+        lock.unlock()
+        saveToVault()
+        ClickyLogger.info("[CONNECTOR_REGISTRY]", "Disconnected provider '\(provider.rawValue)'")
+    }
+
+    public func revoke(provider: ConnectorProvider) {
+        disconnect(provider: provider)
+        ClickyLogger.info("[CONNECTOR_REGISTRY]", "Revoked access and deleted credentials for '\(provider.rawValue)'")
+    }
+
+    private func saveToVault() {
+        lock.lock()
+        let dict = accounts
+        lock.unlock()
+
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+        if let data = try? encoder.encode(Array(dict.values)) {
+            try? data.write(to: vaultURL, options: .atomic)
+        }
+    }
+
+    private func restoreFromVault() {
+        guard FileManager.default.fileExists(atPath: vaultURL.path),
+              let data = try? Data(contentsOf: vaultURL),
+              let list = try? JSONDecoder().decode([ConnectorAccount].self, from: data) else {
+            return
+        }
+        lock.lock()
+        for item in list {
+            accounts[item.provider] = item
+        }
+        lock.unlock()
+        ClickyLogger.info("[CONNECTOR_REGISTRY]", "Restored \(list.count) connector account(s) from vault.")
     }
 }
