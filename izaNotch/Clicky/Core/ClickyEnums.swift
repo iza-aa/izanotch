@@ -174,6 +174,27 @@ public struct AttachmentValidator: Sendable {
         return (true, nil, att)
     }
 }
+public struct VoiceMemoData: Identifiable, Codable, Equatable, Sendable {
+    public let id: UUID
+    public let audioFileURLString: String?
+    public let durationSeconds: Double
+    public let transcriptText: String
+    public let recordedAt: Date
+
+    public init(
+        id: UUID = UUID(),
+        audioFileURLString: String? = nil,
+        durationSeconds: Double = 0.0,
+        transcriptText: String,
+        recordedAt: Date = Date()
+    ) {
+        self.id = id
+        self.audioFileURLString = audioFileURLString
+        self.durationSeconds = durationSeconds
+        self.transcriptText = transcriptText
+        self.recordedAt = recordedAt
+    }
+}
 
 public struct HomeSpaceChatMessage: Identifiable, Codable, Equatable {
     public let id: UUID
@@ -183,6 +204,7 @@ public struct HomeSpaceChatMessage: Identifiable, Codable, Equatable {
     public var computerPayload: ComputerCardPayload?
     public var egressResult: EgressResult?
     public var attachments: [ChatAttachment]
+    public var voiceMemo: VoiceMemoData?
 
     public init(
         id: UUID = UUID(),
@@ -191,7 +213,8 @@ public struct HomeSpaceChatMessage: Identifiable, Codable, Equatable {
         timestamp: Date = Date(),
         computerPayload: ComputerCardPayload? = nil,
         egressResult: EgressResult? = nil,
-        attachments: [ChatAttachment] = []
+        attachments: [ChatAttachment] = [],
+        voiceMemo: VoiceMemoData? = nil
     ) {
         self.id = id
         self.isUser = isUser
@@ -200,6 +223,7 @@ public struct HomeSpaceChatMessage: Identifiable, Codable, Equatable {
         self.computerPayload = computerPayload
         self.egressResult = egressResult
         self.attachments = attachments
+        self.voiceMemo = voiceMemo
     }
 }
 

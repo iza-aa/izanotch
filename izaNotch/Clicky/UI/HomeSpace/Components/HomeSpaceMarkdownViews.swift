@@ -1097,3 +1097,146 @@ public struct HomeSpaceDraftSkillReviewView: View {
         }
     }
 }
+// MARK: - HomeSpaceVoiceMemoCardView (PRD §A7, MT-28: Playable Voice Memo Card with Transcript)
+
+public struct HomeSpaceVoiceMemoCardView: View {
+    public let memo: VoiceMemoData
+
+    @State private var isPlaying: Bool = false
+    @State private var playbackProgress: Double = 0.0
+    @State private var isTranscriptExpanded: Bool = false
+    @State private var playbackTimer: Timer?
+
+    public init(memo: VoiceMemoData) {
+        self.memo = memo
+    }
+
+    private var formattedDuration: String {
+        let sec = Int(memo.durationSeconds)
+        let m = sec / 60
+        let s = sec % 60
+        return String(format: "%d:%02d", m, s)
+    }
+
+    public var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            // Player Bar
+            HStack(spacing: 10) {
+                // Play / Pause Button
+                Button(action: togglePlayback) {
+                    ZStack {
+                        Circle()
+                            .fill(LinearGradient(
+                                colors: [Color(hex: "#38BDF8"), Color(hex: "#0284C7")],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ))
+                            .frame(width: 32, height: 32)
+
+                        Image(systemName: isPlaying ? "pause.fill" : "play.fill")
+                            .font(.system(size: 12, weight: .bold))
+                            .foregroundStyle(.white)
+                            .offset(x: isPlaying ? 0 : 1)
+                    }
+                }
+                .buttonStyle(.plain)
+
+                // Waveform / Progress Display
+                VStack(alignment: .leading, spacing: 3) {
+                    GeometryReader { geo in
+                        ZStack(alignment: .leading) {
+                            Capsule()
+                                .fill(Color.white.opacity(0.12))
+                                .frame(height: 4)
+
+                            Capsule()
+                                .fill(Color(hex: "#38BDF8"))
+                                .frame(width: max(4, geo.size.width * playbackProgress), height: 4)
+                        }
+                    }
+                    .frame(height: 4)
+
+                    HStack {
+                        Text(isPlaying ? "Memutar audio..." : "Voice Memo")
+                            .font(.system(size: 10.5, weight: .medium))
+                            .foregroundStyle(.white.opacity(0.75))
+
+                        Spacer()
+
+                        Text(formattedDuration)
+                            .font(.system(size: 10, weight: .medium, design: .monospaced))
+                            .foregroundStyle(.white.opacity(0.5))
+                    }
+                }
+
+                // Transcript Expand Toggle
+                Button(action: {
+                    withAnimation(.spring(response: 0.25, dampingFraction: 0.8)) {
+                        isTranscriptExpanded.toggle()
+                    }
+                }) {
+                    Image(systemName: isTranscriptExpanded ? "text.bubble.fill" : "text.bubble")
+                        .font(.system(size: 13))
+                        .foregroundStyle(isTranscriptExpanded ? Color(hex: "#38BDF8") : Color.white.opacity(0.6))
+                        .padding(6)
+                        .background(Circle().fill(Color.white.opacity(0.06)))
+                }
+                .buttonStyle(.plain)
+                .help(isTranscriptExpanded ? "Sembunyikan transkrip" : "Tampilkan transkrip")
+            }
+
+            // Expanded Transcript Text
+            if isTranscriptExpanded && !memo.transcriptText.isEmpty {
+                VStack(alignment: .leading, spacing: 3) {
+                    Text("Transkrip:")
+                        .font(.system(size: 9.5, weight: .bold))
+                        .foregroundStyle(Color(hex: "#38BDF8"))
+
+                    Text(memo.transcriptText)
+                        .font(.system(size: 12, weight: .regular))
+                        .foregroundStyle(.white.opacity(0.92))
+                        .lineSpacing(2)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .padding(8)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(RoundedRectangle(cornerRadius: 8).fill(Color.black.opacity(0.3)))
+                .transition(.opacity.combined(with: .scale(scale: 0.98)))
+            }
+        }
+        .padding(10)
+        .background(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .fill(Color(hex: "#0F172A").opacity(0.85))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        .stroke(Color.white.opacity(0.1), lineWidth: 0.8)
+                )
+        )
+        .frame(maxWidth: 420, alignment: .leading)
+    }
+
+    private func togglePlayback() {
+        if isPlaying {
+            isPlaying = false
+            playbackTimer?.invalidate()
+            playbackTimer = nil
+        } else {
+            isPlaying = true
+            ClickySoundEngine.shared.play(.open)
+            playbackProgress = 0.0
+            let duration = max(2.0, memo.durationSeconds)
+            let step = 0.05 / duration
+            playbackTimer = Timer.scheduledTimer(withTimeInterval: 0.05, repeats: true) { _ in
+                playbackProgress += step
+                if playbackProgress >= 1.0 {
+                    playbackProgress = 0.0
+                    isPlaying = false
+                    playbackTimer?.invalidate()
+                    playbackTimer = nil
+                    ClickySoundEngine.shared.play(.done)
+                }
+            }
+        }
+    }
+}

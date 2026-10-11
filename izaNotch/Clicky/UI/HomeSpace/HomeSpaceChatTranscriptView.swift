@@ -135,6 +135,9 @@ extension HomeSpaceRootView {
                                                             }
                                                         }
                                                     }
+                                                    if let memo = message.voiceMemo {
+                                                        HomeSpaceVoiceMemoCardView(memo: memo)
+                                                    }
                                                     if !message.text.isEmpty {
                                                         Text(message.text)
                                                             .font(.system(size: 13, weight: .medium))
@@ -230,6 +233,11 @@ extension HomeSpaceRootView {
                                                             .background(Capsule().fill(Color.white.opacity(0.08)))
                                                         }
                                                     }
+                                                }
+
+                                                if let memo = message.voiceMemo {
+                                                    HomeSpaceVoiceMemoCardView(memo: memo)
+                                                        .id("voice-memo-\(message.id)")
                                                 }
 
                                                 if !message.text.isEmpty {
