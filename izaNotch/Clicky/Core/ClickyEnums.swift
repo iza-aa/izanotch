@@ -594,3 +594,136 @@ public enum ClickyCommandCategory: Equatable, Sendable {
     case aksi(actionType: String, target: String)
     case tanya(query: String)
 }
+// MARK: - AuditLogService (PRD §A11, §A16, S4-security, MT-41)
+
+public struct AuditEventItem: Identifiable, Codable, Sendable, Equatable {
+    public var id: String { eventId }
+    public let eventId: String
+    public let timestamp: Date
+    public let eventType: String
+    public let actorSlug: String
+    public let actionDescription: String
+    public let metadata: [String: String]
+
+    public init(
+        eventId: String = UUID().uuidString,
+        timestamp: Date = Date(),
+        eventType: String,
+        actorSlug: String,
+        actionDescription: String,
+        metadata: [String: String] = [:]
+    ) {
+        self.eventId = eventId
+        self.timestamp = timestamp
+        self.eventType = eventType
+        self.actorSlug = actorSlug
+        self.actionDescription = actionDescription
+        self.metadata = metadata
+    }
+}
+
+public final class AuditLogService: @unchecked Sendable {
+    public static let shared = AuditLogService()
+
+    private let lock = NSLock()
+    private var events: [AuditEventItem] = []
+    private let logFileURL: URL
+    public static let maxAuditRetention = 1000
+
+    private init() {
+        let home = FileManager.default.homeDirectoryForCurrentUser
+        let baseDir = home.appendingPathComponent(".izanotchy", isDirectory: true)
+        try? FileManager.default.createDirectory(at: baseDir, withIntermediateDirectories: true)
+        self.logFileURL = baseDir.appendingPathComponent("audit_logs.json")
+        loadLogs()
+    }
+
+    /// Records a control-plane event with strict redaction of PEM keys, tokens, and passwords
+    @discardableResult
+    public func recordEvent(
+        type: String,
+        actor: String,
+        description: String,
+        metadata: [String: String] = [:]
+    ) -> AuditEventItem {
+        lock.lock()
+        defer { lock.unlock() }
+
+        // Apply strict redaction to description and metadata values
+        let cleanDescription = Self.maskSensitiveContent(description)
+        var cleanMetadata: [String: String] = [:]
+        for (k, v) in metadata {
+            cleanMetadata[k] = Self.maskSensitiveContent(v)
+        }
+
+        let item = AuditEventItem(
+            eventType: type,
+            actorSlug: actor,
+            actionDescription: cleanDescription,
+            metadata: cleanMetadata
+        )
+
+        events.append(item)
+        if events.count > Self.maxAuditRetention {
+            events = Array(events.suffix(Self.maxAuditRetention))
+        }
+
+        saveLogs()
+        ClickyLogger.info("[AUDIT_LOG]", "Recorded control-plane event '\(type)' by '\(actor)': \(cleanDescription)")
+        return item
+    }
+
+    /// Exports audit log to disk as a JSON artifact
+    public func exportAuditLog() -> URL? {
+        lock.lock()
+        let items = events
+        lock.unlock()
+
+        let home = FileManager.default.homeDirectoryForCurrentUser
+        let exportDir = home.appendingPathComponent(".izanotchy/shared_workspace/audit_exports", isDirectory: true)
+        try? FileManager.default.createDirectory(at: exportDir, withIntermediateDirectories: true)
+
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyyMMdd_HHmmss"
+        let timestampStr = formatter.string(from: Date())
+        let exportURL = exportDir.appendingPathComponent("audit_export_\(timestampStr).json")
+
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+        guard let data = try? encoder.encode(items) else { return nil }
+        try? data.write(to: exportURL, options: .atomic)
+        ClickyLogger.info("[AUDIT_LOG]", "Exported \(items.count) audit events to \(exportURL.path)")
+        return exportURL
+    }
+
+    /// Strict Redaction Filter: masks PEM blocks, Bearer tokens, passwords, and sensitive keys
+    public static func maskSensitiveContent(_ text: String) -> String {
+        var result = text
+        // 1. PEM Key blocks
+        let pemPattern = #"-----BEGIN[A-Z0-9\s_-]+KEY-----[\s\S]*?-----END[A-Z0-9\s_-]+KEY-----"#
+        result = result.replacingOccurrences(of: pemPattern, with: "[REDACTED_PEM_KEY]", options: .regularExpression)
+        // 2. Bearer tokens
+        result = result.replacingOccurrences(of: #"(Bearer\s+)[A-Za-z0-9_\-\.]{10,}"#, with: "$1[REDACTED]", options: .regularExpression)
+        // 3. Passwords & Secrets in JSON/text
+        result = result.replacingOccurrences(of: #"("password"\s*:\s*")[^"]+(")"#, with: "$1[REDACTED]$2", options: .regularExpression)
+        result = result.replacingOccurrences(of: #"(api[_-]?key\s*[=:]\s*)[A-Za-z0-9_\-]{12,}"#, with: "$1[REDACTED]", options: .regularExpression)
+        return result
+    }
+
+    private func saveLogs() {
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+        if let data = try? encoder.encode(events) {
+            try? data.write(to: logFileURL, options: .atomic)
+        }
+    }
+
+    private func loadLogs() {
+        guard FileManager.default.fileExists(atPath: logFileURL.path),
+              let data = try? Data(contentsOf: logFileURL),
+              let list = try? JSONDecoder().decode([AuditEventItem].self, from: data) else {
+            return
+        }
+        self.events = list.count > Self.maxAuditRetention ? Array(list.suffix(Self.maxAuditRetention)) : list
+    }
+}
