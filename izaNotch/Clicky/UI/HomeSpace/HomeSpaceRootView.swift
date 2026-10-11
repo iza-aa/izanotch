@@ -381,6 +381,12 @@ struct HomeSpaceRootView: View {
 
         Task { @MainActor in
             var promptWithContext = clean
+            let slashRes = CompanionSkillLibrary.shared.resolveSlashReference(from: clean, for: companion.activeBuddy.slug)
+            if let skill = slashRes.skill {
+                let skillGuidance = CompanionSkillLibrary.shared.formatForSystemPrompt(skill)
+                let baseText = slashRes.remainderPrompt.isEmpty ? skill.whenToUse : slashRes.remainderPrompt
+                promptWithContext = "\(baseText)\n\n\(skillGuidance)"
+            }
             if !currentAttachments.isEmpty {
                 let desc = currentAttachments.map { "\($0.fileName) (\($0.mimeType))" }.joined(separator: ", ")
                 promptWithContext += " [Attachments: \(desc)]"

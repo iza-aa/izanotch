@@ -262,3 +262,214 @@ extension CompanionProfile {
         defaultClicky
     ]
 }
+// MARK: - CompanionSkill (Schema C4: 6-Field Standard Skill Contract)
+public struct CompanionSkill: Identifiable, Codable, Equatable, Sendable {
+    public var id: String { name.lowercased().replacingOccurrences(of: " ", with: "-") }
+    public var name: String
+    public var whenToUse: String
+    public var requiredInputs: [String]
+    public var access: [String]
+    public var steps: [String]
+    public var validation: String
+    public var output: String
+    public var approvalBoundary: [String]
+    public var origin: String // "manual" | "teach-mode"
+    public var draft: Bool
+
+    public init(
+        name: String,
+        whenToUse: String,
+        requiredInputs: [String] = [],
+        access: [String] = [],
+        steps: [String] = [],
+        validation: String = "",
+        output: String = "",
+        approvalBoundary: [String] = [],
+        origin: String = "manual",
+        draft: Bool = false
+    ) {
+        self.name = name
+        self.whenToUse = whenToUse
+        self.requiredInputs = requiredInputs
+        self.access = access
+        self.steps = steps
+        self.validation = validation
+        self.output = output
+        self.approvalBoundary = approvalBoundary
+        self.origin = origin
+        self.draft = draft
+    }
+}
+
+// MARK: - CompanionSkillLibrary (Shared Cross-Bot Skill Storage & Slash Resolver)
+public final class CompanionSkillLibrary: @unchecked Sendable {
+    public static let shared = CompanionSkillLibrary()
+
+    private let fileManager = FileManager.default
+
+    private var sharedSkillsDirectory: URL {
+        let dir = fileManager.homeDirectoryForCurrentUser
+            .appendingPathComponent(".izanotchy/shared_workspace/skills", isDirectory: true)
+        if !fileManager.fileExists(atPath: dir.path) {
+            try? fileManager.createDirectory(at: dir, withIntermediateDirectories: true)
+        }
+        return dir
+    }
+
+    private init() {
+        seedBuiltinSkillsIfEmpty()
+    }
+
+    /// Saves or updates a skill in the shared library or companion-specific directory
+    @discardableResult
+    public func saveSkill(_ skill: CompanionSkill, for companionSlug: String? = nil) -> URL? {
+        let targetDir: URL
+        if let slug = companionSlug, !slug.isEmpty {
+            targetDir = fileManager.homeDirectoryForCurrentUser
+                .appendingPathComponent(".izanotchy/companions/\(slug)/workspace/skills", isDirectory: true)
+        } else {
+            targetDir = sharedSkillsDirectory
+        }
+        try? fileManager.createDirectory(at: targetDir, withIntermediateDirectories: true)
+
+        let fileURL = targetDir.appendingPathComponent("\(skill.id).json")
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = .prettyPrinted
+        guard let data = try? encoder.encode(skill) else { return nil }
+        try? data.write(to: fileURL)
+        ClickyLogger.info("[SKILLS]", "Saved skill '\(skill.name)' to \(fileURL.path) (origin=\(skill.origin), draft=\(skill.draft))")
+        return fileURL
+    }
+
+    /// Retrieves a skill by name or slug from companion scope or shared library
+    public func getSkill(named name: String, for companionSlug: String? = nil) -> CompanionSkill? {
+        let targetId = name.lowercased().replacingOccurrences(of: " ", with: "-").replacingOccurrences(of: "/", with: "")
+
+        // 1. Check companion-specific directory if slug provided
+        if let slug = companionSlug, !slug.isEmpty {
+            let compDir = fileManager.homeDirectoryForCurrentUser
+                .appendingPathComponent(".izanotchy/companions/\(slug)/workspace/skills", isDirectory: true)
+            let compFile = compDir.appendingPathComponent("\(targetId).json")
+            if let data = try? Data(contentsOf: compFile),
+               let skill = try? JSONDecoder().decode(CompanionSkill.self, from: data) {
+                return skill
+            }
+        }
+
+        // 2. Check shared library
+        let sharedFile = sharedSkillsDirectory.appendingPathComponent("\(targetId).json")
+        if let data = try? Data(contentsOf: sharedFile),
+           let skill = try? JSONDecoder().decode(CompanionSkill.self, from: data) {
+            return skill
+        }
+
+        return nil
+    }
+
+    /// Lists all skills available in the shared library plus companion scope
+    public func allSkills(for companionSlug: String? = nil) -> [CompanionSkill] {
+        var results: [String: CompanionSkill] = [:]
+
+        // Read shared library
+        if let items = try? fileManager.contentsOfDirectory(at: sharedSkillsDirectory, includingPropertiesForKeys: nil) {
+            for item in items where item.pathExtension.lowercased() == "json" {
+                if let data = try? Data(contentsOf: item),
+                   let skill = try? JSONDecoder().decode(CompanionSkill.self, from: data) {
+                    results[skill.id] = skill
+                }
+            }
+        }
+
+        // Read companion scope (overrides or adds)
+        if let slug = companionSlug, !slug.isEmpty {
+            let compDir = fileManager.homeDirectoryForCurrentUser
+                .appendingPathComponent(".izanotchy/companions/\(slug)/workspace/skills", isDirectory: true)
+            if let items = try? fileManager.contentsOfDirectory(at: compDir, includingPropertiesForKeys: nil) {
+                for item in items where item.pathExtension.lowercased() == "json" {
+                    if let data = try? Data(contentsOf: item),
+                       let skill = try? JSONDecoder().decode(CompanionSkill.self, from: data) {
+                        results[skill.id] = skill
+                    }
+                }
+            }
+        }
+
+        return Array(results.values).sorted(by: { $0.name < $1.name })
+    }
+
+    /// Resolves slash command reference from prompt (e.g. "/check-inbox" or "/compose")
+    public func resolveSlashReference(from prompt: String, for companionSlug: String? = nil) -> (skill: CompanionSkill?, remainderPrompt: String) {
+        let trimmed = prompt.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard trimmed.hasPrefix("/") else { return (nil, prompt) }
+
+        let components = trimmed.dropFirst().components(separatedBy: .whitespaces)
+        guard let commandName = components.first, !commandName.isEmpty else { return (nil, prompt) }
+
+        let remainder = components.dropFirst().joined(separator: " ")
+        if let skill = getSkill(named: commandName, for: companionSlug) {
+            ClickyLogger.info("[SKILLS]", "Resolved slash command '/\(commandName)' -> Skill '\(skill.name)'")
+            return (skill, remainder)
+        }
+
+        return (nil, prompt)
+    }
+
+    /// Formats skill into System 2 prompt guidance so planner adheres to its steps and boundaries
+    public func formatForSystemPrompt(_ skill: CompanionSkill) -> String {
+        return """
+        [ACTIVE_SKILL: \(skill.name)]
+        - When to use: \(skill.whenToUse)
+        - Required Inputs: \(skill.requiredInputs.joined(separator: ", "))
+        - Access: \(skill.access.joined(separator: ", "))
+        - Steps:
+        \(skill.steps.enumerated().map { "  \($0 + 1). \($1)" }.joined(separator: "\n"))
+        - Validation: \(skill.validation)
+        - Expected Output: \(skill.output)
+        - Approval Boundary: \(skill.approvalBoundary.joined(separator: ", "))
+        """
+    }
+
+    private func seedBuiltinSkillsIfEmpty() {
+        let existing = allSkills()
+        if existing.isEmpty {
+            let checkInbox = CompanionSkill(
+                name: "check-inbox",
+                whenToUse: "Digunakan saat pengguna meminta memeriksa kotak masuk, membaca email terbaru, atau memeriksa folder surel.",
+                requiredInputs: ["folderName (opsional, default: Inbox)", "targetIndex (opsional, default: 1)"],
+                access: ["Webmail DOM", "Mail App"],
+                steps: [
+                    "Buka antarmuka email pada isolated workspace.",
+                    "Periksa daftar pesan pada folder target.",
+                    "Ekstrak pengirim, subjek, dan pratinjau isi pesan tanpa mengubah status read/unread jika tidak diminta.",
+                    "Sintesiskan laporan temuan faktual 5-bagian."
+                ],
+                validation: "Daftar email memuat minimal 1 item terverifikasi pada DOM atau AX.",
+                output: "Laporan faktual pengirim, subjek, dan jumlah pesan.",
+                approvalBoundary: [],
+                origin: "manual",
+                draft: false
+            )
+
+            let composeDraft = CompanionSkill(
+                name: "compose-draft",
+                whenToUse: "Digunakan saat pengguna meminta membuat draf email baru atau membalas pesan.",
+                requiredInputs: ["to", "subject", "body"],
+                access: ["Webmail DOM Compose", "Mail Composer"],
+                steps: [
+                    "Buka jendela komposisi pesan baru.",
+                    "Isi bidang penerima, subjek, dan badan email.",
+                    "Verifikasi teks yang diketik pada form fields.",
+                    "Simpan sebagai draf (DILARANG mengirim tanpa approval eksplisit)."
+                ],
+                validation: "Form fields diverifikasi berisi alamat penerima dan subjek yang tepat.",
+                output: "Status draf tersimpan dan pratinjau konten pesan.",
+                approvalBoundary: ["Pengiriman email aktual (Send) wajib meminta izin pengguna"],
+                origin: "manual",
+                draft: false
+            )
+
+            saveSkill(checkInbox)
+            saveSkill(composeDraft)
+        }
+    }
+}
