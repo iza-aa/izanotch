@@ -159,18 +159,6 @@ struct HomeSpaceRootView: View {
             .frame(width: 900, height: 580)
             .offset(y: notchHeight)
 
-            // MARK: - Section 4: Semi-Fullscreen Computer Modal (F-08: 1:1 Foto Baru)
-            if let modalPayload = activeComputerModalPayload {
-                HomeSpaceInteractiveComputerModalView(payload: modalPayload, onDismiss: {
-                    ClickySoundEngine.shared.play(.close)
-                    withAnimation(.spring(response: 0.30, dampingFraction: 0.82)) {
-                        activeComputerModalPayload = nil
-                    }
-                })
-                .frame(width: 900, height: 580)
-                .offset(y: notchHeight)
-                .zIndex(500)
-            }
         }
         .frame(width: 900, height: totalHeight)
         .background(
@@ -420,23 +408,46 @@ struct HomeSpaceRootView: View {
                 // In-Chat First: Keep action directly inside chat feed (Zero Auto-Maximize)
                 do {
                     HomeSpaceWindowManager.shared.ensureOrderFront()
-                    let finalPayload = try await CompanionVMAgentLoop.shared.executeAutonomousTask(
-                        prompt: clean,
-                        slug: companion.activeBuddy.slug,
-                        appName: targetApp,
-                        taskPlan: plan,
-                        onProgress: { progressPayload in
-                            withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
-                                var updated = progressPayload
-                                updated.updatedAt = Date()
-                                companion.updateChatMessage(id: assistantMsgId, computerPayload: updated)
+                    let finalPayload: ComputerCardPayload
+                    if plan.executionTier == "web" {
+                        ClickyLogger.info("[ROUTING]", "Executing task in Web Workspace (CompanionVMAgentLoop native bypassed)")
+                        finalPayload = try await WebWorkspaceAgentLoop.shared.executeAutonomousWebTask(
+                            prompt: clean,
+                            slug: companion.activeBuddy.slug,
+                            appName: targetApp,
+                            taskPlan: plan,
+                            onProgress: { progressPayload in
+                                withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+                                    var updated = progressPayload
+                                    updated.updatedAt = Date()
+                                    companion.updateChatMessage(id: assistantMsgId, computerPayload: updated)
+                                }
+                                if self.activeComputerModalPayload != nil {
+                                    self.activeComputerModalPayload = progressPayload
+                                }
+                                HomeSpaceWindowManager.shared.ensureOrderFront()
                             }
-                            if self.activeComputerModalPayload != nil {
-                                self.activeComputerModalPayload = progressPayload
+                        )
+                    } else {
+                        ClickyLogger.info("[ROUTING]", "Executing task in Native CUA (CompanionVMAgentLoop active)")
+                        finalPayload = try await CompanionVMAgentLoop.shared.executeAutonomousTask(
+                            prompt: clean,
+                            slug: companion.activeBuddy.slug,
+                            appName: targetApp,
+                            taskPlan: plan,
+                            onProgress: { progressPayload in
+                                withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+                                    var updated = progressPayload
+                                    updated.updatedAt = Date()
+                                    companion.updateChatMessage(id: assistantMsgId, computerPayload: updated)
+                                }
+                                if self.activeComputerModalPayload != nil {
+                                    self.activeComputerModalPayload = progressPayload
+                                }
+                                HomeSpaceWindowManager.shared.ensureOrderFront()
                             }
-                            HomeSpaceWindowManager.shared.ensureOrderFront()
-                        }
-                    )
+                        )
+                    }
                     withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
                         var updated = finalPayload
                         updated.updatedAt = Date()

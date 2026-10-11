@@ -33,6 +33,15 @@ final class HomeSpacePanel: NSPanel {
         }
         return super.performKeyEquivalent(with: event)
     }
+
+    override func sendEvent(_ event: NSEvent) {
+        if event.type == .leftMouseDown {
+            if !isKeyWindow {
+                makeKey()
+            }
+        }
+        super.sendEvent(event)
+    }
 }
 
 @MainActor
@@ -40,8 +49,8 @@ public final class HomeSpaceWindowManager: ObservableObject {
     public static let shared = HomeSpaceWindowManager()
 
     private var panel: HomeSpacePanel?
+    public var window: NSWindow? { panel }
     @Published public private(set) var isVisible = false
-
     private init() {
         NotificationCenter.default.addObserver(
             forName: NSApplication.didChangeScreenParametersNotification,
@@ -124,7 +133,6 @@ public final class HomeSpaceWindowManager: ObservableObject {
         if !isVisible {
             panel.alphaValue = 0.0
             panel.makeKeyAndOrderFront(nil)
-            NSApp.activate(ignoringOtherApps: true)
 
             NSAnimationContext.runAnimationGroup { context in
                 context.duration = 0.20
@@ -134,7 +142,6 @@ public final class HomeSpaceWindowManager: ObservableObject {
         } else {
             panel.alphaValue = 1.0
             panel.makeKeyAndOrderFront(nil)
-            NSApp.activate(ignoringOtherApps: true)
         }
 
         isVisible = true
@@ -182,10 +189,10 @@ public final class HomeSpaceWindowManager: ObservableObject {
         let height: CGFloat = 612 // 580 card + 32 notch height
         let rect = NSRect(x: 0, y: 0, width: width, height: height)
 
-        // Clean borderless panel that accepts keyboard input (NO .nonactivatingPanel, NO .hudWindow)
+        // Raycast-pattern floating panel: .nonactivatingPanel allows presenting and receiving focus over fullscreen Spaces without triggering Space switching or activation collision
         let newPanel = HomeSpacePanel(
             contentRect: rect,
-            styleMask: [.borderless],
+            styleMask: [.borderless, .nonactivatingPanel],
             backing: .buffered,
             defer: false
         )

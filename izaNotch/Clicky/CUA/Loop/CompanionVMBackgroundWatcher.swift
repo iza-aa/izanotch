@@ -63,6 +63,9 @@ public final class CompanionVMBackgroundWatcher: ObservableObject {
         for companion in sandboxCompanions {
             await inspectSandboxForImportantItems(companion: companion)
         }
+
+        // TASK-046 Fase D: Evaluate and trigger scheduled automations
+        await evaluateAutomations()
     }
 
     private func inspectSandboxForImportantItems(companion: CompanionProfile) async {
@@ -90,6 +93,43 @@ public final class CompanionVMBackgroundWatcher: ObservableObject {
                     triggerProactiveAlert(companionSlug: slug, subject: subject, sender: sender, preview: preview)
                 }
             }
+        }
+    }
+    // MARK: - Automation Trigger Evaluation (TASK-046 Fase D)
+
+    /// Evaluates due automations from the store and dispatches them autonomously with a unique runId.
+    public func evaluateAutomations() async {
+        let isTakeover = await MainActor.run { CompanionVMViewportController.shared.isTakeoverActive }
+        guard !WebWorkspaceLoginWindowController.shared.isLoginWindowOpen && !isTakeover else {
+            ClickyLogger.info("[VM_WATCHER]", "[AUTOMATION_PARKED] Skipping automation evaluation: Web Workspace is currently awaiting login or active human takeover.")
+            return
+        }
+        let store = CompanionAutomationStore.shared
+        let due = store.dueAutomations(at: Date())
+        for auto in due {
+            let runId = "auto-" + UUID().uuidString.prefix(8)
+            ClickyLogger.info(
+                "[VM_WATCHER]",
+                "[AUTOMATION] Firing scheduled automation '\(auto.name)' (runId=\(runId)) for companion '\(auto.targetBuddySlug)': prompt='\(auto.prompt)'"
+            )
+
+            store.recordExecution(id: auto.id, at: Date())
+
+            // Set active E2E runId directly on companion manager
+            #if DEBUG
+            CompanionManager.shared.activeE2ERunId = String(runId)
+            #endif
+
+            // Production internal dispatch to HomeSpace prompt entrypoint (Single Source of Truth)
+            NotificationCenter.default.post(
+                name: Notification.Name("HomeSpaceSubmitPrompt"),
+                object: auto.prompt,
+                userInfo: [
+                    "runId": String(runId),
+                    "companionSlug": auto.targetBuddySlug,
+                    "isAutomation": true
+                ]
+            )
         }
     }
 

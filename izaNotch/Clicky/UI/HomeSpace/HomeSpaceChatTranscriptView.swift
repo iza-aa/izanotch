@@ -145,8 +145,8 @@ extension HomeSpaceRootView {
                                                             payload: payload,
                                                             onTakeoverClicked: {
                                                                 ClickySoundEngine.shared.play(.open)
-                                                                withAnimation(.spring(response: 0.32, dampingFraction: 0.82)) {
-                                                                    activeComputerModalPayload = payload
+                                                                withAnimation(.spring(response: 0.25)) {
+                                                                    CompanionVMViewportController.shared.isTakeoverActive.toggle()
                                                                 }
                                                             },
                                                             onOpenWindowClicked: {
@@ -154,12 +154,7 @@ extension HomeSpaceRootView {
                                                                     CompanionWindowStreamService.shared.launchOrFocusWorkflowApp(appName: app)
                                                                 }
                                                             },
-                                                            onCardTapped: {
-                                                                ClickySoundEngine.shared.play(.open)
-                                                                withAnimation(.spring(response: 0.32, dampingFraction: 0.82)) {
-                                                                    activeComputerModalPayload = payload
-                                                                }
-                                                            },
+                                                            onCardTapped: nil,
                                                             isCollapsible: true,
                                                             isCollapsed: $companion.isWorkspaceCollapsed
                                                         )
