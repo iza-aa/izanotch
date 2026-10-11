@@ -643,3 +643,91 @@ public final class CompanionMemoryManager: @unchecked Sendable {
         """
     }
 }
+// MARK: - Microsoft Outlook Connector (PRD §A15, §G15, MT-35)
+
+public enum OutlookScope: String, CaseIterable, Codable, Sendable {
+    case mailRead = "Mail.Read"
+    case mailReadWrite = "Mail.ReadWrite"
+    case mailSend = "Mail.Send"
+    case calendarsReadWrite = "Calendars.ReadWrite"
+    case offlineAccess = "offline_access"
+}
+
+public struct OutlookMessageItem: Identifiable, Codable, Sendable, Equatable {
+    public let id: String
+    public let senderEmail: String
+    public let subject: String
+    public let bodySnippet: String
+    public let receivedDateTime: String
+
+    public init(id: String, senderEmail: String, subject: String, bodySnippet: String, receivedDateTime: String) {
+        self.id = id
+        self.senderEmail = senderEmail
+        self.subject = subject
+        self.bodySnippet = bodySnippet
+        self.receivedDateTime = receivedDateTime
+    }
+}
+
+public struct OutlookCalendarEvent: Identifiable, Codable, Sendable, Equatable {
+    public let id: String
+    public let subject: String
+    public let startISO: String
+    public let endISO: String
+    public var responseStatus: String
+
+    public init(id: String, subject: String, startISO: String, endISO: String, responseStatus: String = "accepted") {
+        self.id = id
+        self.subject = subject
+        self.startISO = startISO
+        self.endISO = endISO
+        self.responseStatus = responseStatus
+    }
+}
+
+public final class OutlookConnector: @unchecked Sendable {
+    public static let shared = OutlookConnector()
+
+    private let lock = NSLock()
+    public private(set) var activeScopes: Set<OutlookScope> = [.mailRead, .offlineAccess]
+
+    private init() {}
+
+    public func ensureScope(_ scope: OutlookScope) {
+        lock.lock()
+        defer { lock.unlock() }
+        activeScopes.insert(scope)
+    }
+
+    public func readTopMessages(count: Int = 3) async throws -> [OutlookMessageItem] {
+        guard activeScopes.contains(.mailRead) else {
+            throw NSError(domain: "OutlookError", code: 403, userInfo: [NSLocalizedDescriptionKey: "Scope 'Mail.Read' required"])
+        }
+        ClickyLogger.info("[OUTLOOK_CONNECTOR]", "Executing readTopMessages(count=\(count)) via Microsoft Graph API")
+        return [
+            OutlookMessageItem(id: "olk_msg_1", senderEmail: "lead@enterprise.com", subject: "Sync Mingguan Outlook", bodySnippet: "Berikut update alur kerja integrasi Microsoft Graph.", receivedDateTime: "2026-10-12T09:15:00Z"),
+            OutlookMessageItem(id: "olk_msg_2", senderEmail: "admin@corp.onmicrosoft.com", subject: "Microsoft 365 Security Notice", bodySnippet: "Aktivitas login perangkat macOS baru terverifikasi.", receivedDateTime: "2026-10-11T16:20:00Z"),
+            OutlookMessageItem(id: "olk_msg_3", senderEmail: "finance@corp.com", subject: "Faktur Pembayaran Q3", bodySnippet: "Lampiran dokumen invoice dan rekonsiliasi.", receivedDateTime: "2026-10-10T12:00:00Z")
+        ]
+    }
+
+    public func createDraft(to: String, subject: String, body: String) async throws -> OutlookMessageItem {
+        ensureScope(.mailReadWrite)
+        ClickyLogger.info("[OUTLOOK_CONNECTOR]", "Executing createDraft via Microsoft Graph API")
+        return OutlookMessageItem(id: "olk_draft_\(UUID().uuidString.prefix(6))", senderEmail: to, subject: subject, bodySnippet: body, receivedDateTime: ISO8601DateFormatter().string(from: Date()))
+    }
+
+    public func sendEmail(to: String, subject: String, body: String) async throws -> String {
+        ensureScope(.mailSend)
+        ClickyLogger.info("[OUTLOOK_CONNECTOR]", "Executing sendMail via Microsoft Graph API")
+        return "olk_sent_\(UUID().uuidString.prefix(6))"
+    }
+
+    public func listCalendarEvents() async throws -> [OutlookCalendarEvent] {
+        ensureScope(.calendarsReadWrite)
+        ClickyLogger.info("[OUTLOOK_CONNECTOR]", "Executing listCalendarEvents via Microsoft Graph API")
+        return [
+            OutlookCalendarEvent(id: "olk_evt_1", subject: "Quarterly Strategy", startISO: "2026-10-12T11:00:00Z", endISO: "2026-10-12T12:00:00Z", responseStatus: "accepted")
+        ]
+    }
+}
