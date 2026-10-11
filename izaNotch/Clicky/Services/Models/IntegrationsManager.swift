@@ -590,3 +590,153 @@ public final class GmailAPIConnector: @unchecked Sendable {
         return Array(filtered.prefix(count))
     }
 }
+// MARK: - SecretsVault (PRD §A11, §A12, MT-18: Encrypted Secrets Vault & Output Redaction)
+
+import CryptoKit
+
+public enum SecretsVaultError: Error, LocalizedError, Equatable {
+    case invalidName(String)
+    case valueTooShort(String)
+    case valueTooLong(String)
+    case maxLimitExceeded(String)
+
+    public var errorDescription: String? {
+        switch self {
+        case .invalidName(let msg): return msg
+        case .valueTooShort(let msg): return msg
+        case .valueTooLong(let msg): return msg
+        case .maxLimitExceeded(let msg): return msg
+        }
+    }
+}
+
+public struct SecretItem: Codable, Sendable, Identifiable, Equatable {
+    public var id: String { name }
+    public let name: String
+    public let value: String
+    public let createdAt: Date
+    public var updatedAt: Date
+
+    public init(name: String, value: String, createdAt: Date = Date(), updatedAt: Date = Date()) {
+        self.name = name
+        self.value = value
+        self.createdAt = createdAt
+        self.updatedAt = updatedAt
+    }
+}
+
+public final class SecretsVault: @unchecked Sendable {
+    public static let shared = SecretsVault()
+
+    public static let maxSecretsCount = 25
+    public static let minSecretBytes = 8
+    public static let maxSecretBytes = 4096
+    public static let nameRegex = try! NSRegularExpression(pattern: "^[A-Z0-9_]{1,64}$")
+
+    private let lock = NSLock()
+    private var secrets: [String: SecretItem] = [:]
+    private let vaultURL: URL
+    private let symmetricKey: SymmetricKey
+
+    private init() {
+        let home = FileManager.default.homeDirectoryForCurrentUser
+        let baseDir = home.appendingPathComponent(".izanotchy", isDirectory: true)
+        try? FileManager.default.createDirectory(at: baseDir, withIntermediateDirectories: true)
+        self.vaultURL = baseDir.appendingPathComponent("secrets_vault.enc")
+
+        let keySeed = (Bundle.main.bundleIdentifier ?? "com.anysphere.sand") + "vault_salt_izanotchy"
+        let digest = SHA256.hash(data: Data(keySeed.utf8))
+        self.symmetricKey = SymmetricKey(data: digest)
+
+        loadEncryptedVault()
+    }
+
+    /// Stores a secret after validating name format, byte bounds, and the 25 secret limit
+    public func setSecret(name: String, value: String) throws {
+        lock.lock()
+        defer { lock.unlock() }
+
+        // 1. Name validation: ^[A-Z0-9_]{1,64}$
+        let range = NSRange(location: 0, length: name.utf16.count)
+        guard Self.nameRegex.firstMatch(in: name, options: [], range: range) != nil else {
+            throw SecretsVaultError.invalidName("Format nama secret tidak valid. Gunakan huruf kapital, angka, dan garis bawah (1-64 karakter, misal: GITHUB_TOKEN).")
+        }
+
+        // 2. Value size constraint: 8 to 4096 bytes
+        let byteCount = value.utf8.count
+        if byteCount < Self.minSecretBytes {
+            throw SecretsVaultError.valueTooShort("Nilai secret terlalu pendek (minimal \(Self.minSecretBytes) byte).")
+        }
+        if byteCount > Self.maxSecretBytes {
+            throw SecretsVaultError.valueTooLong("Nilai secret melebihi batas (maksimal \(Self.maxSecretBytes) byte).")
+        }
+
+        // 3. Limit 25 secrets per account
+        if secrets[name] == nil && secrets.count >= Self.maxSecretsCount {
+            throw SecretsVaultError.maxLimitExceeded("Batas maksimum \(Self.maxSecretsCount) secret tercapai.")
+        }
+
+        let item = SecretItem(name: name, value: value)
+        secrets[name] = item
+        saveEncryptedVault()
+        ClickyLogger.info("[SECRETS_VAULT]", "Stored secret '\(name)' (\(byteCount) bytes). Plaintext never logged.")
+    }
+
+    /// Retrieves a secret value strictly for in-process execution (env injection / HTTP headers)
+    public func getSecret(name: String) -> String? {
+        lock.lock()
+        defer { lock.unlock() }
+        return secrets[name]?.value
+    }
+
+    /// Deletes a secret from vault
+    public func deleteSecret(name: String) {
+        lock.lock()
+        secrets.removeValue(forKey: name)
+        saveEncryptedVault()
+        lock.unlock()
+        ClickyLogger.info("[SECRETS_VAULT]", "Deleted secret '\(name)'.")
+    }
+
+    /// Lists secret names (values omitted for security)
+    public func listSecretNames() -> [String] {
+        lock.lock()
+        defer { lock.unlock() }
+        return Array(secrets.keys).sorted()
+    }
+
+    /// Redaction Engine: Replaces all known secret values with [REDACTED]
+    public func redactSecrets(from text: String) -> String {
+        lock.lock()
+        let valuesToMask = secrets.values.map { $0.value }.filter { $0.count >= 8 }
+        lock.unlock()
+
+        var result = text
+        for v in valuesToMask {
+            result = result.replacingOccurrences(of: v, with: "[REDACTED]")
+        }
+        return result
+    }
+
+    private func saveEncryptedVault() {
+        let encoder = JSONEncoder()
+        guard let data = try? encoder.encode(Array(secrets.values)),
+              let sealedBox = try? AES.GCM.seal(data, using: symmetricKey) else {
+            return
+        }
+        try? sealedBox.combined?.write(to: vaultURL, options: .atomic)
+    }
+
+    private func loadEncryptedVault() {
+        guard FileManager.default.fileExists(atPath: vaultURL.path),
+              let combinedData = try? Data(contentsOf: vaultURL),
+              let sealedBox = try? AES.GCM.SealedBox(combined: combinedData),
+              let decryptedData = try? AES.GCM.open(sealedBox, using: symmetricKey),
+              let list = try? JSONDecoder().decode([SecretItem].self, from: decryptedData) else {
+            return
+        }
+        for item in list {
+            secrets[item.name] = item
+        }
+    }
+}
