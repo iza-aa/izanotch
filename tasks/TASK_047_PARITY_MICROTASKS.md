@@ -71,12 +71,12 @@ Prasyarat masuk TASK-047: 8 skenario `scenarios.fasec.json` lulus + 8 bloker B1-
 
 ### FASE 5 — GOVERNANCE (PRD §A12, G7; sumber S3, S4)
 
-| ID | [Tipe] | Scope | Baca | Bukti review |
-|---|---|---|---|---|
-| MT-17 | [non-UI] | Auto-review rule engine: Ask first / Allow automatically (Ask first menang), personal rules hanya memperketat, rules per-desktop | S3-approvals | Rule Ask first menghentikan aksi match; Allow tidak melewati Ask first |
-| MT-18 | [non-UI] | Secrets vault: encrypted, redacted `[REDACTED]` di output/log/model (pola Team Secrets), maksimum & format nama persis docs | S3-secrets | Secret tak pernah muncul di log/transkrip/output model |
-| MT-19 | [non-UI] | Approval expiry ~10 menit untuk aksi tanpa pengguna + kartu expired + retry flow | S3-approvals | Approval kadaluarsa tercatat; aksi tidak jalan |
-| MT-20 | [non-UI] | Local execution policy: Ask every time default / Always / Never (Never = rekomendasi) + per-computer setting | S3-local | Perintah lokal tanpa approval ditolak; log jelas |
+| ID | [Tipe] | Scope | Baca | Bukti review | Status |
+|---|---|---|---|---|---|
+| MT-17 | [non-UI] | Auto-review rule engine: Ask first / Allow automatically (Ask first menang), personal rules hanya memperketat, rules per-desktop | S3-approvals | Rule Ask first menghentikan aksi match; Allow tidak melewati Ask first | LULUS |
+| MT-18 | [non-UI] | Secrets vault: encrypted, redacted `[REDACTED]` di output/log/model (pola Team Secrets), maksimum & format nama persis docs | S3-secrets | Secret tak pernah muncul di log/transkrip/output model | LULUS |
+| MT-19 | [non-UI] | Approval expiry ~10 menit untuk aksi tanpa pengguna + kartu expired + retry flow | S3-approvals | Approval kadaluarsa tercatat; aksi tidak jalan | LULUS |
+| MT-20 | [non-UI] | Local execution policy: Ask every time default / Always / Never (Never = rekomendasi) + per-computer setting | S3-local | Perintah lokal tanpa approval ditolak; log jelas | LULUS |
 
 ### FASE 6 — MODEL CAPABILITY CHECK (PRD §B; sumber S1, S6)
 
