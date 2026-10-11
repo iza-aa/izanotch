@@ -313,3 +313,100 @@ final class CompanionManager: ObservableObject {
     @Published public var activeCompanion: CompanionProfile = CompanionProfile.defaultResearchBuddy
     @Published var selectedModel: String = Defaults[.selectedAIModel]
 }
+// MARK: - CompanionExecutionCoordinator (PRD §A5, §G11, MT-16: Non-Locking Multi-Companion Parallelism)
+
+public struct CompanionTaskState: Sendable {
+    public let slug: String
+    public let taskName: String
+    public let startedAt: Date
+    public let screenSnapshotPath: String
+
+    public init(slug: String, taskName: String, startedAt: Date = Date(), screenSnapshotPath: String) {
+        self.slug = slug
+        self.taskName = taskName
+        self.startedAt = startedAt
+        self.screenSnapshotPath = screenSnapshotPath
+    }
+}
+
+public final class CompanionExecutionCoordinator: @unchecked Sendable {
+    public static let shared = CompanionExecutionCoordinator()
+
+    private let lock = NSLock()
+    private var activeSessions: [String: CompanionTaskState] = [:]
+    private var activeTasks: [String: Task<Void, Never>] = [:]
+
+    private init() {}
+
+    /// Checks if a companion can launch a computer-use task (enforces max 1 task per bot limit)
+    public func canLaunchTask(for slug: String) -> Bool {
+        lock.lock()
+        defer { lock.unlock() }
+        return activeSessions[slug] == nil
+    }
+
+    /// Number of companions actively running tasks in parallel
+    public var activeParallelCount: Int {
+        lock.lock()
+        defer { lock.unlock() }
+        return activeSessions.count
+    }
+
+    /// Checks if a specific companion is actively processing
+    public func isProcessing(slug: String) -> Bool {
+        lock.lock()
+        defer { lock.unlock() }
+        return activeSessions[slug] != nil
+    }
+
+    /// Launches a non-locking parallel task for a companion
+    @discardableResult
+    public func launchTask(
+        slug: String,
+        taskName: String,
+        operation: @escaping @Sendable () async -> Void
+    ) -> Bool {
+        lock.lock()
+        // Enforce: max 1 computer-use task per bot per saat (PRD §A5)
+        if activeSessions[slug] != nil {
+            lock.unlock()
+            ClickyLogger.warning("[COORDINATOR]", "Companion '\(slug)' already has an active task. Concurrency rejected (max 1 task per bot).")
+            return false
+        }
+
+        let home = FileManager.default.homeDirectoryForCurrentUser
+        let screenPath = home.appendingPathComponent(".izanotchy/companions/\(slug)/workspace/snapshots/active_frame.png").path
+        let state = CompanionTaskState(slug: slug, taskName: taskName, startedAt: Date(), screenSnapshotPath: screenPath)
+        activeSessions[slug] = state
+
+        let t = Task {
+            ClickyLogger.info("[COORDINATOR]", "Started parallel execution for '\(slug)': '\(taskName)' on dedicated screen '\(screenPath)'")
+            await operation()
+            self.concludeTask(for: slug)
+        }
+        activeTasks[slug] = t
+        lock.unlock()
+        return true
+    }
+
+    /// Concludes a companion's active task releasing its execution slot
+    public func concludeTask(for slug: String) {
+        lock.lock()
+        defer { lock.unlock() }
+        activeSessions.removeValue(forKey: slug)
+        activeTasks.removeValue(forKey: slug)
+        ClickyLogger.info("[COORDINATOR]", "Concluded task for '\(slug)' (remaining parallel: \(activeSessions.count))")
+    }
+
+    /// Cancels a running task for a specific companion without affecting any other running companions
+    public func stopTask(for slug: String) {
+        lock.lock()
+        let task = activeTasks[slug]
+        activeSessions.removeValue(forKey: slug)
+        activeTasks.removeValue(forKey: slug)
+        lock.unlock()
+
+        task?.cancel()
+        ClickyLogger.info("[COORDINATOR]", "Cancelled task for '\(slug)'. Other running companions unaffected.")
+    }
+}
