@@ -53,12 +53,12 @@ Prasyarat masuk TASK-047: 8 skenario `scenarios.fasec.json` lulus + 8 bloker B1-
 
 ### FASE 3 — CONNECTORS & API TIER (PRD §A15-G8/G15, §F5; sumber S5)
 
-| ID | [Tipe] | Scope | Baca | Bukti review |
-|---|---|---|---|---|
-| MT-09 | [non-UI] | Routing tier keempat `api_connector` di CanonicalTaskContract + ExecutionRoutingGate (email intent + Gmail account terhubung → api_connector) | S5-connector | Log [ROUTING] menunjukkan tier api_connector untuk task email saat OAuth aktif |
-| MT-10 | [non-UI] | Gmail API connector: OAuth scope bertahap (readonly → modify → send — persis G15), search operator Gmail, baca pesan, draft, send | S5-gmail | Baca 3 email teratas via API (bukan webview); kirim draft via API; scope awal = readonly saja |
-| MT-11 | [non-UI] | Provider derivation via registry: `adapter(forEmailHost:)` dipakai controller — nol domain string di luar registry | PRD G15 | grep domain literal di controller = 0 |
-| MT-12 | [non-UI] | Connector registry pattern (declarative, account-wide, OAuth per pengguna yang bicara — pola acts-as-the-asker) + disconnect/revoke | S5-connectors | Revoke di Google mencabut akses; nol kredensial di log |
+| ID | [Tipe] | Scope | Baca | Bukti review | Status |
+|---|---|---|---|---|---|
+| MT-09 | [non-UI] | Routing tier keempat `api_connector` di CanonicalTaskContract + ExecutionRoutingGate (email intent + Gmail account terhubung → api_connector) | S5-connector | Log [ROUTING] menunjukkan tier api_connector untuk task email saat OAuth aktif | LULUS |
+| MT-10 | [non-UI] | Gmail API connector: OAuth scope bertahap (readonly → modify → send — persis G15), search operator Gmail, baca pesan, draft, send | S5-gmail | Baca 3 email teratas via API (bukan webview); kirim draft via API; scope awal = readonly saja | LULUS |
+| MT-11 | [non-UI] | Provider derivation via registry: `adapter(forEmailHost:)` dipakai controller — nol domain string di luar registry | PRD G15 | grep domain literal di controller = 0 | LULUS |
+| MT-12 | [non-UI] | Connector registry pattern (declarative, account-wide, OAuth per pengguna yang bicara — pola acts-as-the-asker) + disconnect/revoke | S5-connectors | Revoke di Google mencabut akses; nol kredensial di log | LULUS |
 
 ### FASE 4 — MEMORI & MULTI-COMPANION (PRD §A1, A7, G3, G11; sumber S1, S2, S4)
 
