@@ -9,9 +9,25 @@
 
 import Foundation
 
+public enum AutomationStoreError: Error, LocalizedError, Equatable {
+    case limitExceeded(String)
+    case invalidInterval(String)
+
+    public var errorDescription: String? {
+        switch self {
+        case .limitExceeded(let msg): return msg
+        case .invalidInterval(let msg): return msg
+        }
+    }
+}
+
 @MainActor
 final class CompanionAutomationStore: ObservableObject {
     static let shared = CompanionAutomationStore()
+
+    public static let maxRoutinesPerCompanion = 50
+    public static let maxRunRecordsPerRoutine = 20
+    public static let minIntervalSeconds = 300 // 5 minutes
 
     @Published private(set) var automations: [CompanionAutomation] = []
 
@@ -56,8 +72,22 @@ final class CompanionAutomationStore: ObservableObject {
 
     // MARK: - Scheduling & Trigger Evaluation
 
+    /// Adds a new routine enforcing the 50 routine limit per companion and minimum 5-minute interval
+    public func addAutomation(_ automation: CompanionAutomation) throws {
+        let companionCount = automations.filter { $0.owningCompanion == automation.owningCompanion }.count
+        if companionCount >= Self.maxRoutinesPerCompanion {
+            throw AutomationStoreError.limitExceeded("Batas maksimum 50 routine per companion tercapai. Hapus routine yang tidak aktif untuk menambah baru.")
+        }
+        if let interval = automation.trigger.intervalSeconds, interval < Self.minIntervalSeconds {
+            throw AutomationStoreError.invalidInterval("Interval minimum antar jadwal adalah 5 menit (300 detik).")
+        }
+        automations.append(automation)
+        saveAutomations()
+        ClickyLogger.info("[AUTOMATION_STORE]", "Added routine '\(automation.name)' for \(automation.owningCompanion) (total: \(companionCount + 1)/50)")
+    }
+
     /// Returns list of automations that are due for execution at the given timestamp.
-    /// Excludes disabled and parked automations (Zero infinite retry loops).
+    /// Evaluates companion timezone and excludes disabled/parked automations.
     func dueAutomations(at date: Date = Date()) -> [CompanionAutomation] {
         guard !WebWorkspaceLoginWindowController.shared.isLoginWindowOpen else { return [] }
         return automations.filter { automation in
@@ -71,17 +101,24 @@ final class CompanionAutomationStore: ObservableObject {
                 }
                 return true
 
-            case .timeOfDay:
+            case .scheduled, .timeOfDay:
                 guard let scheduled = automation.trigger.scheduledTime else { return false }
+                let tz = TimeZone(identifier: automation.trigger.timezone) ?? TimeZone.current
                 let formatter = DateFormatter()
                 formatter.dateFormat = "HH:mm"
+                formatter.timeZone = tz
                 let currentStr = formatter.string(from: date)
                 if currentStr == scheduled {
+                    var cal = Calendar.current
+                    cal.timeZone = tz
                     if let last = automation.lastRunAt {
-                        return !Calendar.current.isDate(last, inSameDayAs: date)
+                        return !cal.isDate(last, inSameDayAs: date)
                     }
                     return true
                 }
+                return false
+
+            case .event:
                 return false
             }
         }
@@ -98,15 +135,18 @@ final class CompanionAutomationStore: ObservableObject {
         }
     }
 
-    /// Records the execution outcome to enforce max 3 retries without state change.
-    func recordOutcome(id: String, success: Bool, reason: String? = nil) {
+    /// Records the execution outcome to enforce max 3 retries without state change and caps history at 20.
+    func recordOutcome(id: String, success: Bool, runId: String = UUID().uuidString, reason: String? = nil) {
         guard let idx = automations.firstIndex(where: { $0.id == id }) else { return }
+
+        let currentIso = ISO8601DateFormatter().string(from: Date())
+        let statusString: String
 
         if success {
             automations[idx].consecutiveFailures = 0
             automations[idx].isParked = false
             automations[idx].parkedReason = nil
-            saveAutomations()
+            statusString = "success"
             ClickyLogger.info("[AUTOMATION_STORE]", "Automation '\(automations[idx].name)' succeeded; reset consecutiveFailures=0.")
         } else {
             automations[idx].consecutiveFailures += 1
@@ -115,7 +155,7 @@ final class CompanionAutomationStore: ObservableObject {
             if fails >= 3 {
                 automations[idx].isParked = true
                 automations[idx].parkedReason = reason ?? "Awaiting login / action required"
-                saveAutomations()
+                statusString = "parked"
 
                 ClickyLogger.warning("[AUTOMATION_STORE]", "Automation '\(automations[idx].name)' reached 3 consecutive failures. Parking task to prevent infinite retry loops.")
 
@@ -130,9 +170,19 @@ final class CompanionAutomationStore: ObservableObject {
                     ]
                 )
             } else {
-                saveAutomations()
+                statusString = "failed"
             }
         }
+
+        // Append to run history (capped at max 20)
+        let record = RoutineRunRecord(runId: runId, at: currentIso, status: statusString, summary: reason)
+        var history = automations[idx].runHistory
+        history.append(record)
+        if history.count > Self.maxRunRecordsPerRoutine {
+            history = Array(history.suffix(Self.maxRunRecordsPerRoutine))
+        }
+        automations[idx].runHistory = history
+        saveAutomations()
     }
 
     /// Unparks an automation when user completes login or manually triggers it.
