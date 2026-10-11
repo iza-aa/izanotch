@@ -149,7 +149,10 @@ extension CompanionManager {
             voiceMemo: message.voiceMemo,
             liveVoiceChat: message.liveVoiceChat,
             senderCompanionSlug: message.senderCompanionSlug,
-            replyToMessageId: message.replyToMessageId
+            replyToMessageId: message.replyToMessageId,
+            threadId: message.threadId,
+            threadMessages: message.threadMessages,
+            reactions: message.reactions
         )
         chatMessages.append(sanitizedMessage)
         if let payload = sanitizedMessage.computerPayload {

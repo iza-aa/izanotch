@@ -223,6 +223,19 @@ public struct LiveVoiceChatSessionData: Identifiable, Codable, Equatable, Sendab
     }
 }
 
+public struct MessageReactionItem: Codable, Sendable, Identifiable, Equatable {
+    public var id: String { "\(symbol):\(authorSlug)" }
+    public let symbol: String // e.g. "thumbs_up", "heart", "eyes", "rocket"
+    public let authorSlug: String
+    public let timestamp: Date
+
+    public init(symbol: String, authorSlug: String, timestamp: Date = Date()) {
+        self.symbol = symbol
+        self.authorSlug = authorSlug
+        self.timestamp = timestamp
+    }
+}
+
 public struct HomeSpaceChatMessage: Identifiable, Codable, Equatable {
     public let id: UUID
     public let isUser: Bool
@@ -235,6 +248,9 @@ public struct HomeSpaceChatMessage: Identifiable, Codable, Equatable {
     public var liveVoiceChat: LiveVoiceChatSessionData?
     public var senderCompanionSlug: String?
     public var replyToMessageId: UUID?
+    public var threadId: UUID?
+    public var threadMessages: [HomeSpaceChatMessage]
+    public var reactions: [MessageReactionItem]
 
     public init(
         id: UUID = UUID(),
@@ -247,7 +263,10 @@ public struct HomeSpaceChatMessage: Identifiable, Codable, Equatable {
         voiceMemo: VoiceMemoData? = nil,
         liveVoiceChat: LiveVoiceChatSessionData? = nil,
         senderCompanionSlug: String? = nil,
-        replyToMessageId: UUID? = nil
+        replyToMessageId: UUID? = nil,
+        threadId: UUID? = nil,
+        threadMessages: [HomeSpaceChatMessage] = [],
+        reactions: [MessageReactionItem] = []
     ) {
         self.id = id
         self.isUser = isUser
@@ -260,6 +279,43 @@ public struct HomeSpaceChatMessage: Identifiable, Codable, Equatable {
         self.liveVoiceChat = liveVoiceChat
         self.senderCompanionSlug = senderCompanionSlug
         self.replyToMessageId = replyToMessageId
+        self.threadId = threadId
+        self.threadMessages = threadMessages
+        self.reactions = reactions
+    }
+}
+
+// MARK: - MessageThreadAndReactionManager (PRD §A7, MT-32: Threads & Reaction Acknowledgment)
+
+public final class MessageThreadAndReactionManager: @unchecked Sendable {
+    public static let shared = MessageThreadAndReactionManager()
+
+    private let lock = NSLock()
+    private var threads: [UUID: [HomeSpaceChatMessage]] = [:]
+
+    private init() {}
+
+    /// Adds an acknowledgment reaction. Invariant (PRD §A7): Reactions NEVER carry new instructions!
+    public func evaluateReactionImpact(symbol: String, authorSlug: String) -> (isInstruction: Bool, acknowledgmentNotice: String) {
+        ClickyLogger.info("[REACTION]", "Received reaction '\(symbol)' from '\(authorSlug)' (strictly acknowledgment only; no new instructions dispatched).")
+        return (false, "Reaction '\(symbol)' diterima sebagai acknowledgement saja.")
+    }
+
+    /// Appends a reply to a message thread (feedback on specific deliverable or turn)
+    public func addThreadReply(parentMessageId: UUID, reply: HomeSpaceChatMessage) {
+        lock.lock()
+        var list = threads[parentMessageId] ?? []
+        list.append(reply)
+        threads[parentMessageId] = list
+        lock.unlock()
+        ClickyLogger.info("[THREAD]", "Appended thread reply to message '\(parentMessageId)' (total thread replies: \(list.count))")
+    }
+
+    /// Gets all replies in a message thread
+    public func getThreadReplies(parentMessageId: UUID) -> [HomeSpaceChatMessage] {
+        lock.lock()
+        defer { lock.unlock() }
+        return threads[parentMessageId] ?? []
     }
 }
 
