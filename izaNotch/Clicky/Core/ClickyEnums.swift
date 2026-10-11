@@ -233,6 +233,8 @@ public struct HomeSpaceChatMessage: Identifiable, Codable, Equatable {
     public var attachments: [ChatAttachment]
     public var voiceMemo: VoiceMemoData?
     public var liveVoiceChat: LiveVoiceChatSessionData?
+    public var senderCompanionSlug: String?
+    public var replyToMessageId: UUID?
 
     public init(
         id: UUID = UUID(),
@@ -243,7 +245,9 @@ public struct HomeSpaceChatMessage: Identifiable, Codable, Equatable {
         egressResult: EgressResult? = nil,
         attachments: [ChatAttachment] = [],
         voiceMemo: VoiceMemoData? = nil,
-        liveVoiceChat: LiveVoiceChatSessionData? = nil
+        liveVoiceChat: LiveVoiceChatSessionData? = nil,
+        senderCompanionSlug: String? = nil,
+        replyToMessageId: UUID? = nil
     ) {
         self.id = id
         self.isUser = isUser
@@ -254,6 +258,98 @@ public struct HomeSpaceChatMessage: Identifiable, Codable, Equatable {
         self.attachments = attachments
         self.voiceMemo = voiceMemo
         self.liveVoiceChat = liveVoiceChat
+        self.senderCompanionSlug = senderCompanionSlug
+        self.replyToMessageId = replyToMessageId
+    }
+}
+
+// MARK: - GroupChatSession & GroupChatCoordinator (PRD §A7, MT-31: Group Chat 2-6 Companions)
+
+public struct GroupChatParticipant: Codable, Sendable, Identifiable, Equatable {
+    public var id: String { slug }
+    public let slug: String
+    public let name: String
+    public let role: String
+
+    public init(slug: String, name: String, role: String) {
+        self.slug = slug
+        self.name = name
+        self.role = role
+    }
+}
+
+public struct GroupChatSession: Identifiable, Codable, Equatable, Sendable {
+    public let id: UUID
+    public var name: String
+    public var sharedOutcomeGoal: String
+    public var participantSlugs: [String] // 2-6 companions per PRD §A7
+    public var messages: [HomeSpaceChatMessage]
+    public let createdAt: Date
+
+    public init(
+        id: UUID = UUID(),
+        name: String,
+        sharedOutcomeGoal: String,
+        participantSlugs: [String],
+        messages: [HomeSpaceChatMessage] = [],
+        createdAt: Date = Date()
+    ) {
+        self.id = id
+        self.name = name
+        self.sharedOutcomeGoal = sharedOutcomeGoal
+        // Enforce 2-6 bots limit per PRD §A7
+        self.participantSlugs = Array(participantSlugs.prefix(6))
+        self.messages = messages
+        self.createdAt = createdAt
+    }
+}
+
+public final class GroupChatCoordinator: @unchecked Sendable {
+    public static let shared = GroupChatCoordinator()
+
+    private let lock = NSLock()
+    private var sessions: [UUID: GroupChatSession] = [:]
+
+    private init() {}
+
+    /// Creates a group chat enforcing the 2 to 6 bot limit (PRD §A7)
+    public func createGroupChat(name: String, outcome: String, participants: [String]) throws -> GroupChatSession {
+        lock.lock()
+        defer { lock.unlock() }
+
+        guard participants.count >= 2 else {
+            throw NSError(domain: "GroupChat", code: 400, userInfo: [NSLocalizedDescriptionKey: "Group chat memerlukan minimal 2 companion."])
+        }
+        let clamped = Array(participants.prefix(6))
+        let session = GroupChatSession(name: name, sharedOutcomeGoal: outcome, participantSlugs: clamped)
+        sessions[session.id] = session
+        ClickyLogger.info("[GROUP_CHAT]", "Created group chat '\(name)' with \(clamped.count) participants (shared outcome: '\(outcome)')")
+        return session
+    }
+
+    /// Validates safety rule: DILARANG approval berisiko atau secrets di dalam grup!
+    public func validateGroupMessageContent(text: String) -> (isValid: Bool, warning: String?) {
+        let lower = text.lowercased()
+        let hasSecretAttempt = lower.contains("token") || lower.contains("api_key") || lower.contains("password") || lower.contains("secret")
+        let hasApprovalAttempt = lower.contains("approve send") || lower.contains("approve delete") || lower.contains("approve purchase")
+
+        if hasSecretAttempt || hasApprovalAttempt {
+            return (false, "Peringatan Keamanan (PRD §A7): Approval berisiko dan secrets dilarang di dalam group chat. Silakan gunakan chat privat 1:1.")
+        }
+        return (true, nil)
+    }
+
+    /// Resolves target companion turn from @mentions or reply reference
+    public func resolveTargetCompanion(from text: String, availableSlugs: [String]) -> (targetSlug: String?, hasOverheard: Bool) {
+        let words = text.components(separatedBy: .whitespaces)
+        for w in words where w.hasPrefix("@") {
+            let cleanTag = String(w.dropFirst()).lowercased()
+            if let match = availableSlugs.first(where: { $0.lowercased() == cleanTag || $0.lowercased().contains(cleanTag) }) {
+                return (match, true)
+            }
+        }
+        // Default: broadcast to first participant, other participants overhear
+        return (availableSlugs.first, true)
     }
 }
 
