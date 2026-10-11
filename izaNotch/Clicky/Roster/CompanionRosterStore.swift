@@ -491,7 +491,7 @@ public final class CompanionRosterStore: ObservableObject {
         CompanionManager.shared.syncSessionsFromRoster(allCompanions, activeId: activeCompanionId)
     }
     
-    private func persist() {
+    public func persist() {
         if let encoded = try? JSONEncoder().encode(allCompanions) {
             UserDefaults.standard.set(encoded, forKey: rosterKey)
         }

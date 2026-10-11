@@ -548,3 +548,196 @@ public final class CompanionTeachModeEngine: ObservableObject, @unchecked Sendab
         ClickyLogger.info("[TEACH_MODE]", "Cancelled Teach Mode session.")
     }
 }
+// MARK: - SkillMarketplaceService (PRD §A8, MT-27: Marketplace & Packaged Skills)
+
+public struct PackagedSkillItem: Identifiable, Codable, Sendable, Equatable {
+    public var id: String { skill.id }
+    public let skill: CompanionSkill
+    public let category: String
+    public let author: String
+    public let downloadsCount: Int
+    public var isInstalled: Bool
+
+    public init(
+        skill: CompanionSkill,
+        category: String,
+        author: String = "Izanotchy Catalog",
+        downloadsCount: Int = 100,
+        isInstalled: Bool = false
+    ) {
+        self.skill = skill
+        self.category = category
+        self.author = author
+        self.downloadsCount = downloadsCount
+        self.isInstalled = isInstalled
+    }
+}
+
+public final class SkillMarketplaceService: @unchecked Sendable {
+    public static let shared = SkillMarketplaceService()
+
+    private let lock = NSLock()
+    private var catalog: [PackagedSkillItem] = []
+
+    private init() {
+        seedCatalog()
+    }
+
+    private func seedCatalog() {
+        catalog = [
+            PackagedSkillItem(
+                skill: CompanionSkill(
+                    name: "gmail-digest",
+                    whenToUse: "Digunakan untuk membaca dan membuat ringkasan surel harian.",
+                    requiredInputs: ["newerThan (opsional)"],
+                    access: ["Gmail API", "Mail"],
+                    steps: [
+                        "Panggil API surel untuk membaca 5 pesan terbaru.",
+                        "Ekstrak poin penting dan urgensi per pesan.",
+                        "Sintesiskan ringkasan 5-bagian."
+                    ],
+                    validation: "Surel terverifikasi terbaca.",
+                    output: "Ringkasan surel harian berbutir.",
+                    approvalBoundary: [],
+                    origin: "marketplace",
+                    draft: false
+                ),
+                category: "Communication",
+                author: "Google Workspace Team",
+                downloadsCount: 1420
+            ),
+            PackagedSkillItem(
+                skill: CompanionSkill(
+                    name: "pr-code-review",
+                    whenToUse: "Digunakan saat meninjau pull request atau git diff.",
+                    requiredInputs: ["diffContent"],
+                    access: ["Terminal", "Git CLI"],
+                    steps: [
+                        "Periksa berkas yang berubah.",
+                        "Identifikasi regresi tipe dan celah keamanan.",
+                        "Buat daftar saran perbaikan spesifik."
+                    ],
+                    validation: "Seluruh berkas diff selesai dianalisis.",
+                    output: "Laporan checklist code review.",
+                    approvalBoundary: [],
+                    origin: "marketplace",
+                    draft: false
+                ),
+                category: "Developer",
+                author: "Shippy Dev Fleet",
+                downloadsCount: 980
+            ),
+            PackagedSkillItem(
+                skill: CompanionSkill(
+                    name: "market-crypto-scan",
+                    whenToUse: "Digunakan untuk memindai pasar kripto dan indikator teknikal.",
+                    requiredInputs: ["universe (opsional)"],
+                    access: ["TradingView", "Market Data API"],
+                    steps: [
+                        "Ambil kandel harga 1 jam.",
+                        "Hitung level Fibonacci dan divergensi RSI.",
+                        "Petakan level entry dan invalidasi."
+                    ],
+                    validation: "Kandel harga terverifikasi.",
+                    output: "Laporan sinyal radar pasar.",
+                    approvalBoundary: ["Dilarang mengeksekusi order riil"],
+                    origin: "marketplace",
+                    draft: false
+                ),
+                category: "Finance",
+                author: "Futures Scout",
+                downloadsCount: 2150
+            ),
+            PackagedSkillItem(
+                skill: CompanionSkill(
+                    name: "meeting-notes-summary",
+                    whenToUse: "Digunakan untuk menyusun notula rapat dan tindak lanjut.",
+                    requiredInputs: ["notesText"],
+                    access: ["Notes", "Calendar"],
+                    steps: [
+                        "Analisis poin keputusan rapat.",
+                        "Ekstrak item aksi dan penanggung jawab.",
+                        "Buat dokumen ringkasan terstruktur."
+                    ],
+                    validation: "Item aksi terverifikasi.",
+                    output: "Dokumen notula rapat terstruktur.",
+                    approvalBoundary: [],
+                    origin: "marketplace",
+                    draft: false
+                ),
+                category: "Productivity",
+                author: "Chief of Staff",
+                downloadsCount: 870
+            )
+        ]
+    }
+
+    /// Lists catalog items, marking installed status based on companion scope
+    public func listCatalog(category: String? = nil, companionSlug: String? = nil) -> [PackagedSkillItem] {
+        lock.lock()
+        defer { lock.unlock() }
+
+        let installedSkills: Set<String> = {
+            if let slug = companionSlug {
+                return Set(CompanionSkillLibrary.shared.allSkills(for: slug).map { $0.id })
+            } else {
+                return Set(CompanionSkillLibrary.shared.allSkills().map { $0.id })
+            }
+        }()
+
+        var result = catalog.map { item -> PackagedSkillItem in
+            var copy = item
+            copy.isInstalled = installedSkills.contains(item.skill.id)
+            return copy
+        }
+
+        if let cat = category, !cat.isEmpty {
+            result = result.filter { $0.category.lowercased() == cat.lowercased() }
+        }
+
+        return result
+    }
+
+    /// Installs a packaged skill into the shared library and activates it for companion
+    @discardableResult
+    public func installSkill(skillId: String, for companionSlug: String? = nil) -> Bool {
+        lock.lock()
+        let item = catalog.first(where: { $0.skill.id == skillId })
+        lock.unlock()
+
+        guard let target = item else { return false }
+
+        // 1. Save skill into library
+        CompanionSkillLibrary.shared.saveSkill(target.skill, for: companionSlug)
+
+        // 2. Activate in companion's activeSkills
+        if let slug = companionSlug {
+            Task { @MainActor in
+                if let idx = CompanionRosterStore.shared.allCompanions.firstIndex(where: { $0.slug == slug }) {
+                    if !CompanionRosterStore.shared.allCompanions[idx].activeSkills.contains(skillId) {
+                        CompanionRosterStore.shared.allCompanions[idx].activeSkills.append(skillId)
+                        CompanionRosterStore.shared.persist()
+                    }
+                }
+            }
+        }
+
+        ClickyLogger.info("[MARKETPLACE]", "Installed packaged skill '\(skillId)' for companion '\(companionSlug ?? "shared")'.")
+        return true
+    }
+
+    /// Uninstalls / deactivates a skill
+    @discardableResult
+    public func uninstallSkill(skillId: String, from companionSlug: String? = nil) -> Bool {
+        if let slug = companionSlug {
+            Task { @MainActor in
+                if let idx = CompanionRosterStore.shared.allCompanions.firstIndex(where: { $0.slug == slug }) {
+                    CompanionRosterStore.shared.allCompanions[idx].activeSkills.removeAll(where: { $0 == skillId })
+                    CompanionRosterStore.shared.persist()
+                }
+            }
+        }
+        ClickyLogger.info("[MARKETPLACE]", "Uninstalled skill '\(skillId)' from companion '\(companionSlug ?? "shared")'.")
+        return true
+    }
+}
