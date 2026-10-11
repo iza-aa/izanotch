@@ -19,6 +19,7 @@ public struct WebSiteSelectorMap: Codable, Sendable {
     public let inboxSelector: String
     public let loginMarkers: [String]
     public let dismissSelectors: [String]
+    public let folderTargets: [String: String]
 
     public init(
         toField: String,
@@ -30,7 +31,8 @@ public struct WebSiteSelectorMap: Codable, Sendable {
         emailRow: String? = nil,
         inboxSelector: String,
         loginMarkers: [String],
-        dismissSelectors: [String] = []
+        dismissSelectors: [String] = [],
+        folderTargets: [String: String] = [:]
     ) {
         self.toField = toField
         self.subjectField = subjectField
@@ -42,6 +44,7 @@ public struct WebSiteSelectorMap: Codable, Sendable {
         self.inboxSelector = inboxSelector
         self.loginMarkers = loginMarkers
         self.dismissSelectors = dismissSelectors
+        self.folderTargets = folderTargets
     }
 }
 
@@ -99,7 +102,13 @@ public final class WebSiteAdapterRegistry: @unchecked Sendable {
                 emailRow: "tr.zA",
                 inboxSelector: "tr.zA, [role='main'] [role='row'], [gh='cm'], [aria-label*='Inbox'], [aria-label*='Kotak Masuk'], .UI tr",
                 loginMarkers: ["sign in", "choose an account", "pilih akun", "masuk ke akun", "login", "create account", "identifierid", "input[type='email']", "input[type='password']"],
-                dismissSelectors: ["button[aria-label*='Dismiss']", "button[aria-label*='Tutup']", ".bBe", "[role='alertdialog'] button", "[aria-label*='Tidak, terima kasih']", "[aria-label*='No thanks']", ".gb_Vd button", ".gb_Wd", "#gb a[role='button']"]
+                dismissSelectors: ["button[aria-label*='Dismiss']", "button[aria-label*='Tutup']", ".bBe", "[role='alertdialog'] button", "[aria-label*='Tidak, terima kasih']", "[aria-label*='No thanks']", ".gb_Vd button", ".gb_Wd", "#gb a[role='button']"],
+                folderTargets: [
+                    "draf": "a[href*='#drafts'], a[href*='drafts'], [aria-label*='Drafts'], [aria-label*='Draf']",
+                    "draft": "a[href*='#drafts'], a[href*='drafts'], [aria-label*='Drafts'], [aria-label*='Draf']",
+                    "sent": "a[href*='#sent'], a[href*='sent'], [aria-label*='Sent'], [aria-label*='Terkirim']",
+                    "terkirim": "a[href*='#sent'], a[href*='sent'], [aria-label*='Sent'], [aria-label*='Terkirim']"
+                ]
             )
         ),
         WebSiteAdapter(
@@ -119,7 +128,13 @@ public final class WebSiteAdapterRegistry: @unchecked Sendable {
                 emailRow: "[data-convid]",
                 inboxSelector: "[role='listbox'] [role='option'], [data-convid], [aria-label*='Inbox'], [aria-label*='Kotak Masuk']",
                 loginMarkers: ["sign in", "masuk", "i0116", "i0118", "login", "input[type='password']"],
-                dismissSelectors: ["button[aria-label*='Close']", "button[aria-label*='Tutup']", "#close-button", "[data-icon-name='Cancel']"]
+                dismissSelectors: ["button[aria-label*='Close']", "button[aria-label*='Tutup']", "#close-button", "[data-icon-name='Cancel']"],
+                folderTargets: [
+                    "draf": "button[aria-label*='Drafts'], button[aria-label*='Draf'], [data-icon-name='Drafts']",
+                    "draft": "button[aria-label*='Drafts'], button[aria-label*='Draf'], [data-icon-name='Drafts']",
+                    "sent": "button[aria-label*='Sent'], button[aria-label*='Terkirim'], [data-icon-name='Sent']",
+                    "terkirim": "button[aria-label*='Sent'], button[aria-label*='Terkirim'], [data-icon-name='Sent']"
+                ]
             )
         ),
         WebSiteAdapter(
@@ -139,7 +154,11 @@ public final class WebSiteAdapterRegistry: @unchecked Sendable {
                 emailRow: "[role='listitem']",
                 inboxSelector: "[role='listbox'], [role='listitem'], .mail-list-item, [data-test-id*='mailbox'], [aria-label*='Mailboxes']",
                 loginMarkers: ["private, secure and personal", "sign in", "sign in with apple", "apple id", "masuk", "use a different apple id", "password-input"],
-                dismissSelectors: ["button[aria-label*='Dismiss']", ".banner-dismiss", "button.close-btn"]
+                dismissSelectors: ["button[aria-label*='Dismiss']", ".banner-dismiss", "button.close-btn"],
+                folderTargets: [
+                    "draf": "[data-test-id*='drafts'], [aria-label*='Drafts'], [aria-label*='Draf']",
+                    "draft": "[data-test-id*='drafts'], [aria-label*='Drafts'], [aria-label*='Draf']"
+                ]
             )
         ),
         WebSiteAdapter(
