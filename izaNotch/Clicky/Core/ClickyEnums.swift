@@ -53,6 +53,7 @@ public struct ComputerCardPayload: Codable, Equatable, Sendable {
     public var deliverableSummary: String?
     public var responseToUser: String?
     public var updatedAt: Date
+    public var egressResult: EgressResult?
 
     public init(
         cardTitle: String = "Computer",
@@ -70,7 +71,8 @@ public struct ComputerCardPayload: Codable, Equatable, Sendable {
         currentActionLabel: String? = nil,
         deliverableSummary: String? = nil,
         responseToUser: String? = nil,
-        updatedAt: Date = Date()
+        updatedAt: Date = Date(),
+        egressResult: EgressResult? = nil
     ) {
         self.cardTitle = cardTitle
         self.status = status
@@ -88,6 +90,7 @@ public struct ComputerCardPayload: Codable, Equatable, Sendable {
         self.deliverableSummary = deliverableSummary
         self.responseToUser = responseToUser
         self.updatedAt = updatedAt
+        self.egressResult = egressResult
     }
 }
 
@@ -97,19 +100,22 @@ public struct HomeSpaceChatMessage: Identifiable, Codable, Equatable {
     public var text: String
     public let timestamp: Date
     public var computerPayload: ComputerCardPayload?
+    public var egressResult: EgressResult?
 
     public init(
         id: UUID = UUID(),
         isUser: Bool,
         text: String,
         timestamp: Date = Date(),
-        computerPayload: ComputerCardPayload? = nil
+        computerPayload: ComputerCardPayload? = nil,
+        egressResult: EgressResult? = nil
     ) {
         self.id = id
         self.isUser = isUser
         self.text = text
         self.timestamp = timestamp
         self.computerPayload = computerPayload
+        self.egressResult = egressResult
     }
 }
 

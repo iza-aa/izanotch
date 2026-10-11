@@ -143,7 +143,8 @@ extension CompanionManager {
             isUser: message.isUser,
             text: cleanText,
             timestamp: message.timestamp,
-            computerPayload: message.computerPayload
+            computerPayload: message.computerPayload,
+            egressResult: message.egressResult ?? message.computerPayload?.egressResult
         )
         chatMessages.append(sanitizedMessage)
         if let payload = sanitizedMessage.computerPayload {
@@ -158,13 +159,17 @@ extension CompanionManager {
         }
     }
 
-    public func updateChatMessage(id: UUID, computerPayload: ComputerCardPayload?, text: String? = nil) {
+    public func updateChatMessage(id: UUID, computerPayload: ComputerCardPayload?, text: String? = nil, egressResult: EgressResult? = nil) {
         if let payload = computerPayload {
             self.activeComputerPayload = payload
         }
+        let effectiveEgress = egressResult ?? computerPayload?.egressResult
         if let idx = chatMessages.firstIndex(where: { $0.id == id }) {
             if let payload = computerPayload {
                 chatMessages[idx].computerPayload = payload
+            }
+            if let eg = effectiveEgress {
+                chatMessages[idx].egressResult = eg
             }
             if let newText = text {
                 chatMessages[idx].text = newText
@@ -174,6 +179,9 @@ extension CompanionManager {
             if let mIdx = sessions[sIdx].messages.firstIndex(where: { $0.id == id }) {
                 if let payload = computerPayload {
                     sessions[sIdx].messages[mIdx].computerPayload = payload
+                }
+                if let eg = effectiveEgress {
+                    sessions[sIdx].messages[mIdx].egressResult = eg
                 }
                 if let newText = text {
                     sessions[sIdx].messages[mIdx].text = newText

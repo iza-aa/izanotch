@@ -344,3 +344,198 @@ public struct MarkdownFormattedMessageView: View {
         }
     }
 }
+// MARK: - HomeSpaceEgressReportView (Schema C3: Egress 5-Part Structured View)
+public struct HomeSpaceEgressReportView: View {
+    public let result: EgressResult
+    @State private var isExpanded: Bool = true
+
+    public init(result: EgressResult) {
+        self.result = result
+    }
+
+    public var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            // Header: Egress 5-Part Summary
+            HStack(spacing: 8) {
+                Image(systemName: "list.clipboard")
+                    .font(.system(size: 13, weight: .bold))
+                    .foregroundStyle(Color(hex: "#38BDF8"))
+                Text("Laporan Terstruktur")
+                    .font(.system(size: 13, weight: .bold))
+                    .foregroundStyle(.white)
+                Spacer()
+                Button(action: {
+                    withAnimation(.spring(response: 0.25, dampingFraction: 0.8)) {
+                        isExpanded.toggle()
+                    }
+                }) {
+                    Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
+                        .font(.system(size: 10, weight: .semibold))
+                        .foregroundStyle(.white.opacity(0.6))
+                        .padding(4)
+                }
+                .buttonStyle(.plain)
+                .help(isExpanded ? "Ciutkan Laporan" : "Bentangkan Laporan")
+            }
+
+            if isExpanded {
+                VStack(alignment: .leading, spacing: 8) {
+                    // 1. Fakta (Facts)
+                    if !result.report.facts.isEmpty {
+                        VStack(alignment: .leading, spacing: 4) {
+                            HStack(spacing: 6) {
+                                Image(systemName: "info.circle.fill")
+                                    .font(.system(size: 10, weight: .bold))
+                                    .foregroundStyle(Color(hex: "#38BDF8"))
+                                Text("Fakta")
+                                    .font(.system(size: 11, weight: .bold))
+                                    .foregroundStyle(Color(hex: "#38BDF8"))
+                            }
+                            ForEach(result.report.facts, id: \.self) { fact in
+                                HStack(alignment: .top, spacing: 6) {
+                                    Circle()
+                                        .fill(Color(hex: "#38BDF8").opacity(0.8))
+                                        .frame(width: 4, height: 4)
+                                        .padding(.top, 5)
+                                    Text(fact)
+                                        .font(.system(size: 12))
+                                        .foregroundStyle(.white.opacity(0.92))
+                                        .fixedSize(horizontal: false, vertical: true)
+                                }
+                            }
+                        }
+                        .padding(8)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(RoundedRectangle(cornerRadius: 8).fill(Color.white.opacity(0.04)))
+                    }
+
+                    // 2. Asumsi (Assumptions)
+                    if !result.report.assumptions.isEmpty {
+                        VStack(alignment: .leading, spacing: 4) {
+                            HStack(spacing: 6) {
+                                Image(systemName: "questionmark.circle")
+                                    .font(.system(size: 10, weight: .bold))
+                                    .foregroundStyle(Color(hex: "#A78BFA"))
+                                Text("Asumsi")
+                                    .font(.system(size: 11, weight: .bold))
+                                    .foregroundStyle(Color(hex: "#A78BFA"))
+                            }
+                            ForEach(result.report.assumptions, id: \.self) { item in
+                                HStack(alignment: .top, spacing: 6) {
+                                    Circle()
+                                        .fill(Color(hex: "#A78BFA").opacity(0.8))
+                                        .frame(width: 4, height: 4)
+                                        .padding(.top, 5)
+                                    Text(item)
+                                        .font(.system(size: 12))
+                                        .foregroundStyle(.white.opacity(0.85))
+                                        .fixedSize(horizontal: false, vertical: true)
+                                }
+                            }
+                        }
+                        .padding(8)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(RoundedRectangle(cornerRadius: 8).fill(Color.white.opacity(0.04)))
+                    }
+
+                    // 3. Tindakan Selesai (Completed Actions)
+                    if !result.report.completedActions.isEmpty {
+                        VStack(alignment: .leading, spacing: 4) {
+                            HStack(spacing: 6) {
+                                Image(systemName: "checkmark.circle.fill")
+                                    .font(.system(size: 10, weight: .bold))
+                                    .foregroundStyle(Color(hex: "#34D399"))
+                                Text("Aksi Selesai")
+                                    .font(.system(size: 11, weight: .bold))
+                                    .foregroundStyle(Color(hex: "#34D399"))
+                            }
+                            ForEach(result.report.completedActions, id: \.self) { item in
+                                HStack(alignment: .top, spacing: 6) {
+                                    Circle()
+                                        .fill(Color(hex: "#34D399").opacity(0.8))
+                                        .frame(width: 4, height: 4)
+                                        .padding(.top, 5)
+                                    Text(item)
+                                        .font(.system(size: 12))
+                                        .foregroundStyle(.white.opacity(0.85))
+                                        .fixedSize(horizontal: false, vertical: true)
+                                }
+                            }
+                        }
+                        .padding(8)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(RoundedRectangle(cornerRadius: 8).fill(Color.white.opacity(0.04)))
+                    }
+
+                    // 4. Menunggu Persetujuan (Awaiting Approval)
+                    if !result.report.awaitingApproval.isEmpty {
+                        VStack(alignment: .leading, spacing: 4) {
+                            HStack(spacing: 6) {
+                                Image(systemName: "exclamationmark.triangle.fill")
+                                    .font(.system(size: 10, weight: .bold))
+                                    .foregroundStyle(Color(hex: "#F59E0B"))
+                                Text("Menunggu Persetujuan")
+                                    .font(.system(size: 11, weight: .bold))
+                                    .foregroundStyle(Color(hex: "#F59E0B"))
+                            }
+                            ForEach(result.report.awaitingApproval, id: \.self) { item in
+                                HStack(alignment: .top, spacing: 6) {
+                                    Circle()
+                                        .fill(Color(hex: "#F59E0B").opacity(0.8))
+                                        .frame(width: 4, height: 4)
+                                        .padding(.top, 5)
+                                    Text(item)
+                                        .font(.system(size: 12))
+                                        .foregroundStyle(.white.opacity(0.9))
+                                        .fixedSize(horizontal: false, vertical: true)
+                                }
+                            }
+                        }
+                        .padding(8)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(RoundedRectangle(cornerRadius: 8).fill(Color(hex: "#F59E0B").opacity(0.08)))
+                    }
+
+                    // 5. Pertanyaan Terbuka (Open Questions)
+                    if !result.report.openQuestions.isEmpty {
+                        VStack(alignment: .leading, spacing: 4) {
+                            HStack(spacing: 6) {
+                                Image(systemName: "bubble.left.and.bubble.right.fill")
+                                    .font(.system(size: 10, weight: .bold))
+                                    .foregroundStyle(Color(hex: "#EC4899"))
+                                Text("Pertanyaan Terbuka")
+                                    .font(.system(size: 11, weight: .bold))
+                                    .foregroundStyle(Color(hex: "#EC4899"))
+                            }
+                            ForEach(result.report.openQuestions, id: \.self) { item in
+                                HStack(alignment: .top, spacing: 6) {
+                                    Circle()
+                                        .fill(Color(hex: "#EC4899").opacity(0.8))
+                                        .frame(width: 4, height: 4)
+                                        .padding(.top, 5)
+                                    Text(item)
+                                        .font(.system(size: 12))
+                                        .foregroundStyle(.white.opacity(0.9))
+                                        .fixedSize(horizontal: false, vertical: true)
+                                }
+                            }
+                        }
+                        .padding(8)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(RoundedRectangle(cornerRadius: 8).fill(Color(hex: "#EC4899").opacity(0.08)))
+                    }
+                }
+            }
+        }
+        .padding(12)
+        .background(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .fill(Color(hex: "#0F172A").opacity(0.75))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        .stroke(Color.white.opacity(0.1), lineWidth: 0.8)
+                )
+        )
+        .frame(maxWidth: 540, alignment: .leading)
+    }
+}

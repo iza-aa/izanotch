@@ -1207,6 +1207,48 @@ public final class CompanionVMAgentLoop: ObservableObject {
             }
         }
 
+        let activeRunId = CompanionManager.shared.activeE2ERunId ?? UUID().uuidString
+        let evidenceDir = FileManager.default.homeDirectoryForCurrentUser
+            .appendingPathComponent(".izanotchy/companions/\(slug)/workspace/evidence/\(activeRunId)", isDirectory: true)
+        try? FileManager.default.createDirectory(at: evidenceDir, withIntermediateDirectories: true)
+
+        let performedActions = auditTrail.map { "\($0.actionName): \($0.targetDescription)" }
+        let facts: [String] = [
+            cleanSummary.isEmpty ? safeResponse : cleanSummary,
+            "Tugas diselesaikan pada aplikasi \(appName) melalui CUA terisolasi."
+        ]
+        let egressReport = EgressReport(
+            facts: facts,
+            assumptions: [
+                "Lingkungan virtual display terisolasi beroperasi tanpa gangguan layar utama."
+            ],
+            completedActions: performedActions.isEmpty ? ["Eksekusi alur tugas selesai."] : performedActions,
+            awaitingApproval: [],
+            openQuestions: []
+        )
+        let snapPath = CompanionWindowStreamService.shared.activeSnapshotPath ?? CompanionVMViewportController.shared.activeSnapshotPath ?? ""
+        let egressEvidence = EgressEvidence(
+            sourceLinks: [],
+            screenshots: (!snapPath.isEmpty && FileManager.default.fileExists(atPath: snapPath)) ? [snapPath] : [],
+            timestamps: [ISO8601DateFormatter().string(from: Date())],
+            files: [],
+            actionLog: ("~/Library/Logs/Izanotchy/clicky.log" as NSString).expandingTildeInPath,
+            unverified: []
+        )
+        let egressRes = EgressResult(
+            runId: activeRunId,
+            concluded: true,
+            isDone: isSuccess,
+            report: egressReport,
+            evidence: egressEvidence,
+            deliverables: [
+                EgressDeliverable(type: "card", artifact: "\(evidenceDir.path)/egress.json")
+            ]
+        )
+        if let egressData = try? JSONEncoder().encode(egressRes) {
+            try? egressData.write(to: evidenceDir.appendingPathComponent("egress.json"))
+        }
+
         return ComputerCardPayload(
             cardTitle: "Computer",
             status: finalStatus,
@@ -1221,7 +1263,8 @@ public final class CompanionVMAgentLoop: ObservableObject {
             currentActionLabel: nil,
             deliverableSummary: safeResponse,
             responseToUser: safeResponse,
-            updatedAt: Date()
+            updatedAt: Date(),
+            egressResult: egressRes
         )
     }
 

@@ -121,26 +121,113 @@ public struct AFMStepDecision: Codable, Sendable {
     }
 }
 
-// MARK: - Validation & Response Contract (Egress Output)
+// MARK: - Validation & Response Contract (Egress Output — Schema C3)
+
+public struct EgressReport: Codable, Sendable, Equatable {
+    public var facts: [String]
+    public var assumptions: [String]
+    public var completedActions: [String]
+    public var awaitingApproval: [String]
+    public var openQuestions: [String]
+
+    public init(
+        facts: [String] = [],
+        assumptions: [String] = [],
+        completedActions: [String] = [],
+        awaitingApproval: [String] = [],
+        openQuestions: [String] = []
+    ) {
+        self.facts = facts
+        self.assumptions = assumptions
+        self.completedActions = completedActions
+        self.awaitingApproval = awaitingApproval
+        self.openQuestions = openQuestions
+    }
+}
+
+public struct EgressEvidence: Codable, Sendable, Equatable {
+    public var sourceLinks: [String]
+    public var screenshots: [String]
+    public var timestamps: [String]
+    public var files: [String]
+    public var actionLog: String
+    public var unverified: [String]
+
+    public init(
+        sourceLinks: [String] = [],
+        screenshots: [String] = [],
+        timestamps: [String] = [],
+        files: [String] = [],
+        actionLog: String = "",
+        unverified: [String] = []
+    ) {
+        self.sourceLinks = sourceLinks
+        self.screenshots = screenshots
+        self.timestamps = timestamps
+        self.files = files
+        self.actionLog = actionLog
+        self.unverified = unverified
+    }
+}
+
+public struct EgressDeliverable: Codable, Sendable, Equatable, Identifiable {
+    public var id: String { artifact.isEmpty ? type : artifact }
+    public var type: String
+    public var artifact: String
+
+    public init(type: String, artifact: String) {
+        self.type = type
+        self.artifact = artifact
+    }
+}
+
+public struct EgressResult: Codable, Sendable, Equatable {
+    public var runId: String
+    public var concluded: Bool
+    public var isDone: Bool
+    public var report: EgressReport
+    public var evidence: EgressEvidence
+    public var deliverables: [EgressDeliverable]
+
+    public init(
+        runId: String,
+        concluded: Bool = true,
+        isDone: Bool = true,
+        report: EgressReport = EgressReport(),
+        evidence: EgressEvidence = EgressEvidence(),
+        deliverables: [EgressDeliverable] = []
+    ) {
+        self.runId = runId
+        self.concluded = concluded
+        self.isDone = isDone
+        self.report = report
+        self.evidence = evidence
+        self.deliverables = deliverables
+    }
+}
+
 public struct AFMValidationResult: Codable, Sendable {
     public let isDone: Bool
     public let systemState: String
     public let extractedData: String
     public let responseToUser: String
     public let requiresTakeover: Bool
+    public let egressResult: EgressResult?
 
     public init(
         isDone: Bool,
         systemState: String,
         extractedData: String = "none",
         responseToUser: String,
-        requiresTakeover: Bool = false
+        requiresTakeover: Bool = false,
+        egressResult: EgressResult? = nil
     ) {
         self.isDone = isDone
         self.systemState = systemState
         self.extractedData = extractedData
         self.responseToUser = responseToUser
         self.requiresTakeover = requiresTakeover
+        self.egressResult = egressResult
     }
 }
 

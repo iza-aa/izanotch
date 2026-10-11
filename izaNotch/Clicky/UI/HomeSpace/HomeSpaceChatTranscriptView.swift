@@ -180,6 +180,10 @@ extension HomeSpaceRootView {
                                                         .id("past-steps-\(message.id)")
                                                     }
                                                 }
+                                                if let egress = message.egressResult ?? message.computerPayload?.egressResult {
+                                                    HomeSpaceEgressReportView(result: egress)
+                                                        .id("egress-report-\(message.id)")
+                                                }
 
                                                 if !message.text.isEmpty {
                                                     MarkdownFormattedMessageView(text: message.text)

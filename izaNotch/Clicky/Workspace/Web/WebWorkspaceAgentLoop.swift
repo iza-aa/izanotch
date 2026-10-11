@@ -273,6 +273,53 @@ public final class WebWorkspaceAgentLoop: ObservableObject {
             let deliverableText = "Email ke \(extracted.to.isEmpty ? "tujuan" : extracted.to) berhasil diverifikasi DOM dan terkirim."
             payload.deliverableSummary = deliverableText
             payload.responseToUser = "Email berhasil diverifikasi dan dikirim melalui Web Workspace."
+
+            let composeFacts: [String] = [
+                "Pesan terverifikasi ditujukan kepada \(extracted.to.isEmpty ? "tujuan" : extracted.to) dengan subjek '\(extracted.subject)'.",
+                "Komposisi bidang formulir berhasil diverifikasi pada DOM."
+            ]
+            let composeReport = EgressReport(
+                facts: composeFacts,
+                assumptions: [
+                    "Sesi antarmuka web terisolasi aktif tanpa interupsi layar utama."
+                ],
+                completedActions: [
+                    "Membuka dialog komposisi pesan.",
+                    "Memasukkan alamat penerima, subjek, dan badan pesan.",
+                    intent == "send" ? "Mengirim pesan via tombol kirim DOM." : "Menyimpan draf pesan pada webmail."
+                ],
+                awaitingApproval: [],
+                openQuestions: []
+            )
+            let activeRunId = CompanionManager.shared.activeE2ERunId ?? UUID().uuidString
+            let evidenceDir = FileManager.default.homeDirectoryForCurrentUser
+                .appendingPathComponent(".izanotchy/companions/\(slug)/workspace/evidence/\(activeRunId)", isDirectory: true)
+            try? FileManager.default.createDirectory(at: evidenceDir, withIntermediateDirectories: true)
+            let snapURL = FileManager.default.homeDirectoryForCurrentUser
+                .appendingPathComponent(".izanotchy/companions/\(slug)/workspace/snapshots/active_frame.png")
+            let snapPath = snapURL.path
+            let composeEvidence = EgressEvidence(
+                sourceLinks: [adapter.entryURL.absoluteString],
+                screenshots: FileManager.default.fileExists(atPath: snapPath) ? [snapPath] : [],
+                timestamps: [ISO8601DateFormatter().string(from: Date())],
+                files: [],
+                actionLog: ("~/Library/Logs/Izanotchy/clicky.log" as NSString).expandingTildeInPath,
+                unverified: []
+            )
+            let composeEgressResult = EgressResult(
+                runId: activeRunId,
+                concluded: true,
+                isDone: true,
+                report: composeReport,
+                evidence: composeEvidence,
+                deliverables: [
+                    EgressDeliverable(type: "card", artifact: "\(evidenceDir.path)/egress.json")
+                ]
+            )
+            if let egressData = try? JSONEncoder().encode(composeEgressResult) {
+                try? egressData.write(to: evidenceDir.appendingPathComponent("egress.json"))
+            }
+            payload.egressResult = composeEgressResult
             onProgress(payload)
 
             ClickyLogger.info("[TASK_VALIDATOR]", "Web workspace task validated: isDone=true, deliverableSaved=true")
@@ -450,6 +497,68 @@ public final class WebWorkspaceAgentLoop: ObservableObject {
             let findingSummary = "Kotak masuk terverifikasi: terdapat \(totalEmails) email.\(detail)"
             payload.deliverableSummary = findingSummary
             payload.responseToUser = "Pemeriksaan kotak masuk selesai. Ditemukan \(totalEmails) email.\(detail)"
+
+            var egressFacts: [String] = []
+            egressFacts.append("Kotak masuk terverifikasi memuat \(totalEmails) pesan aktif.")
+            if targetOrdinal > 1 {
+                egressFacts.append("Email ke-\(targetOrdinal) terverifikasi dari \(sender.isEmpty ? "pengirim" : sender) dengan subjek '\(subject)'.")
+                if !headline.isEmpty {
+                    egressFacts.append("Pratinjau konten pesan: \(headline.prefix(80)).")
+                }
+            } else {
+                egressFacts.append("Email terbaru terverifikasi dari \(sender.isEmpty ? "pengirim" : sender) dengan subjek '\(subject)'.")
+                if !headline.isEmpty {
+                    egressFacts.append("Pratinjau konten pesan: \(headline.prefix(80)).")
+                }
+            }
+
+            let egressReport = EgressReport(
+                facts: egressFacts,
+                assumptions: [
+                    "Sesi antarmuka web terisolasi aktif tanpa interupsi layar utama."
+                ],
+                completedActions: [
+                    "Memuat antarmuka webmail dalam workspace terisolasi.",
+                    "Menginspeksi DOM elemen daftar email (\(listItems.count) item).",
+                    "Mengekstrak atribut pengirim dan subjek pesan."
+                ],
+                awaitingApproval: [],
+                openQuestions: []
+            )
+
+            let activeRunId = CompanionManager.shared.activeE2ERunId ?? UUID().uuidString
+            let evidenceDir = FileManager.default.homeDirectoryForCurrentUser
+                .appendingPathComponent(".izanotchy/companions/\(slug)/workspace/evidence/\(activeRunId)", isDirectory: true)
+            try? FileManager.default.createDirectory(at: evidenceDir, withIntermediateDirectories: true)
+
+            let snapURL = FileManager.default.homeDirectoryForCurrentUser
+                .appendingPathComponent(".izanotchy/companions/\(slug)/workspace/snapshots/active_frame.png")
+            let snapPath = snapURL.path
+
+            let egressEvidence = EgressEvidence(
+                sourceLinks: [adapter.entryURL.absoluteString],
+                screenshots: FileManager.default.fileExists(atPath: snapPath) ? [snapPath] : [],
+                timestamps: [ISO8601DateFormatter().string(from: Date())],
+                files: [],
+                actionLog: ("~/Library/Logs/Izanotchy/clicky.log" as NSString).expandingTildeInPath,
+                unverified: []
+            )
+
+            let egressResult = EgressResult(
+                runId: activeRunId,
+                concluded: true,
+                isDone: true,
+                report: egressReport,
+                evidence: egressEvidence,
+                deliverables: [
+                    EgressDeliverable(type: "card", artifact: "\(evidenceDir.path)/egress.json")
+                ]
+            )
+
+            if let egressData = try? JSONEncoder().encode(egressResult) {
+                try? egressData.write(to: evidenceDir.appendingPathComponent("egress.json"))
+            }
+            payload.egressResult = egressResult
             onProgress(payload)
 
             ClickyLogger.info("[TASK_VALIDATOR]", "Web workspace task validated: isDone=true, deliverableSaved=true")
