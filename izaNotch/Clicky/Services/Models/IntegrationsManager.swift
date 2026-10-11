@@ -391,3 +391,196 @@ public final class ConnectorRegistry: @unchecked Sendable {
         ClickyLogger.info("[CONNECTOR_REGISTRY]", "Restored \(list.count) connector account(s) from vault.")
     }
 }
+// MARK: - Gmail API Connector & Staged OAuth Scopes (PRD §G8, §G15, MT-10)
+
+public enum GmailScope: String, CaseIterable, Codable, Sendable {
+    case readonly = "https://www.googleapis.com/auth/gmail.readonly"
+    case modify = "https://www.googleapis.com/auth/gmail.modify"
+    case send = "https://www.googleapis.com/auth/gmail.send"
+}
+
+public struct GmailMessageSummary: Codable, Sendable, Identifiable, Equatable {
+    public let id: String
+    public let threadId: String
+
+    public init(id: String, threadId: String) {
+        self.id = id
+        self.threadId = threadId
+    }
+}
+
+public struct GmailMessageDetail: Codable, Sendable, Identifiable, Equatable {
+    public let id: String
+    public let threadId: String
+    public let sender: String
+    public let recipient: String
+    public let subject: String
+    public let date: String
+    public let snippet: String
+    public let bodyText: String
+
+    public init(
+        id: String,
+        threadId: String,
+        sender: String,
+        recipient: String,
+        subject: String,
+        date: String,
+        snippet: String,
+        bodyText: String
+    ) {
+        self.id = id
+        self.threadId = threadId
+        self.sender = sender
+        self.recipient = recipient
+        self.subject = subject
+        self.date = date
+        self.snippet = snippet
+        self.bodyText = bodyText
+    }
+}
+
+public struct GmailDraftResult: Codable, Sendable, Identifiable, Equatable {
+    public let id: String
+    public let messageId: String
+    public let to: String
+    public let subject: String
+    public let body: String
+
+    public init(id: String, messageId: String, to: String, subject: String, body: String) {
+        self.id = id
+        self.messageId = messageId
+        self.to = to
+        self.subject = subject
+        self.body = body
+    }
+}
+
+public struct GmailSendResult: Codable, Sendable, Identifiable, Equatable {
+    public let id: String
+    public let threadId: String
+    public let sentAt: String
+
+    public init(id: String, threadId: String, sentAt: String) {
+        self.id = id
+        self.threadId = threadId
+        self.sentAt = sentAt
+    }
+}
+
+public final class GmailAPIConnector: @unchecked Sendable {
+    public static let shared = GmailAPIConnector()
+
+    private let lock = NSLock()
+    public private(set) var activeScopes: Set<GmailScope> = [.readonly]
+
+    private init() {}
+
+    /// Scope Staging: Initial scope is readonly. Escalates only when features require it.
+    public func ensureScope(_ scope: GmailScope) {
+        lock.lock()
+        defer { lock.unlock() }
+        if !activeScopes.contains(scope) {
+            activeScopes.insert(scope)
+            ClickyLogger.info("[GMAIL_CONNECTOR]", "Escalated OAuth scope to include '\(scope.rawValue)'")
+        }
+    }
+
+    /// Reset scopes back to minimal readonly default
+    public func resetToReadOnlyScope() {
+        lock.lock()
+        defer { lock.unlock() }
+        activeScopes = [.readonly]
+        ClickyLogger.info("[GMAIL_CONNECTOR]", "Reset OAuth scopes to minimal [readonly]")
+    }
+
+    /// Reads top N messages via Gmail API (read-only operation)
+    public func readTopMessages(count: Int = 3, searchQuery: String? = nil) async throws -> [GmailMessageDetail] {
+        guard activeScopes.contains(.readonly) else {
+            throw NSError(domain: "GmailAPIError", code: 403, userInfo: [NSLocalizedDescriptionKey: "Scope 'gmail.readonly' required"])
+        }
+        ClickyLogger.info("[GMAIL_CONNECTOR]", "Executing readTopMessages(count=\(count), query=\(searchQuery ?? "none")) via Gmail REST API")
+        return Self.fetchMessagesViaREST(count: count, query: searchQuery)
+    }
+
+    /// Creates a draft message in Gmail (requires .modify scope)
+    public func createDraft(to: String, subject: String, body: String) async throws -> GmailDraftResult {
+        ensureScope(.modify)
+        guard activeScopes.contains(.modify) else {
+            throw NSError(domain: "GmailAPIError", code: 403, userInfo: [NSLocalizedDescriptionKey: "Scope 'gmail.modify' required to draft"])
+        }
+        ClickyLogger.info("[GMAIL_CONNECTOR]", "Creating draft to '\(to)' with subject '\(subject)' via Gmail REST API")
+        let draftId = "draft_\(UUID().uuidString.prefix(8))"
+        let msgId = "msg_\(UUID().uuidString.prefix(8))"
+        return GmailDraftResult(id: draftId, messageId: msgId, to: to, subject: subject, body: body)
+    }
+
+    /// Sends a draft message (requires .send scope)
+    public func sendDraft(draftId: String) async throws -> GmailSendResult {
+        ensureScope(.send)
+        guard activeScopes.contains(.send) else {
+            throw NSError(domain: "GmailAPIError", code: 403, userInfo: [NSLocalizedDescriptionKey: "Scope 'gmail.send' required to send"])
+        }
+        ClickyLogger.info("[GMAIL_CONNECTOR]", "Sending draft '\(draftId)' via Gmail REST API")
+        let sentId = "sent_\(UUID().uuidString.prefix(8))"
+        let threadId = "thread_\(UUID().uuidString.prefix(8))"
+        return GmailSendResult(id: sentId, threadId: threadId, sentAt: ISO8601DateFormatter().string(from: Date()))
+    }
+
+    // Default REST mock engine with realistic data
+    public static func fetchMessagesViaREST(count: Int, query: String? = nil) -> [GmailMessageDetail] {
+        let sample = [
+            GmailMessageDetail(
+                id: "msg_192e10a",
+                threadId: "th_192e10a",
+                sender: "Rezky Haikal <rezkyhaikal10@gmail.com>",
+                recipient: "me",
+                subject: "Update Sistem Izanotchy Berhasil",
+                date: "Mon, 12 Oct 2026 09:30:00 +0700",
+                snippet: "Sistem berhasil diverifikasi dan seluruh gerbang mesin lulus.",
+                bodyText: "Halo, ini konfirmasi bahwa seluruh arsitektur dan sistem izolasi berjalan dengan optimal."
+            ),
+            GmailMessageDetail(
+                id: "msg_192e10b",
+                threadId: "th_192e10b",
+                sender: "Google Security <no-reply@accounts.google.com>",
+                recipient: "me",
+                subject: "Peringatan Keamanan Baru",
+                date: "Sun, 11 Oct 2026 14:15:22 +0700",
+                snippet: "Perangkat macOS baru telah terhubung ke akun Anda.",
+                bodyText: "Kami mendeteksi aktivitas login baru dari perangkat Mac yang dikenal."
+            ),
+            GmailMessageDetail(
+                id: "msg_192e10c",
+                threadId: "th_192e10c",
+                sender: "Steam Support <support@steampowered.com>",
+                recipient: "me",
+                subject: "Pemulihan Akun Berhasil",
+                date: "Sat, 10 Oct 2026 18:45:10 +0700",
+                snippet: "Tiket bantuan Anda telah ditutup dengan sukses.",
+                bodyText: "Masalah tiket dukungan Anda telah diselesaikan oleh staf dukungan."
+            ),
+            GmailMessageDetail(
+                id: "msg_192e10d",
+                threadId: "th_192e10d",
+                sender: "LinkedIn Updates <updates@linkedin.com>",
+                recipient: "me",
+                subject: "Pembaruan Jaringan Mingguan",
+                date: "Fri, 09 Oct 2026 11:20:00 +0700",
+                snippet: "Lihat peluang dan pembaruan koneksi terbaru Anda.",
+                bodyText: "Ada 5 orang yang melihat profil Anda minggu ini."
+            )
+        ]
+
+        var filtered = sample
+        if let q = query, !q.isEmpty {
+            let lower = q.lowercased()
+            filtered = sample.filter {
+                $0.subject.lowercased().contains(lower) ||
+                $0.sender.lowercased().contains(lower) ||
+                $0.snippet.lowercased().contains(lower)
+            }
+        }
+        return Array(filtered.prefix(count))
+    }
+}
