@@ -63,8 +63,8 @@ Dokumen ini adalah Single Source of Truth untuk memantau status pengerjaan fitur
 ---
 
 ## Riwayat Penyelesaian Terbaru
+- Milestone 312: Deterministic Surface Pivot, Ingress Routing Gate, Web Workspace & Ledgered Dead Code Purge (2026-10-11).
 - Milestone 310: Complete Screencapture Eradication & Virtual Sandbox HID Gating (2026-10-10).
-- Milestone 309: Zero External Screencapture Invocations & Specific Item Navigation Targeting (2026-10-10).
 - Milestone 298: Dimmer Backdrop Exclusion, Modal Sheet Compositing & Deterministic CUA Enforcement (2026-10-10).
 - Milestone 297: Unfiltered Modal Dialog Detection, Autonomous Sheet Dismissal & Button Protection (2026-10-10).
 - Milestone 296: Strict S1 Ingress & S4 CUA Architectural Boundary & Conversational Intent Protection (2026-10-10).
@@ -119,3 +119,15 @@ Berikut adalah daftar file, paket, dan pendekatan yang telah dihapus secara seng
 | `Astronacci*Engine.swift` (Cluster, Divergence, Quasimodo, Ephemeris, Calendar, Aspect) | Properti assign-only tak terpakai & modifier public redundan (43 temuan Periphery tuntas) | `FuturesScoutCoreAnalyst` data-driven interface | Dilarang permanen (2026-10-11) |
 | `CuaActionCursorManager.swift` (`CuaActionCursorView`, `CuaActionCursorTriangle`) | Decommissioned stub shape & views (0 callers) | Native Cua Driver cursor overlay | Dilarang permanen (2026-10-11) |
 | `CuaDriverClient.swift` (`CuaApp`, `CuaWindow`, `CuaElement`, `CuaWindowState`, `listApps()`, `listWindows()`, `getWindowState()`) | Dead prototype RPC structs & methods (0 callers) | Lean `CuaDriverClient` + direct MCP tool execution | Dilarang permanen (2026-10-11) |
+
+### Catatan Rekonsiliasi Audit (Reviewer Verification 2026-10-11)
+1. **Astronacci Domain**: Modul kalkulator teknikal matematika (`AstronacciDeterministicEngine`, `AstronacciClusterEngine`, `AstronacciDivergenceEngine`, `AstronacciQuasimodoEngine`, `AstronacciEphemerisEngine`, `AstronacciEconomicCalendarEngine`, `AstronacciPlanetaryAspectEngine`) **TIDAK DIHAPUS MUTLAK** karena memiliki konsumen runtime aktif (`FuturesScoutMarketDataService`, `CompanionReportPresenter`, `FuturesScoutCoreAnalyst`, `FuturesScoutChartAnalyst`). Penghapusan hanya menargetkan secara presisi 380 baris evaluasi usang dan 43 temuan simbol mati / assign-only Periphery (menghasilkan 0 temuan Periphery pada domain Astronacci).
+2. **CuaDriverClient**: Komponen **resmi dan disanksi** sebagai eksekutor fisik domain TradingView (Invariant 17). Pembersihan hanya memangkas tipe/metode prototipe RPC yang tidak terpakai (`CuaApp`, `CuaWindow`, `CuaElement`, `CuaWindowState`, `listApps()`, dll).
+
+### Inventaris Pembersihan Kode Liar Berikutnya (Pasca-TASK-047)
+Berdasarkan audit Periphery pasca-TASK-046 (1.017 temuan tersisa dari baseline 1.148):
+- **Batch 1 (Design System)**: `DesignSystem.swift` (51 temuan) — palet warna statis, token tipografi, dan view modifier yang tidak pernah dirujuk oleh UI modern Home Space.
+- **Batch 2 (Avatar Domain)**: `CompanionProceduralAvatarView.swift` (33) + `CompanionAvatarLabCatalog.swift` (25) (total 58 temuan) — state animasi prosedural tak terpakai dan preset katalog lab lama.
+- **Batch 3 (CUA & Kinematika)**: `CuaMotionEngine.swift` (31) + `CompanionVMAgentLoop.swift` (32) (total 63 temuan) — spline motion math usang dan cabang loop dekomposisi legacy.
+- **Batch 4 (Shelf Component)**: `components/Shelf/` (34 temuan) — subview rak legacy notch yang tidak aktif pada arsitektur Home Space notch-wrapped baru.
+- **Batch 5 (Core/Extensions)**: `private/CGSSpace.swift` (21) + `DataTypes+Extensions.swift` (18) (total 39 temuan) — binding CoreGraphics privat tak terpakai dan utility extensions redundan.

@@ -72,10 +72,14 @@ public final class WebWorkspaceDOMService: @unchecked Sendable {
                 var subject = subjEl ? (subjEl.innerText || '').trim() : '';
                 var text = (r.innerText || '').trim();
                 if (text.length > 0) {
+                    var rect = r.getBoundingClientRect();
                     listItems.push({
+                        'index': i + 1,
                         'sender': sender,
                         'subject': subject,
-                        'headline': text.substring(0, 100)
+                        'headline': text.substring(0, 100),
+                        'x': rect.left + (rect.width / 2.0),
+                        'y': rect.top + (rect.height / 2.0)
                     });
                 }
             }
@@ -168,8 +172,10 @@ public final class WebWorkspaceDOMService: @unchecked Sendable {
         """
 
         if let dict = try? await webView.evaluateJavaScript(js) as? [String: Any],
-           let x = dict["x"] as? Double, let y = dict["y"] as? Double {
-            return CGPoint(x: x, y: y)
+           let rawX = dict["x"] as? Double, let rawY = dict["y"] as? Double {
+            let zoom = await MainActor.run { webView.pageZoom }
+            let scale = (zoom > 0) ? zoom : 1.0
+            return CGPoint(x: rawX * scale, y: rawY * scale)
         }
         return nil
     }

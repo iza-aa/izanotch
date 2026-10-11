@@ -76,3 +76,34 @@ Metode audit wajib, berurutan:
 ## 6. Disiplin Fail-Fix Loop
 
 Gagal = bug sistem → root-cause (konsultasi arsip `archive/legacy_docs/ERRORS.md` bila perlu) → perbaiki sistem, bukan test/oracle → rebuild → ulangi sampai gerbang lulus. Dilarang test tailoring; expected yang faktual salah hanya boleh diubah dengan justifikasi di CHANGELOG.
+
+---
+
+## 7. Rekonsiliasi Realitas & Disposisi Audit (Reviewer Verification 2026-10-11)
+
+Dua deviasi dari rencana awal disetujui reviewer berbasis verifikasi dependensi nyata pada codebase:
+
+1. **Domain Astronacci (Preservasi Parsial Komponen Hidup)**:
+   - **Fakta**: Seluruh domain Astronacci tidak dapat dihapus mutlak karena memiliki rantai pemanggil aktif yang vital pada modul analitik pasar (`FuturesScoutMarketDataService`, `CompanionReportPresenter`, `FuturesScoutCoreAnalyst`, `FuturesScoutChartAnalyst`).
+   - **Tindakan Terledger**: Hanya simbol mati yang dipangkas:
+     - 380 baris evaluasi lama (`evaluateConfluence`, `evaluateVetoGate`, struktur data evaluasi kuno).
+     - 43 temuan Periphery tuntas (properti assign-only, model internal tak terpakai seperti `AstronacciFibonacciGrid`, dan aksesibilitas `public` redundan).
+   - **Hasil**: Peringatan Periphery untuk domain Astronacci turun dari 43 menjadi **0** tanpa merusak fungsi live `FuturesScout`.
+
+2. **CuaDriverClient (Status: Komponen Domain yang Disanksi)**:
+   - **Fakta**: `CuaDriverClient` bukan dead code, melainkan klien eksekusi fisik resmi untuk domain TradingView (Invariant 17) yang menangani perpindahan kursor canvas, snapshot grafis, dan eksekusi shortcut.
+   - **Tindakan Terledger**: Membersihkan modul prototipe RPC usang yang tidak pernah dipanggil (`CuaApp`, `CuaWindow`, `CuaElement`, `CuaWindowState`, `listApps()`, `listWindows()`, `getWindowState()`), serta mengisolasi transport ke scope internal package.
+
+---
+
+## 8. Inventaris Pembersihan Kode Liar Berikutnya (Pasca-TASK-047)
+
+Berdasarkan audit Periphery pasca-TASK-046 (1.017 temuan tersisa dari baseline 1.148):
+
+| Target Domain / File | Jumlah Temuan | Rincian Dead Code & Potensi Reduksi | Disposisi Rencana |
+|---|---|---|---|
+| `DesignSystem.swift` | 51 temuan | Palet warna statis, token tipografi, dan view modifier yang tidak pernah dirujuk oleh UI modern Home Space. | Batch 1 Pembersihan Pasca-TASK-047 |
+| Avatar Domain (`CompanionProceduralAvatarView.swift` [33], `CompanionAvatarLabCatalog.swift` [25]) | 58 temuan | State animasi prosedural tak terpakai, preset bentuk katalog lab lama yang ditinggalkan. | Batch 2 Pembersihan Pasca-TASK-047 |
+| CUA & Kinematika (`CuaMotionEngine.swift` [31], `CompanionVMAgentLoop.swift` [32]) | 63 temuan | Metode spline/motion math usang dan cabang loop dekomposisi legacy yang digantikan Web Workspace. | Batch 3 Pembersihan Pasca-TASK-047 |
+| `components/Shelf/` | 34 temuan | Subview rak legacy notch yang tidak aktif pada arsitektur Home Space notch-wrapped baru. | Batch 4 Pembersihan Pasca-TASK-047 |
+| `private/CGSSpace.swift` & `DataTypes+Extensions.swift` | 39 temuan | Binding fungsi privat CoreGraphics/CGS tak terpakai dan utility extensions yang telah memiliki padanan di Swift standard library. | Batch 5 Pembersihan Pasca-TASK-047 |

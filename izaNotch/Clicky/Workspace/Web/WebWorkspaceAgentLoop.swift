@@ -10,7 +10,7 @@
 import Foundation
 import WebKit
 import AppKit
-
+import SwiftUI
 public enum WebTaskStatus: String, Codable, Sendable {
     case loading = "loading"
     case awaitingLogin = "awaiting_login"
@@ -374,6 +374,21 @@ public final class WebWorkspaceAgentLoop: ObservableObject {
 
             _ = await viewportController.captureSnapshot(slug: slug)
 
+            // Glide virtual cursor to inspected email row
+            if let firstEmail = listItems.first,
+               let rawX = firstEmail["x"] as? Double,
+               let rawY = firstEmail["y"] as? Double, rawX > 0 && rawY > 0 {
+                let zoom = await MainActor.run { webView.pageZoom }
+                let scale = (zoom > 0) ? zoom : 1.0
+                let targetPt = CGPoint(x: rawX * scale, y: rawY * scale)
+                await MainActor.run {
+                    withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+                        viewportController.vmCursorPosition = targetPt
+                    }
+                }
+                ClickyLogger.info("[WEB_CURSOR]", "Glided virtual agent cursor to inspected email row at (\(Int(targetPt.x)), \(Int(targetPt.y)))")
+                try? await Task.sleep(nanoseconds: 200_000_000)
+            }
             queueItems[0] = ComputerCardQueueItem(name: "Daftar email terverifikasi (\(listItems.count) item)", statusBadge: "Done", isChecked: true)
             if queueItems.count > 1 {
                 queueItems[1] = ComputerCardQueueItem(name: "Inspeksi isi selesai", statusBadge: "Done", isChecked: true)

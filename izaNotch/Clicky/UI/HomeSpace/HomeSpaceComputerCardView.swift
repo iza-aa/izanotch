@@ -476,19 +476,26 @@ public struct HomeSpaceComputerCardView: View {
             Color(hex: "#18191B")
 
             if payload.cardTitle == "Web Workspace" {
-                VMWebViewRepresentable(controller: vmController)
-                    .allowsHitTesting(vmController.isTakeoverActive)
-                    .simultaneousGesture(
-                        TapGesture().onEnded {
-                            if vmController.isTakeoverActive, let win = vmController.webView?.window ?? HomeSpaceWindowManager.shared.window {
-                                win.makeKey()
-                                if let wv = vmController.webView {
-                                    let shifted = win.makeFirstResponder(wv)
-                                    ClickyLogger.info("[TAKEOVER]", "User tapped active Web Workspace card: win.makeKey(), makeFirstResponder(wv)=\(shifted)")
+                ZStack(alignment: .topLeading) {
+                    VMWebViewRepresentable(controller: vmController)
+                        .allowsHitTesting(vmController.isTakeoverActive)
+                        .simultaneousGesture(
+                            TapGesture().onEnded {
+                                if vmController.isTakeoverActive, let win = vmController.webView?.window ?? HomeSpaceWindowManager.shared.window {
+                                    win.makeKey()
+                                    if let wv = vmController.webView {
+                                        let shifted = win.makeFirstResponder(wv)
+                                        ClickyLogger.info("[TAKEOVER]", "User tapped active Web Workspace card: win.makeKey(), makeFirstResponder(wv)=\(shifted)")
+                                    }
                                 }
                             }
-                        }
-                    )
+                        )
+
+                    // Virtual Agent Cursor Overlay (visible when companion operates autonomously)
+                    if !vmController.isTakeoverActive {
+                        virtualAgentCursorOverlay
+                    }
+                }
             } else if customImg != nil {
                 InteractiveVirtualDesktopView(
                     targetAppName: target,
@@ -502,6 +509,37 @@ public struct HomeSpaceComputerCardView: View {
             }
         }
         .aspectRatio(contentRatio, contentMode: .fit)
+    }
+    // MARK: - Virtual Agent Cursor Overlay (Web Tier Live Cursor)
+    private var virtualAgentCursorOverlay: some View {
+        ZStack {
+            // Ripple pulse when clicking
+            if vmController.isClicking {
+                Circle()
+                    .stroke(Color(hex: "#38BDF8"), lineWidth: 2)
+                    .frame(width: 28, height: 28)
+                    .position(vmController.vmCursorPosition)
+                    .transition(.scale.combined(with: .opacity))
+            }
+
+            // Virtual Arrow Cursor with Companion badge
+            HStack(spacing: 4) {
+                Image(systemName: "cursorarrow")
+                    .font(.system(size: 13, weight: .bold))
+                    .foregroundColor(Color(hex: "#38BDF8"))
+                    .shadow(color: Color.black.opacity(0.85), radius: 3)
+
+                Text(CompanionManager.shared.activeBuddy.name)
+                    .font(.system(size: 9.5, weight: .bold))
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 5)
+                    .padding(.vertical, 2)
+                    .background(Capsule().fill(Color(hex: "#0284C7")))
+                    .shadow(radius: 2)
+            }
+            .position(x: vmController.vmCursorPosition.x + 18, y: vmController.vmCursorPosition.y + 12)
+        }
+        .allowsHitTesting(false)
     }
 
     // MARK: - Workspace Connection Placeholder
