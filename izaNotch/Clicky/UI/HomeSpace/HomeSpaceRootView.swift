@@ -44,6 +44,7 @@ struct HomeSpaceRootView: View {
     @State var isEditingCharacter: Bool = false
     @State var editName: String = ""
     @State var editRole: String = ""
+    @State var editDescription: String = ""
     @State var editCloudColorHex: String = ""
     @State var editRingColorHex: String = ""
     @State var editMood: AgentCloudFaceMood = .happy

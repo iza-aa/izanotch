@@ -98,6 +98,27 @@ extension HomeSpaceRootView {
                                     )
                             }
                         }
+
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("DESCRIPTION (ATURAN STANDING DURABLE)")
+                                .font(.system(size: 8.5, weight: .bold))
+                                .foregroundColor(.white.opacity(0.45))
+
+                            TextField("Standing rules (e.g. Never send without approval)...", text: $editDescription)
+                                .textFieldStyle(.plain)
+                                .font(.system(size: 11.5, weight: .regular))
+                                .foregroundColor(.white)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 5)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 6, style: .continuous)
+                                        .fill(Color.white.opacity(0.06))
+                                )
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 6, style: .continuous)
+                                        .stroke(Color.white.opacity(0.1), lineWidth: 0.8)
+                                )
+                        }
                     }
                 }
                 .padding(.horizontal, 24)

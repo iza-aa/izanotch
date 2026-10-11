@@ -361,6 +361,8 @@ extension HomeSpaceRootView {
     func startEditing(session: BuddySession) {
         editName = session.name
         editRole = session.roleDescription
+        let existingComp = CompanionRosterStore.shared.allCompanions.first(where: { $0.id == session.id })
+        editDescription = existingComp?.summary ?? session.roleDescription
         editCloudColorHex = session.avatarColorHex
         editRingColorHex = session.ringColorHex.isEmpty ? "#BAE6FD" : session.ringColorHex
         editMood = session.mood
@@ -407,6 +409,7 @@ extension HomeSpaceRootView {
             cloudColorHex: editCloudColorHex,
             ringColorHex: editRingColorHex,
             mood: mappedMood,
+            summary: editDescription,
             templateId: editSelectedTemplateId,
             animationKey: chosenAnimationKey,
             currentExpressionKey: editAvatarLabExpression,

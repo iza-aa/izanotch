@@ -94,6 +94,17 @@ extension CompanionManager {
             - execution domain: "\(b.executionDomain.rawValue)"
             """
 
+            let standingRules = (CompanionRosterStore.shared.allCompanions.first(where: { $0.slug == slug })?.summary ?? b.roleDescription).trimmingCharacters(in: .whitespacesAndNewlines)
+            if !standingRules.isEmpty {
+                companionIdentityContext += """
+
+                STANDING DURABLE RULES & BOUNDARY DIRECTIVE (PRD §A4):
+                \"\(standingRules)\"
+                MANDATORY INVARIANT:
+                The description above is a set of DURABLE STANDING RULES. You MUST treat them as unbreakable operational boundaries! (e.g. If the rules state "Never send without approval", you MUST STOP and ask for explicit human confirmation before dispatching or sending).
+                """
+                ClickyLogger.info("[COMPANION_RULES]", "Injected durable standing rules for \(slug): '\(standingRules)'")
+            }
             if let spec = loadedSpec, !spec.isEmpty {
                 hasLoadedSpec = true
                 companionIdentityContext += """
