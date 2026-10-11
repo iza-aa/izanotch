@@ -423,3 +423,100 @@ public final class CompanionRosterStore: ObservableObject {
         }
     }
 }
+// MARK: - CompanionHandoffService (PRD §A7, MT-15: Bot-to-Bot Async Handoff)
+
+public struct CompanionHandoffMessage: Codable, Sendable, Identifiable, Equatable {
+    public let id: UUID
+    public let fromSlug: String
+    public let toSlug: String
+    public let stage: String
+    public let contextSummary: String
+    public let sharedArtifactPaths: [String]
+    public let taskInstruction: String
+    public let timestamp: Date
+    public var status: String
+
+    public init(
+        id: UUID = UUID(),
+        fromSlug: String,
+        toSlug: String,
+        stage: String,
+        contextSummary: String,
+        sharedArtifactPaths: [String] = [],
+        taskInstruction: String,
+        timestamp: Date = Date(),
+        status: String = "accepted"
+    ) {
+        self.id = id
+        self.fromSlug = fromSlug
+        self.toSlug = toSlug
+        self.stage = stage
+        self.contextSummary = contextSummary
+        self.sharedArtifactPaths = sharedArtifactPaths
+        self.taskInstruction = taskInstruction
+        self.timestamp = timestamp
+        self.status = status
+    }
+}
+
+@MainActor
+public final class CompanionHandoffService: ObservableObject {
+    public static let shared = CompanionHandoffService()
+
+    @Published public private(set) var activeHandoffs: [CompanionHandoffMessage] = []
+
+    private init() {}
+
+    /// Dispatches an asynchronous handoff from one companion to another
+    /// Enforces the Single Owner per Stage rule (PRD §A7).
+    @discardableResult
+    public func dispatchHandoff(
+        from fromSlug: String,
+        to toSlug: String,
+        stage: String,
+        contextSummary: String,
+        sharedArtifactPaths: [String] = [],
+        taskInstruction: String
+    ) -> CompanionHandoffMessage {
+        let handoff = CompanionHandoffMessage(
+            fromSlug: fromSlug,
+            toSlug: toSlug,
+            stage: stage,
+            contextSummary: contextSummary,
+            sharedArtifactPaths: sharedArtifactPaths,
+            taskInstruction: taskInstruction
+        )
+
+        activeHandoffs.append(handoff)
+
+        // 1. Record dispatch message in sender companion chat
+        let fromCompanion = CompanionRosterStore.shared.allCompanions.first(where: { $0.slug == fromSlug })
+        let toCompanion = CompanionRosterStore.shared.allCompanions.first(where: { $0.slug == toSlug })
+        let toName = toCompanion?.name ?? toSlug
+        let fromName = fromCompanion?.name ?? fromSlug
+
+        let dispatchText = "Handoff ke \(toName): \(taskInstruction) [Tahap: \(stage)]"
+        let senderMsg = HomeSpaceChatMessage(isUser: false, text: dispatchText)
+        if let fComp = fromCompanion {
+            CompanionRosterStore.shared.appendMessage(senderMsg, forCompanionId: fComp.id)
+        }
+
+        // 2. Transfer ownership to recipient companion (Single Owner per Stage rule)
+        let receiptText = "Menerima handoff dari \(fromName): \(taskInstruction)\nKonteks: \(contextSummary)"
+        let recipientMsg = HomeSpaceChatMessage(isUser: false, text: receiptText)
+        if let tComp = toCompanion {
+            CompanionRosterStore.shared.appendMessage(recipientMsg, forCompanionId: tComp.id)
+            // Record handoff in recipient's memory
+            CompanionMemoryManager.shared.recordWorkSummary(
+                slug: toSlug,
+                runId: handoff.id.uuidString,
+                prompt: taskInstruction,
+                outcome: "Menerima handoff tahap '\(stage)' dari \(fromSlug)",
+                sources: sharedArtifactPaths
+            )
+        }
+
+        ClickyLogger.info("[HANDOFF]", "Dispatched bot-to-bot handoff from '\(fromSlug)' to '\(toSlug)': stage='\(stage)'")
+        return handoff
+    }
+}
