@@ -107,13 +107,13 @@ Prasyarat masuk TASK-047: 8 skenario `scenarios.fasec.json` lulus + 8 bloker B1-
 
 ### FASE 9 — CONNECTORS PENUH & EKSTERNAL INGRESS (PRD §A15/G15, §A10; sumber S5, S3)
 
-| ID | [Tipe] | Scope | Baca | Bukti review |
-|---|---|---|---|---|
-| MT-33 | [non-UI] | Google Calendar connector (events/RSVP/freebusy, scope bertahap) | S5-gmail | Create/RSVP event via API terverifikasi |
-| MT-34 | [non-UI] | Google Drive connector (search/read/create/upload, scope bertahap) | S5-drive | Baca & buat file Drive terverifikasi |
-| MT-35 | [non-UI] | Outlook Mail+Calendar connector (Mail.ReadWrite/Mail.Send/Calendars.ReadWrite + offline_access) | S5-outlook | Paritas Gmail di Outlook |
-| MT-36 | [non-UI] | Custom MCP connector (public-internet server, allowed_tools filter, tanpa kredensial di command) + tunneling doc | S5-mcp | MCP server kustom dipanggil dari companion |
-| MT-37 | [UI] | Eksternal task ingress (notifikasi macOS/share sheet): task dari luar chat + ACK ringkas + hasil di app (pola tag-on-x) | S3-tag | Task dari notifikasi masuk, ACK terkirim, hasil di app |
+| ID | [Tipe] | Scope | Baca | Bukti review | Status |
+|---|---|---|---|---|---|
+| MT-33 | [non-UI] | Google Calendar connector (events/RSVP/freebusy, scope bertahap) | S5-gmail | Create/RSVP event via API terverifikasi | LULUS |
+| MT-34 | [non-UI] | Google Drive connector (search/read/create/upload, scope bertahap) | S5-drive | Baca & buat file Drive terverifikasi | LULUS |
+| MT-35 | [non-UI] | Outlook Mail+Calendar connector (Mail.ReadWrite/Mail.Send/Calendars.ReadWrite + offline_access) | S5-outlook | Paritas Gmail di Outlook | LULUS |
+| MT-36 | [non-UI] | Custom MCP connector (public-internet server, allowed_tools filter, tanpa kredensial di command) + tunneling doc | S5-mcp | MCP server kustom dipanggil dari companion | LULUS |
+| MT-37 | [UI] | Eksternal task ingress (notifikasi macOS/share sheet): task dari luar chat + ACK ringkas + hasil di app (pola tag-on-x) | S3-tag | Task dari notifikasi masuk, ACK terkirim, hasil di app | LULUS |
 
 ### FASE 10 — TEAM & GOVERNANCE PARITY (PRD §A11/A16, G7; sumber S3, S4) — FASE AKHIR
 
