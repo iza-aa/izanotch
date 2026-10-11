@@ -253,6 +253,13 @@ struct HomeSpaceRootView: View {
                 submitPrompt(prompt)
             }
         }
+        .onReceive(NotificationCenter.default.publisher(for: Notification.Name("HomeSpaceReviseArtifact"))) { notif in
+            if let artifactPath = notif.object as? String {
+                let name = URL(fileURLWithPath: artifactPath).lastPathComponent
+                inputText = "Revisi artifact \(name): "
+                isTypingMode = true
+            }
+        }
     }
 
 

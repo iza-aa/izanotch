@@ -183,6 +183,15 @@ extension HomeSpaceRootView {
                                                 if let egress = message.egressResult ?? message.computerPayload?.egressResult {
                                                     HomeSpaceEgressReportView(result: egress)
                                                         .id("egress-report-\(message.id)")
+
+                                                    ForEach(egress.deliverables) { deliv in
+                                                        HomeSpaceDeliverableCardView(deliverable: deliv) { revisedPath in
+                                                            let name = URL(fileURLWithPath: revisedPath).lastPathComponent
+                                                            inputText = "Revisi artifact \(name): "
+                                                            isTypingMode = true
+                                                        }
+                                                        .id("deliverable-\(deliv.id)-\(message.id)")
+                                                    }
                                                 }
 
                                                 if !message.text.isEmpty {

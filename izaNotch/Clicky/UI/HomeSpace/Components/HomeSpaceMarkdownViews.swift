@@ -539,3 +539,280 @@ public struct HomeSpaceEgressReportView: View {
         .frame(maxWidth: 540, alignment: .leading)
     }
 }
+// MARK: - HomeSpaceDeliverableCardView (PRD §A9, MT-02: Deliverable Card & In-Place Revision)
+public struct HomeSpaceDeliverableCardView: View {
+    public let deliverable: EgressDeliverable
+    public var onRevise: ((String) -> Void)? = nil
+
+    @State private var isEditingInline: Bool = false
+    @State private var editedContent: String = ""
+    @State private var currentVersion: Int = 1
+    @State private var previewSnippet: String = ""
+    @State private var fileSizeFormatted: String = ""
+    @State private var isCopied: Bool = false
+    @State private var saveStatusMessage: String? = nil
+
+    public init(deliverable: EgressDeliverable, onRevise: ((String) -> Void)? = nil) {
+        self.deliverable = deliverable
+        self.onRevise = onRevise
+        _currentVersion = State(initialValue: deliverable.version)
+    }
+
+    private var artifactURL: URL? {
+        let path = deliverable.artifact
+        if path.hasPrefix("/") {
+            return URL(fileURLWithPath: path)
+        } else if path.hasPrefix("~") {
+            return URL(fileURLWithPath: (path as NSString).expandingTildeInPath)
+        }
+        return nil
+    }
+
+    private var artifactFileName: String {
+        artifactURL?.lastPathComponent ?? deliverable.artifact
+    }
+
+    private var typeVisuals: (icon: String, label: String, colorHex: String) {
+        let ext = artifactURL?.pathExtension.lowercased() ?? ""
+        let t = deliverable.type.lowercased()
+        if ext == "json" || ext == "yaml" || ext == "yml" || t == "data" {
+            return ("curlybraces", "Data", "#38BDF8")
+        } else if ext == "csv" || ext == "tsv" || ext == "xlsx" || t == "spreadsheet" {
+            return ("tablecells.fill", "Spreadsheet", "#34D399")
+        } else if ext == "swift" || ext == "py" || ext == "js" || ext == "ts" || ext == "html" || t == "code" {
+            return ("chevron.left.forwardslash.chevron.right", "Kode", "#A78BFA")
+        } else if t == "email" || t == "draft" || ext == "eml" {
+            return ("envelope.badge.fill", "Draf Pesan", "#F59E0B")
+        } else if ext == "png" || ext == "jpg" || ext == "jpeg" || ext == "pdf" || t == "media" {
+            return ("photo.fill", "Media", "#EC4899")
+        } else {
+            return ("doc.text.fill", "Dokumen", "#38BDF8")
+        }
+    }
+
+    public var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            // Header: Type Badge & Version & Title
+            HStack(spacing: 8) {
+                HStack(spacing: 5) {
+                    Image(systemName: typeVisuals.icon)
+                        .font(.system(size: 11, weight: .bold))
+                        .foregroundStyle(Color(hex: typeVisuals.colorHex))
+                    Text(typeVisuals.label)
+                        .font(.system(size: 10.5, weight: .bold))
+                        .foregroundStyle(Color(hex: typeVisuals.colorHex))
+                }
+                .padding(.horizontal, 8)
+                .padding(.vertical, 3.5)
+                .background(
+                    Capsule().fill(Color(hex: typeVisuals.colorHex).opacity(0.15))
+                )
+
+                Text(deliverable.title ?? artifactFileName)
+                    .font(.system(size: 13, weight: .bold))
+                    .foregroundStyle(.white)
+                    .lineLimit(1)
+
+                Spacer()
+
+                Text("v\(currentVersion)")
+                    .font(.system(size: 10, weight: .semibold, design: .monospaced))
+                    .foregroundStyle(.white.opacity(0.6))
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 2)
+                    .background(Capsule().fill(Color.white.opacity(0.08)))
+            }
+
+            // Preview Section
+            if isEditingInline {
+                VStack(alignment: .leading, spacing: 6) {
+                    TextEditor(text: $editedContent)
+                        .font(.system(size: 11.5, design: .monospaced))
+                        .scrollContentBackground(.hidden)
+                        .padding(8)
+                        .background(RoundedRectangle(cornerRadius: 8).fill(Color.black.opacity(0.4)))
+                        .frame(minHeight: 120, maxHeight: 220)
+
+                    HStack {
+                        Button(action: saveInlineRevision) {
+                            HStack(spacing: 4) {
+                                Image(systemName: "checkmark.circle.fill")
+                                    .font(.system(size: 10.5))
+                                Text("Simpan ke Artifact yang Sama")
+                                    .font(.system(size: 11, weight: .semibold))
+                            }
+                            .foregroundStyle(Color(hex: "#34D399"))
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 5)
+                            .background(RoundedRectangle(cornerRadius: 6).fill(Color(hex: "#34D399").opacity(0.16)))
+                        }
+                        .buttonStyle(.plain)
+
+                        Button(action: { isEditingInline = false }) {
+                            Text("Batal")
+                                .font(.system(size: 11))
+                                .foregroundStyle(.white.opacity(0.6))
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 5)
+                        }
+                        .buttonStyle(.plain)
+
+                        if let msg = saveStatusMessage {
+                            Text(msg)
+                                .font(.system(size: 10.5))
+                                .foregroundStyle(Color(hex: "#34D399"))
+                        }
+                    }
+                }
+            } else {
+                VStack(alignment: .leading, spacing: 4) {
+                    if !previewSnippet.isEmpty {
+                        Text(previewSnippet)
+                            .font(.system(size: 11.5, design: .monospaced))
+                            .foregroundStyle(.white.opacity(0.85))
+                            .lineLimit(4)
+                            .padding(8)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .background(RoundedRectangle(cornerRadius: 8).fill(Color.black.opacity(0.3)))
+                    } else if let summ = deliverable.summary, !summ.isEmpty {
+                        Text(summ)
+                            .font(.system(size: 12))
+                            .foregroundStyle(.white.opacity(0.85))
+                            .padding(8)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .background(RoundedRectangle(cornerRadius: 8).fill(Color.white.opacity(0.04)))
+                    }
+
+                    if !fileSizeFormatted.isEmpty {
+                        Text(fileSizeFormatted)
+                            .font(.system(size: 10))
+                            .foregroundStyle(.white.opacity(0.45))
+                    }
+                }
+            }
+
+            // Action Toolbar: Preview / Revise / Copy Path
+            HStack(spacing: 8) {
+                // Open File
+                Button(action: openArtifact) {
+                    HStack(spacing: 4) {
+                        Image(systemName: "arrow.up.right.square")
+                            .font(.system(size: 10.5))
+                        Text("Buka")
+                            .font(.system(size: 11, weight: .medium))
+                    }
+                    .foregroundStyle(.white.opacity(0.9))
+                    .padding(.horizontal, 9)
+                    .padding(.vertical, 4.5)
+                    .background(RoundedRectangle(cornerRadius: 6).fill(Color.white.opacity(0.08)))
+                }
+                .buttonStyle(.plain)
+                .help("Buka berkas artifact secara native")
+
+                // Revise Artifact (In-Place, Zero Duplication)
+                Button(action: startRevision) {
+                    HStack(spacing: 4) {
+                        Image(systemName: "pencil.line")
+                            .font(.system(size: 10.5))
+                        Text("Revisi")
+                            .font(.system(size: 11, weight: .semibold))
+                    }
+                    .foregroundStyle(Color(hex: "#38BDF8"))
+                    .padding(.horizontal, 9)
+                    .padding(.vertical, 4.5)
+                    .background(RoundedRectangle(cornerRadius: 6).fill(Color(hex: "#38BDF8").opacity(0.14)))
+                }
+                .buttonStyle(.plain)
+                .help("Revisi artifact ini langsung tanpa membuat salinan duplikat")
+
+                Spacer()
+
+                // Copy Path
+                Button(action: copyArtifactPath) {
+                    HStack(spacing: 4) {
+                        Image(systemName: isCopied ? "checkmark" : "doc.on.doc")
+                            .font(.system(size: 10))
+                        Text(isCopied ? "Tersalin" : "Salin Path")
+                            .font(.system(size: 10.5))
+                    }
+                    .foregroundStyle(.white.opacity(0.55))
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(12)
+        .background(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .fill(Color(hex: "#111827").opacity(0.85))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        .stroke(Color.white.opacity(0.1), lineWidth: 0.8)
+                )
+        )
+        .frame(maxWidth: 540, alignment: .leading)
+        .onAppear {
+            loadArtifactMetadata()
+        }
+    }
+
+    private func loadArtifactMetadata() {
+        guard let url = artifactURL, FileManager.default.fileExists(atPath: url.path) else {
+            return
+        }
+        if let attrs = try? FileManager.default.attributesOfItem(atPath: url.path),
+           let size = attrs[.size] as? Int64 {
+            fileSizeFormatted = ByteCountFormatter.string(fromByteCount: size, countStyle: .file)
+        }
+        if let content = try? String(contentsOf: url, encoding: .utf8) {
+            editedContent = content
+            let trimmed = content.trimmingCharacters(in: .whitespacesAndNewlines)
+            previewSnippet = String(trimmed.prefix(280))
+        }
+    }
+
+    private func openArtifact() {
+        guard let url = artifactURL, FileManager.default.fileExists(atPath: url.path) else { return }
+        NSWorkspace.shared.open(url)
+    }
+
+    private func startRevision() {
+        if onRevise != nil {
+            onRevise?(deliverable.artifact)
+        } else {
+            NotificationCenter.default.post(
+                name: Notification.Name("HomeSpaceReviseArtifact"),
+                object: deliverable.artifact
+            )
+            withAnimation(.spring(response: 0.25, dampingFraction: 0.8)) {
+                isEditingInline.toggle()
+            }
+        }
+    }
+
+    private func saveInlineRevision() {
+        guard let url = artifactURL else { return }
+        do {
+            try editedContent.write(to: url, atomically: true, encoding: .utf8)
+            currentVersion += 1
+            loadArtifactMetadata()
+            saveStatusMessage = "Tersimpan (v\(currentVersion))"
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
+                saveStatusMessage = nil
+                isEditingInline = false
+            }
+        } catch {
+            saveStatusMessage = "Gagal menyimpan: \(error.localizedDescription)"
+        }
+    }
+
+    private func copyArtifactPath() {
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.setString(deliverable.artifact, forType: .string)
+        isCopied = true
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.8) {
+            isCopied = false
+        }
+    }
+}

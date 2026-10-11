@@ -174,10 +174,22 @@ public struct EgressDeliverable: Codable, Sendable, Equatable, Identifiable {
     public var id: String { artifact.isEmpty ? type : artifact }
     public var type: String
     public var artifact: String
+    public var title: String?
+    public var summary: String?
+    public var version: Int
 
-    public init(type: String, artifact: String) {
+    public init(
+        type: String,
+        artifact: String,
+        title: String? = nil,
+        summary: String? = nil,
+        version: Int = 1
+    ) {
         self.type = type
         self.artifact = artifact
+        self.title = title
+        self.summary = summary
+        self.version = version
     }
 }
 
