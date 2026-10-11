@@ -28,7 +28,7 @@ public struct AFMTaskDecomposition: Codable, Sendable {
     public let executionTier: String // "web" | "native_cua"
     public let routingReason: String?
     public let targetSurfaceId: String?
-
+    public let isTestRun: Bool
     public var isConversational: Bool {
         return !requiresCUA || targetAppName.lowercased() == "none" || intentType.lowercased() == "conversational"
     }
@@ -50,7 +50,8 @@ public struct AFMTaskDecomposition: Codable, Sendable {
         requiresTakeoverOnCompletion: Bool = false,
         executionTier: String = "native_cua",
         routingReason: String? = nil,
-        targetSurfaceId: String? = nil
+        targetSurfaceId: String? = nil,
+        isTestRun: Bool = false
     ) {
         self.userIntent = userIntent
         self.targetAppName = targetAppName
@@ -69,6 +70,7 @@ public struct AFMTaskDecomposition: Codable, Sendable {
         self.executionTier = executionTier
         self.routingReason = routingReason
         self.targetSurfaceId = targetSurfaceId
+        self.isTestRun = isTestRun
     }
 
     public init(from decoder: Decoder) throws {
@@ -92,6 +94,7 @@ public struct AFMTaskDecomposition: Codable, Sendable {
         self.executionTier = try container.decodeIfPresent(String.self, forKey: .executionTier) ?? "native_cua"
         self.routingReason = try container.decodeIfPresent(String.self, forKey: .routingReason)
         self.targetSurfaceId = try container.decodeIfPresent(String.self, forKey: .targetSurfaceId)
+        self.isTestRun = try container.decodeIfPresent(Bool.self, forKey: .isTestRun) ?? false
     }
 }
 
@@ -261,4 +264,134 @@ public struct LunaPerceptionResult: Sendable {
         self.confidence = confidence
         self.sourceMethod = sourceMethod
     }
+}
+// MARK: - Approval Contract (Schema C6)
+
+public struct ApprovalRequest: Codable, Sendable, Identifiable, Equatable {
+    public var id: String { actionId }
+    public let actionId: String
+    public let operation: String
+    public let inputs: [String: String]
+    public let options: [String] // ["allow_once", "always_allow", "deny"]
+    public let source: String // "user" | "routine" | "bot_handoff"
+    public let expiresAt: Date
+    public var status: String // "pending" | "allowed_once" | "always_allowed" | "denied" | "expired"
+
+    public var isExpired: Bool {
+        return Date() > expiresAt
+    }
+
+    public init(
+        actionId: String = UUID().uuidString,
+        operation: String,
+        inputs: [String: String] = [:],
+        options: [String] = ["allow_once", "always_allow", "deny"],
+        source: String = "routine",
+        expiresAt: Date = Date().addingTimeInterval(600), // ~10 minutes per PRD §A12
+        status: String = "pending"
+    ) {
+        self.actionId = actionId
+        self.operation = operation
+        self.inputs = inputs
+        self.options = options
+        self.source = source
+        self.expiresAt = expiresAt
+        self.status = status
+    }
+}
+
+// MARK: - TrustDesignEngine (PRD §A8, §A12, MT-08: Trust Design & Test Run Gate)
+
+final class ManagedAtomicSet: @unchecked Sendable {
+    private let lock = NSLock()
+    private var set: Set<String> = []
+
+    func contains(_ item: String) -> Bool {
+        lock.lock()
+        defer { lock.unlock() }
+        return set.contains(item)
+    }
+
+    func insert(_ item: String) {
+        lock.lock()
+        defer { lock.unlock() }
+        set.insert(item)
+    }
+
+    func reset() {
+        lock.lock()
+        defer { lock.unlock() }
+        set.removeAll()
+    }
+}
+
+public final class TrustDesignEngine: Sendable {
+    public static let shared = TrustDesignEngine()
+
+    private init() {}
+
+    /// Sensitive operations that strictly require explicit user approval
+    public static let sensitiveOperations: Set<String> = [
+        "send", "purchase", "delete", "publish", "modify_production",
+        "transfer", "overwrite", "send_email", "execute_order"
+    ]
+
+    /// Evaluates if an operation requires approval boundary gating
+    public func requiresApproval(operation: String, isTestRun: Bool = false) -> Bool {
+        let op = operation.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+        if isTestRun {
+            // In Test Run mode, ANY external mutation or sensitive operation requires approval!
+            return Self.sensitiveOperations.contains(op) || op.contains("send") || op.contains("delete") || op.contains("buy") || op.contains("sell")
+        }
+        return Self.sensitiveOperations.contains(op)
+    }
+
+    /// Creates a standard Schema C6 Approval Request for a pending sensitive action
+    public func createApprovalRequest(
+        operation: String,
+        inputs: [String: String],
+        source: String = "routine"
+    ) -> ApprovalRequest {
+        return ApprovalRequest(
+            actionId: UUID().uuidString,
+            operation: operation,
+            inputs: inputs,
+            options: ["allow_once", "always_allow", "deny"],
+            source: source,
+            expiresAt: Date().addingTimeInterval(600), // ~10 minutes per PRD §A12
+            status: "pending"
+        )
+    }
+
+    /// Evaluates No-Data / Stale-Data policy without fabricating dummy data
+    public func handleNoData(
+        policy: String, // "pause_and_notify" | "skip"
+        companionSlug: String,
+        taskName: String
+    ) -> (shouldHalt: Bool, resolutionMessage: String) {
+        if policy == "skip" {
+            ClickyLogger.info("[TRUST_DESIGN]", "No data found for '\(taskName)'. Gracefully skipping per policy.")
+            return (false, "Data tidak ditemukan pada sumber. Tugas dilewati secara anggun.")
+        } else {
+            // Default: pause_and_notify
+            ClickyLogger.warning("[TRUST_DESIGN]", "No data found for '\(taskName)'. Parking task per pause_and_notify policy.")
+            return (true, "Data tidak ditemukan pada sumber. Tugas diparkir dan menunggu arahan pengguna.")
+        }
+    }
+
+    /// Evaluates Idempotency Key to prevent duplicate external mutations on retry
+    private static let executedIdempotencyKeys = ManagedAtomicSet()
+
+    public func shouldExecuteIdempotent(key: String) -> Bool {
+        guard !key.isEmpty else { return true }
+        if Self.executedIdempotencyKeys.contains(key) {
+            ClickyLogger.warning("[TRUST_DESIGN]", "Idempotent retry detected for key '\(key)'. Suppressed duplicate mutation.")
+            return false
+        }
+        Self.executedIdempotencyKeys.insert(key)
+        return true
+    }
+
+    /// Real Work warning for Test Run mode
+    public static let testRunWarning = "Peringatan: Test run menyentuh aplikasi nyata dengan input aman (read-only/draft). Aksi eksternal yang berdampak permanen dicegah oleh approval boundary."
 }

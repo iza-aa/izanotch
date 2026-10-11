@@ -255,8 +255,15 @@ public final class WebWorkspaceAgentLoop: ObservableObject {
 
             queueItems[1] = ComputerCardQueueItem(name: "Field terverifikasi DOM", statusBadge: "Done", isChecked: true)
 
-            // Step 4: Submit / Send if required
-            if intent == "send" || intent == "compose" {
+            // Step 4: Submit / Send if required (Trust Design & Approval Gating)
+            let requiresApproval = TrustDesignEngine.shared.requiresApproval(operation: intent, isTestRun: taskPlan.isTestRun)
+            var awaitingApprovalItems: [String] = []
+
+            if taskPlan.isTestRun {
+                ClickyLogger.info("[TRUST_DESIGN]", TrustDesignEngine.testRunWarning)
+            }
+
+            if (intent == "send" || intent == "compose") && !requiresApproval {
                 ClickyLogger.info("[WEB_LOOP]", "Submitting email via DOM Send click")
                 queueItems[2] = ComputerCardQueueItem(name: "Mengirim email via DOM", statusBadge: "Working", isChecked: false)
                 payload.queueItems = queueItems
@@ -265,14 +272,25 @@ public final class WebWorkspaceAgentLoop: ObservableObject {
                 _ = await domService.glideCursorAndClick(webView: webView, selector: adapter.selectors.sendButton)
                 try? await Task.sleep(nanoseconds: 800_000_000)
                 queueItems[2] = ComputerCardQueueItem(name: "Email terkirim", statusBadge: "Done", isChecked: true)
+            } else if requiresApproval {
+                ClickyLogger.info("[TRUST_DESIGN]", "Approval boundary active: Halting before external mutation (send)")
+                queueItems[2] = ComputerCardQueueItem(name: "Menunggu Persetujuan Pengguna untuk Mengirim", statusBadge: "Takeover Needed", isChecked: false)
+                awaitingApprovalItems.append("Pengiriman email aktual ke \(extracted.to.isEmpty ? "penerima" : extracted.to)")
             }
 
             _ = await viewportController.captureSnapshot(slug: slug)
 
-            payload.status = .done
-            let deliverableText = "Email ke \(extracted.to.isEmpty ? "tujuan" : extracted.to) berhasil diverifikasi DOM dan terkirim."
+            payload.status = requiresApproval ? .takeoverNeeded : .done
+            if requiresApproval {
+                payload.takeoverReason = "Pengiriman email memerlukan persetujuan eksplisit pengguna."
+            }
+            let deliverableText = requiresApproval
+                ? "Draf email ke \(extracted.to.isEmpty ? "tujuan" : extracted.to) berhasil diverifikasi DOM dan tersimpan. Menunggu persetujuan untuk mengirim."
+                : "Email ke \(extracted.to.isEmpty ? "tujuan" : extracted.to) berhasil diverifikasi DOM dan terkirim."
             payload.deliverableSummary = deliverableText
-            payload.responseToUser = "Email berhasil diverifikasi dan dikirim melalui Web Workspace."
+            payload.responseToUser = requiresApproval
+                ? "Draf pesan berhasil disusun pada Web Workspace. Silakan tinjau dan berikan persetujuan untuk mengirimkan."
+                : "Email berhasil diverifikasi dan dikirim melalui Web Workspace."
 
             let composeFacts: [String] = [
                 "Pesan terverifikasi ditujukan kepada \(extracted.to.isEmpty ? "tujuan" : extracted.to) dengan subjek '\(extracted.subject)'.",
@@ -286,9 +304,9 @@ public final class WebWorkspaceAgentLoop: ObservableObject {
                 completedActions: [
                     "Membuka dialog komposisi pesan.",
                     "Memasukkan alamat penerima, subjek, dan badan pesan.",
-                    intent == "send" ? "Mengirim pesan via tombol kirim DOM." : "Menyimpan draf pesan pada webmail."
+                    requiresApproval ? "Menyimpan draf pesan pada webmail (menunggu persetujuan)." : (intent == "send" ? "Mengirim pesan via tombol kirim DOM." : "Menyimpan draf pesan pada webmail.")
                 ],
-                awaitingApproval: [],
+                awaitingApproval: awaitingApprovalItems,
                 openQuestions: []
             )
             let activeRunId = CompanionManager.shared.activeE2ERunId ?? UUID().uuidString
