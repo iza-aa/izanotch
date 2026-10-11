@@ -195,6 +195,33 @@ public struct VoiceMemoData: Identifiable, Codable, Equatable, Sendable {
         self.recordedAt = recordedAt
     }
 }
+public struct LiveVoiceChatSessionData: Identifiable, Codable, Equatable, Sendable {
+    public let id: UUID
+    public let companionSlug: String
+    public let durationSeconds: Double
+    public let startedAt: Date
+    public let endedAt: Date
+    public let summary: String
+    public let fullTranscriptLines: [String]
+
+    public init(
+        id: UUID = UUID(),
+        companionSlug: String,
+        durationSeconds: Double = 0.0,
+        startedAt: Date = Date(),
+        endedAt: Date = Date(),
+        summary: String,
+        fullTranscriptLines: [String] = []
+    ) {
+        self.id = id
+        self.companionSlug = companionSlug
+        self.durationSeconds = durationSeconds
+        self.startedAt = startedAt
+        self.endedAt = endedAt
+        self.summary = summary
+        self.fullTranscriptLines = fullTranscriptLines
+    }
+}
 
 public struct HomeSpaceChatMessage: Identifiable, Codable, Equatable {
     public let id: UUID
@@ -205,6 +232,7 @@ public struct HomeSpaceChatMessage: Identifiable, Codable, Equatable {
     public var egressResult: EgressResult?
     public var attachments: [ChatAttachment]
     public var voiceMemo: VoiceMemoData?
+    public var liveVoiceChat: LiveVoiceChatSessionData?
 
     public init(
         id: UUID = UUID(),
@@ -214,7 +242,8 @@ public struct HomeSpaceChatMessage: Identifiable, Codable, Equatable {
         computerPayload: ComputerCardPayload? = nil,
         egressResult: EgressResult? = nil,
         attachments: [ChatAttachment] = [],
-        voiceMemo: VoiceMemoData? = nil
+        voiceMemo: VoiceMemoData? = nil,
+        liveVoiceChat: LiveVoiceChatSessionData? = nil
     ) {
         self.id = id
         self.isUser = isUser
@@ -224,6 +253,7 @@ public struct HomeSpaceChatMessage: Identifiable, Codable, Equatable {
         self.egressResult = egressResult
         self.attachments = attachments
         self.voiceMemo = voiceMemo
+        self.liveVoiceChat = liveVoiceChat
     }
 }
 

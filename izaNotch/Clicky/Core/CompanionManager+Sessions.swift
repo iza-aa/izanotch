@@ -146,7 +146,8 @@ extension CompanionManager {
             computerPayload: message.computerPayload,
             egressResult: message.egressResult ?? message.computerPayload?.egressResult,
             attachments: message.attachments,
-            voiceMemo: message.voiceMemo
+            voiceMemo: message.voiceMemo,
+            liveVoiceChat: message.liveVoiceChat
         )
         chatMessages.append(sanitizedMessage)
         if let payload = sanitizedMessage.computerPayload {
