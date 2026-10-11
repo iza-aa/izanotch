@@ -258,8 +258,83 @@ public final class CompanionRosterStore: ObservableObject {
         }
     }
 
+    /// Pin / Unpin companion to rail (PRD §A4, MT-25)
+    public func togglePin(id: UUID) {
+        guard let idx = allCompanions.firstIndex(where: { $0.id == id }) else { return }
+        withAnimation(.spring(response: 0.25, dampingFraction: 0.8)) {
+            allCompanions[idx].isPinnedToRail.toggle()
+            let pinned = allCompanions[idx].isPinnedToRail
+            if pinned {
+                presentedRailCompanionIds.insert(id)
+                dismissedCompanionIds.remove(id)
+            }
+        }
+        persist()
+        syncWithCompanionManager()
+        ClickyLogger.info("[ROSTER]", "Toggled pin for '\(allCompanions[idx].name)' -> \(allCompanions[idx].isPinnedToRail)")
+    }
+
+    /// Hide companion from rail/sidebar without deleting data (PRD §A4, MT-25)
+    public func hideCompanion(id: UUID) {
+        guard let idx = allCompanions.firstIndex(where: { $0.id == id }) else { return }
+        withAnimation(.spring(response: 0.25, dampingFraction: 0.8)) {
+            allCompanions[idx].isPinnedToRail = false
+            dismissedCompanionIds.insert(id)
+            presentedRailCompanionIds.remove(id)
+        }
+        persist()
+        syncWithCompanionManager()
+        ClickyLogger.info("[ROSTER]", "Hid companion '\(allCompanions[idx].name)' from rail.")
+    }
+
+    /// Duplicates a companion: copies profile, skills, and routines; DISCARDS history (PRD §A4, MT-25)
+    @discardableResult
+    public func duplicateCompanion(id: UUID) -> CompanionProfile? {
+        guard let original = allCompanions.first(where: { $0.id == id }) else { return nil }
+        let copySuffix = UUID().uuidString.prefix(4)
+        let copyName = "\(original.name) (Copy)"
+        let copySlug = "\(original.slug)-copy-\(copySuffix)"
+
+        // Profile copy: fresh messages, clean memory (history TIDAK ikut)
+        var copy = CompanionProfile(
+            id: UUID(),
+            slug: copySlug,
+            name: copyName,
+            role: original.role,
+            summary: original.summary,
+            cloudColorHex: original.cloudColorHex,
+            ringColorHex: original.ringColorHex,
+            status: .idle,
+            lastMessage: "",
+            activeSkills: original.activeSkills,
+            mdPath: "\(copySlug).md",
+            isPinnedToRail: true,
+            messages: [],
+            mood: original.mood,
+            templateId: original.templateId,
+            animationKey: original.animationKey,
+            currentExpressionKey: original.currentExpressionKey,
+            executionDomain: original.executionDomain,
+            workflowAppNames: original.workflowAppNames,
+            allowedSafariDomains: original.allowedSafariDomains,
+            safariTabAccessMode: original.safariTabAccessMode
+        )
+
+        allCompanions.insert(copy, at: 0)
+        CompanionWorkspaceManager.shared.ensureWorkspaceHierarchy(for: copySlug)
+        CompanionWorkspaceManager.shared.saveProfileJSON(for: copy)
+        persist()
+        syncWithCompanionManager()
+        selectCompanion(id: copy.id)
+
+        ClickyLogger.info("[ROSTER]", "Duplicated companion '\(original.name)' -> '\(copyName)' (history excluded per PRD §A4).")
+        return copy
+    }
+
     public func deleteCompanion(id: UUID) {
         guard allCompanions.count > 1 else { return }
+        let warningNotice = "Berkas pada direktori workspace komputer bot ini mungkin masih tersisa di disk."
+        ClickyLogger.warning("[ROSTER]", "Peringatan Hapus: \(warningNotice)")
         if let target = allCompanions.first(where: { $0.id == id }) {
             CompanionWorkspaceManager.shared.deleteCompanionWorkspace(slug: target.slug)
         }
@@ -270,9 +345,8 @@ public final class CompanionRosterStore: ObservableObject {
             persist()
             CompanionManager.shared.syncSessionsFromRoster(allCompanions, activeId: activeCompanionId)
         }
-        ClickyLogger.info("[ROSTER]", "Deleted companion: \(id)")
+        ClickyLogger.info("[ROSTER]", "Deleted companion: \(id). \(warningNotice)")
     }
-
     public func clearMessages(for id: UUID) {
         if let idx = allCompanions.firstIndex(where: { $0.id == id }) {
             allCompanions[idx].messages = []
