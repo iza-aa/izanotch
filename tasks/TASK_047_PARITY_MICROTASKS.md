@@ -97,13 +97,13 @@ Prasyarat masuk TASK-047: 8 skenario `scenarios.fasec.json` lulus + 8 bloker B1-
 
 ### FASE 8 — VOICE & COLLABORATION STACK (PRD §A7; sumber S2)
 
-| ID | [Tipe] | Scope | Baca | Bukti review |
-|---|---|---|---|---|
-| MT-28 | [UI] | Dictate + voice memo (rekam, play, transkrip di transcript) | S2-chat | Voice memo muncul di transcript dan bisa diputar |
-| MT-29 | [UI] | Voice chat live ("Start voice chat", kartu setelah selesai) | S2-chat | Sesi voice live berfungsi dan meninggalkan kartu |
-| MT-30 | [UI] | Search palette (Cmd+K: switch companion/cari pesan/file/link/routine) + shortcut set penuh | S2-chat | Palette menemukan bot/pesan/file/routine |
-| MT-31 | [UI] | Group chat 2-6 companion (outcome bersama, @-arah, reply = jawab bot itu, tanpa approval/secret di grup) | S2-group | Group chat berfungsi dengan aturan persis docs |
-| MT-32 | [non-UI] | Bot-to-bot handoff async terlihat di percakapan (satu owner per stage) + threads & reactions (reaction = acknowledgment saja) | S2-handoff | Handoff dan thread berfungsi; reaction tidak membawa instruksi |
+| ID | [Tipe] | Scope | Baca | Bukti review | Status |
+|---|---|---|---|---|---|
+| MT-28 | [UI] | Dictate + voice memo (rekam, play, transkrip di transcript) | S2-chat | Voice memo muncul di transcript dan bisa diputar | LULUS |
+| MT-29 | [UI] | Voice chat live ("Start voice chat", kartu setelah selesai) | S2-chat | Sesi voice live berfungsi dan meninggalkan kartu | LULUS |
+| MT-30 | [UI] | Search palette (Cmd+K: switch companion/cari pesan/file/link/routine) + shortcut set penuh | S2-chat | Palette menemukan bot/pesan/file/routine | LULUS |
+| MT-31 | [UI] | Group chat 2-6 companion (outcome bersama, @-arah, reply = jawab bot itu, tanpa approval/secret di grup) | S2-group | Group chat berfungsi dengan aturan persis docs | LULUS |
+| MT-32 | [non-UI] | Bot-to-bot handoff async terlihat di percakapan (satu owner per stage) + threads & reactions (reaction = acknowledgment saja) | S2-handoff | Handoff dan thread berfungsi; reaction tidak membawa instruksi | LULUS |
 
 ### FASE 9 — CONNECTORS PENUH & EKSTERNAL INGRESS (PRD §A15/G15, §A10; sumber S5, S3)
 
