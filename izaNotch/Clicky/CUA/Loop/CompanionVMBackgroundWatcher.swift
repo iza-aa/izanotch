@@ -100,8 +100,9 @@ public final class CompanionVMBackgroundWatcher: ObservableObject {
     /// Evaluates due automations from the store and dispatches them autonomously with a unique runId.
     public func evaluateAutomations() async {
         let isTakeover = await MainActor.run { CompanionVMViewportController.shared.isTakeoverActive }
-        guard !WebWorkspaceLoginWindowController.shared.isLoginWindowOpen && !isTakeover else {
-            ClickyLogger.info("[VM_WATCHER]", "[AUTOMATION_PARKED] Skipping automation evaluation: Web Workspace is currently awaiting login or active human takeover.")
+        let isTaskActive = await MainActor.run { CompanionManager.shared.activeE2ERunId != nil }
+        guard !WebWorkspaceLoginWindowController.shared.isLoginWindowOpen && !isTakeover && !isTaskActive else {
+            ClickyLogger.info("[VM_WATCHER]", "Automation parked: Web Workspace is currently awaiting login, active human takeover, or executing task.")
             return
         }
         let store = CompanionAutomationStore.shared

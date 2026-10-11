@@ -113,8 +113,8 @@ public final class CompanionVMViewportController: NSObject, ObservableObject, WK
         self.pageTitle = adapter.name
         wv.load(URLRequest(url: targetUrl))
         ClickyLogger.info("[VM_VIEWPORT]", "Loading real Mail interface: \(targetUrl.absoluteString)")
+        updateViewportLayout(width: 524, height: 340)
     }
-
     /// Resolves webmail provider dynamically via unified WebSiteAdapterRegistry (Zero Hardcoding).
     public static func resolveMailProvider(for companionSlug: String? = nil, prompt: String? = nil) -> String {
         let companionDomains: String = {
@@ -135,7 +135,7 @@ public final class CompanionVMViewportController: NSObject, ObservableObject, WK
         let targetWidth = max(width, 1024.0)
         let zoom: CGFloat = isModal ? 1.0 : (width < 1024.0 ? max(width / 1024.0, 0.65) : 1.0)
         wv.pageZoom = zoom
-        ClickyLogger.info("[WEB_VIEWPORT]", "Relayout triggered: container=(\(Int(width))x\(Int(height))), layoutWidth=\(Int(targetWidth)), zoom=\(String(format: "%.2f", zoom)), isModal=\(isModal)")
+        ClickyLogger.info("[WEB_VIEWPORT]", "layoutWidth=1024, zoom=\(String(format: "%.2f", zoom)), container=(\(Int(width))x\(Int(height))), isModal=\(isModal)")
     }
     public func loadSafariApp(urlString: String = "https://www.google.com") {
         guard let wv = webView else { return }
