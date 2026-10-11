@@ -37,6 +37,8 @@ struct HomeSpaceRootView: View {
     @State var activeComputerModalPayload: ComputerCardPayload? = nil
     @State var newBuddyPromptText: String = ""
     @ObservedObject var interviewEngine = CompanionInterviewEngine.shared
+    @State var stagedAttachments: [ChatAttachment] = []
+    @State var attachmentErrorMessage: String? = nil
 
     // Character Editing State
     @State var isEditingCharacter: Bool = false
@@ -370,18 +372,24 @@ struct HomeSpaceRootView: View {
         // Autonomous Task Decomposition Stage (AFM On-Device Reasoner)
         // Replaces all rigid hardcoded app keyword matching (isEmailAction, isSafariAction)
         ClickySoundEngine.shared.play(.send)
-        let userMsg = HomeSpaceChatMessage(isUser: true, text: clean)
+        let currentAttachments = stagedAttachments
+        stagedAttachments = []
+        let userMsg = HomeSpaceChatMessage(isUser: true, text: clean, attachments: currentAttachments)
         companion.appendChatMessage(userMsg)
         inputText = ""
         isTypingMode = false
 
         Task { @MainActor in
+            var promptWithContext = clean
+            if !currentAttachments.isEmpty {
+                let desc = currentAttachments.map { "\($0.fileName) (\($0.mimeType))" }.joined(separator: ", ")
+                promptWithContext += " [Attachments: \(desc)]"
+            }
             let plan = await AFMLunaCoordinationBridge.shared.deconstructTaskGoalWithAFM(
-                userPrompt: clean,
+                userPrompt: promptWithContext,
                 companionSlug: companion.activeBuddy.slug,
                 connectedApps: companion.activeBuddy.workflowAppNames
             )
-
             if plan.requiresCUA && !plan.isConversational {
                 let targetApp = (plan.targetAppName.isEmpty || plan.targetAppName.lowercased() == "none") ? (companion.activeBuddy.workflowAppNames.first ?? "Workspace") : plan.targetAppName
                 
@@ -504,4 +512,36 @@ struct HomeSpaceRootView: View {
         }
     }
 
+    func openAttachmentPicker() {
+        let panel = NSOpenPanel()
+        panel.allowsMultipleSelection = true
+        panel.canChooseDirectories = false
+        panel.canCreateDirectories = false
+        panel.title = "Pilih Berkas Lampiran"
+        panel.message = "Pilih hingga 6 berkas (maks 25MB, video 200MB)"
+        if panel.runModal() == .OK {
+            for url in panel.urls {
+                let res = AttachmentValidator.validate(url: url, currentCount: stagedAttachments.count)
+                if let att = res.attachment {
+                    stagedAttachments.append(att)
+                } else if let err = res.error {
+                    withAnimation(.spring(response: 0.25, dampingFraction: 0.8)) {
+                        attachmentErrorMessage = err
+                    }
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 4.0) {
+                        if attachmentErrorMessage == err {
+                            attachmentErrorMessage = nil
+                        }
+                    }
+                    break
+                }
+            }
+        }
+    }
+
+    func removeStagedAttachment(id: UUID) {
+        withAnimation(.spring(response: 0.2, dampingFraction: 0.8)) {
+            stagedAttachments.removeAll(where: { $0.id == id })
+        }
+    }
 }

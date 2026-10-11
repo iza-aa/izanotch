@@ -126,10 +126,10 @@ extension CompanionManager {
 
     public func appendChatMessage(_ message: HomeSpaceChatMessage) {
         let cleanText = Self.stripTechnicalTags(from: message.text)
-        guard !cleanText.isEmpty || message.computerPayload != nil else { return }
-        
+        guard !cleanText.isEmpty || message.computerPayload != nil || !message.attachments.isEmpty else { return }
+
         // Anti-duplicate guard: ignore identical user message submitted within 2.0s
-        if message.isUser, let last = chatMessages.last, last.isUser && last.text == cleanText && abs(last.timestamp.timeIntervalSince(message.timestamp)) < 2.0 {
+        if message.isUser, let last = chatMessages.last, last.isUser && last.text == cleanText && abs(last.timestamp.timeIntervalSince(message.timestamp)) < 2.0 && message.attachments.isEmpty {
             return
         }
 
@@ -144,7 +144,8 @@ extension CompanionManager {
             text: cleanText,
             timestamp: message.timestamp,
             computerPayload: message.computerPayload,
-            egressResult: message.egressResult ?? message.computerPayload?.egressResult
+            egressResult: message.egressResult ?? message.computerPayload?.egressResult,
+            attachments: message.attachments
         )
         chatMessages.append(sanitizedMessage)
         if let payload = sanitizedMessage.computerPayload {

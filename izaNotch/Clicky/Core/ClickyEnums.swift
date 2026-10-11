@@ -94,6 +94,87 @@ public struct ComputerCardPayload: Codable, Equatable, Sendable {
     }
 }
 
+public struct ChatAttachment: Identifiable, Codable, Equatable, Sendable {
+    public let id: UUID
+    public let fileName: String
+    public let fileURLString: String
+    public let fileSize: Int64
+    public let mimeType: String
+    public let isVideo: Bool
+
+    public init(
+        id: UUID = UUID(),
+        fileName: String,
+        fileURLString: String,
+        fileSize: Int64,
+        mimeType: String,
+        isVideo: Bool = false
+    ) {
+        self.id = id
+        self.fileName = fileName
+        self.fileURLString = fileURLString
+        self.fileSize = fileSize
+        self.mimeType = mimeType
+        self.isVideo = isVideo
+    }
+}
+
+public struct AttachmentValidator: Sendable {
+    public static let maxAttachments = 6
+    public static let maxStandardSizeBytes: Int64 = 25 * 1024 * 1024 // 25MB
+    public static let maxVideoSizeBytes: Int64 = 200 * 1024 * 1024 // 200MB
+
+    public static let supportedExtensions: Set<String> = [
+        "png", "jpg", "jpeg", "gif", "webp", "heic", "svg", "bmp",
+        "mp4", "mov", "m4v", "webm", "mkv", "avi",
+        "mp3", "m4a", "wav", "aac", "flac", "ogg",
+        "pdf", "doc", "docx", "ppt", "pptx", "xls", "xlsx", "txt", "rtf", "pages", "numbers", "key",
+        "csv", "tsv", "json", "yaml", "yml", "xml",
+        "swift", "py", "js", "ts", "html", "css", "sh", "c", "cpp", "h", "go", "rs", "rb", "php", "ipynb", "md",
+        "eml", "msg"
+    ]
+
+    public static let videoExtensions: Set<String> = [
+        "mp4", "mov", "m4v", "webm", "mkv", "avi"
+    ]
+
+    public static func validate(url: URL, currentCount: Int) -> (isValid: Bool, error: String?, attachment: ChatAttachment?) {
+        let name = url.lastPathComponent
+        let ext = url.pathExtension.lowercased()
+
+        if currentCount >= maxAttachments {
+            return (false, "Maksimal \(maxAttachments) lampiran per pesan.", nil)
+        }
+
+        if !supportedExtensions.contains(ext) {
+            return (false, "Tipe berkas '.\(ext)' tidak didukung.", nil)
+        }
+
+        let attrs = (try? FileManager.default.attributesOfItem(atPath: url.path)) ?? [:]
+        let size = (attrs[.size] as? Int64) ?? 0
+        let isVideo = videoExtensions.contains(ext)
+
+        let limit = isVideo ? maxVideoSizeBytes : maxStandardSizeBytes
+        if size > limit {
+            let formattedSize = ByteCountFormatter.string(fromByteCount: size, countStyle: .file)
+            let limitStr = isVideo ? "200MB" : "25MB"
+            let msg = isVideo
+                ? "Ukuran video '\(name)' melebihi batas \(limitStr) (\(formattedSize))."
+                : "Ukuran berkas '\(name)' melebihi batas \(limitStr) (\(formattedSize))."
+            return (false, msg, nil)
+        }
+
+        let att = ChatAttachment(
+            fileName: name,
+            fileURLString: url.path,
+            fileSize: size,
+            mimeType: ext,
+            isVideo: isVideo
+        )
+        return (true, nil, att)
+    }
+}
+
 public struct HomeSpaceChatMessage: Identifiable, Codable, Equatable {
     public let id: UUID
     public let isUser: Bool
@@ -101,6 +182,7 @@ public struct HomeSpaceChatMessage: Identifiable, Codable, Equatable {
     public let timestamp: Date
     public var computerPayload: ComputerCardPayload?
     public var egressResult: EgressResult?
+    public var attachments: [ChatAttachment]
 
     public init(
         id: UUID = UUID(),
@@ -108,7 +190,8 @@ public struct HomeSpaceChatMessage: Identifiable, Codable, Equatable {
         text: String,
         timestamp: Date = Date(),
         computerPayload: ComputerCardPayload? = nil,
-        egressResult: EgressResult? = nil
+        egressResult: EgressResult? = nil,
+        attachments: [ChatAttachment] = []
     ) {
         self.id = id
         self.isUser = isUser
@@ -116,6 +199,7 @@ public struct HomeSpaceChatMessage: Identifiable, Codable, Equatable {
         self.timestamp = timestamp
         self.computerPayload = computerPayload
         self.egressResult = egressResult
+        self.attachments = attachments
     }
 }
 

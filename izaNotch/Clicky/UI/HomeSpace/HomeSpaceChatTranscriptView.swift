@@ -118,9 +118,29 @@ extension HomeSpaceRootView {
                                         if message.isUser {
                                             HStack {
                                                 Spacer()
-                                                Text(message.text)
-                                                    .font(.system(size: 13, weight: .medium))
-                                                    .foregroundColor(Color(hex: "#0C1D38"))
+                                                VStack(alignment: .trailing, spacing: 6) {
+                                                    if !message.attachments.isEmpty {
+                                                        HStack(spacing: 5) {
+                                                            ForEach(message.attachments) { att in
+                                                                HStack(spacing: 4) {
+                                                                    Image(systemName: att.isVideo ? "video.fill" : "paperclip")
+                                                                        .font(.system(size: 9.5))
+                                                                    Text(att.fileName)
+                                                                        .font(.system(size: 10.5, weight: .medium))
+                                                                        .lineLimit(1)
+                                                                }
+                                                                .padding(.horizontal, 7)
+                                                                .padding(.vertical, 3.5)
+                                                                .background(Capsule().fill(Color.black.opacity(0.15)))
+                                                            }
+                                                        }
+                                                    }
+                                                    if !message.text.isEmpty {
+                                                        Text(message.text)
+                                                            .font(.system(size: 13, weight: .medium))
+                                                            .foregroundColor(Color(hex: "#0C1D38"))
+                                                    }
+                                                }
                                                 .padding(.horizontal, 14)
                                                 .padding(.vertical, 10)
                                                 .background(
@@ -191,6 +211,24 @@ extension HomeSpaceRootView {
                                                             isTypingMode = true
                                                         }
                                                         .id("deliverable-\(deliv.id)-\(message.id)")
+                                                    }
+                                                }
+
+                                                if !message.attachments.isEmpty {
+                                                    HStack(spacing: 6) {
+                                                        ForEach(message.attachments) { att in
+                                                            HStack(spacing: 4) {
+                                                                Image(systemName: att.isVideo ? "video.fill" : "paperclip")
+                                                                    .font(.system(size: 10))
+                                                                    .foregroundStyle(Color(hex: "#38BDF8"))
+                                                                Text(att.fileName)
+                                                                    .font(.system(size: 11, weight: .medium))
+                                                                    .foregroundStyle(.white)
+                                                            }
+                                                            .padding(.horizontal, 8)
+                                                            .padding(.vertical, 4)
+                                                            .background(Capsule().fill(Color.white.opacity(0.08)))
+                                                        }
                                                     }
                                                 }
 
@@ -395,19 +433,77 @@ extension HomeSpaceRootView {
                                 .buttonStyle(.plain)
                                 .help(companion.buddyDictationManager.isRecordingFromMicrophoneButton ? "Click to stop recording" : "Click to dictate voice or hold Control + Option")
 
-                                // Input Pill (Foto 1)
-                                HStack(spacing: 8) {
-                                    Button(action: {
-                                        ClickySoundEngine.shared.play(.open)
-                                    }) {
-                                        Image(systemName: "paperclip")
-                                            .font(.system(size: 12, weight: .semibold))
-                                            .foregroundColor(.white.opacity(0.55))
-                                            .padding(6)
-                                            .background(Circle().fill(Color.white.opacity(0.06)))
+                                // Input Pill & Staged Attachments (MT-03)
+                                VStack(alignment: .leading, spacing: 4) {
+                                    if let err = attachmentErrorMessage {
+                                        HStack(spacing: 6) {
+                                            Image(systemName: "exclamationmark.triangle.fill")
+                                                .font(.system(size: 11))
+                                                .foregroundStyle(Color(hex: "#F59E0B"))
+                                            Text(err)
+                                                .font(.system(size: 11, weight: .medium))
+                                                .foregroundStyle(.white)
+                                            Spacer()
+                                            Button(action: { attachmentErrorMessage = nil }) {
+                                                Image(systemName: "xmark")
+                                                    .font(.system(size: 9, weight: .bold))
+                                                    .foregroundStyle(.white.opacity(0.6))
+                                            }
+                                            .buttonStyle(.plain)
+                                        }
+                                        .padding(.horizontal, 10)
+                                        .padding(.vertical, 5)
+                                        .background(
+                                            Capsule().fill(Color(hex: "#F59E0B").opacity(0.18))
+                                                .overlay(Capsule().stroke(Color(hex: "#F59E0B").opacity(0.35), lineWidth: 0.8))
+                                        )
+                                        .padding(.bottom, 2)
                                     }
-                                    .buttonStyle(.plain)
 
+                                    if !stagedAttachments.isEmpty {
+                                        ScrollView(.horizontal, showsIndicators: false) {
+                                            HStack(spacing: 6) {
+                                                ForEach(stagedAttachments) { att in
+                                                    HStack(spacing: 5) {
+                                                        Image(systemName: att.isVideo ? "video.fill" : "doc.fill")
+                                                            .font(.system(size: 10))
+                                                            .foregroundStyle(Color(hex: "#38BDF8"))
+                                                        Text(att.fileName)
+                                                            .font(.system(size: 11, weight: .medium))
+                                                            .foregroundStyle(.white)
+                                                            .lineLimit(1)
+                                                        Button(action: { removeStagedAttachment(id: att.id) }) {
+                                                            Image(systemName: "xmark.circle.fill")
+                                                                .font(.system(size: 10))
+                                                                .foregroundStyle(.white.opacity(0.6))
+                                                        }
+                                                        .buttonStyle(.plain)
+                                                    }
+                                                    .padding(.horizontal, 8)
+                                                    .padding(.vertical, 4)
+                                                    .background(
+                                                        Capsule().fill(Color.white.opacity(0.08))
+                                                            .overlay(Capsule().stroke(Color.white.opacity(0.12), lineWidth: 0.6))
+                                                    )
+                                                }
+                                            }
+                                            .padding(.bottom, 2)
+                                        }
+                                    }
+
+                                    HStack(spacing: 8) {
+                                        Button(action: {
+                                            ClickySoundEngine.shared.play(.open)
+                                            openAttachmentPicker()
+                                        }) {
+                                            Image(systemName: "paperclip")
+                                                .font(.system(size: 12, weight: .semibold))
+                                                .foregroundStyle(stagedAttachments.isEmpty ? Color.white.opacity(0.55) : Color(hex: "#38BDF8"))
+                                                .padding(6)
+                                                .background(Circle().fill(Color.white.opacity(stagedAttachments.isEmpty ? 0.06 : 0.15)))
+                                        }
+                                        .buttonStyle(.plain)
+                                        .help("Lampirkan berkas (maks 6 berkas, 25MB, video 200MB)")
                                     TextField("Message \(companion.activeBuddy.name)...", text: $inputText)
                                         .textFieldStyle(.plain)
                                         .font(.system(size: 13, weight: .regular))
@@ -477,6 +573,7 @@ extension HomeSpaceRootView {
                                         )
                                 )
                             }
+                        }
 
                             // Microtext below input (Foto 1)
                             HStack {
