@@ -635,3 +635,87 @@ public final class AutoReviewRuleEngine: @unchecked Sendable {
         }
     }
 }
+// MARK: - LocalExecutionPolicyEngine (PRD §A5, §A12, MT-20: Local Execution Governance)
+
+public enum LocalExecutionPolicy: String, Codable, CaseIterable, Sendable {
+    case askEveryTime = "ask_every_time" // Default
+    case never = "never"                 // Recommended for strict host security
+    case always = "always"
+}
+
+public final class LocalExecutionPolicyEngine: @unchecked Sendable {
+    public static let shared = LocalExecutionPolicyEngine()
+
+    private let lock = NSLock()
+    public private(set) var currentPolicy: LocalExecutionPolicy = .askEveryTime
+    private let policyFileURL: URL
+
+    private init() {
+        let home = FileManager.default.homeDirectoryForCurrentUser
+        let baseDir = home.appendingPathComponent(".izanotchy", isDirectory: true)
+        try? FileManager.default.createDirectory(at: baseDir, withIntermediateDirectories: true)
+        self.policyFileURL = baseDir.appendingPathComponent("local_execution_policy.json")
+        restorePolicy()
+    }
+
+    public func setPolicy(_ policy: LocalExecutionPolicy) {
+        lock.lock()
+        currentPolicy = policy
+        lock.unlock()
+        savePolicy()
+        ClickyLogger.info("[LOCAL_EXEC]", "Local execution policy updated to '\(policy.rawValue)' (per-computer setting)")
+    }
+
+    /// Evaluates if a local shell/terminal command is permitted to execute
+    public func evaluateExecution(command: String, hasExplicitApproval: Bool) -> (allowed: Bool, reason: String) {
+        lock.lock()
+        let policy = currentPolicy
+        lock.unlock()
+
+        switch policy {
+        case .never:
+            let reason = "Local execution policy is set to 'Never'. Command execution permanently forbidden."
+            ClickyLogger.warning("[LOCAL_EXEC]", "Command '\(command.prefix(60))' REJECTED: \(reason)")
+            return (false, reason)
+
+        case .askEveryTime:
+            if hasExplicitApproval {
+                let reason = "Command permitted via explicit user approval under 'Ask every time' policy."
+                ClickyLogger.info("[LOCAL_EXEC]", "Command '\(command.prefix(60))' ALLOWED: \(reason)")
+                return (true, reason)
+            } else {
+                let reason = "Local execution policy requires explicit user approval ('Ask every time'). Approval missing."
+                ClickyLogger.warning("[LOCAL_EXEC]", "Command '\(command.prefix(60))' REJECTED: \(reason)")
+                return (false, reason)
+            }
+
+        case .always:
+            let reason = "Command permitted under 'Always' local execution policy."
+            ClickyLogger.info("[LOCAL_EXEC]", "Command '\(command.prefix(60))' ALLOWED: \(reason)")
+            return (true, reason)
+        }
+    }
+
+    private func savePolicy() {
+        lock.lock()
+        let p = currentPolicy
+        lock.unlock()
+        if let data = try? JSONEncoder().encode(["policy": p.rawValue]) {
+            try? data.write(to: policyFileURL, options: .atomic)
+        }
+    }
+
+    private func restorePolicy() {
+        guard FileManager.default.fileExists(atPath: policyFileURL.path),
+              let data = try? Data(contentsOf: policyFileURL),
+              let dict = try? JSONSerialization.jsonObject(with: data) as? [String: String],
+              let raw = dict["policy"],
+              let p = LocalExecutionPolicy(rawValue: raw) else {
+            return
+        }
+        lock.lock()
+        currentPolicy = p
+        lock.unlock()
+        ClickyLogger.info("[LOCAL_EXEC]", "Restored local execution policy from disk: '\(p.rawValue)'")
+    }
+}
