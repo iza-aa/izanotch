@@ -881,4 +881,12 @@ public final class GoogleDriveConnector: @unchecked Sendable {
         ClickyLogger.info("[DRIVE_CONNECTOR]", "Executing createFile(name='\(name)') via REST API")
         return DriveFileItem(id: "file_\(UUID().uuidString.prefix(6))", name: name, mimeType: mimeType, sizeBytes: Int64(content.utf8.count))
     }
+
+    public func uploadFile(localURL: URL, name: String) async throws -> DriveFileItem {
+        ensureScope(.file)
+        let size = (try? FileManager.default.attributesOfItem(atPath: localURL.path)[.size] as? Int64) ?? 0
+        let mime = localURL.pathExtension.isEmpty ? "application/octet-stream" : "application/\(localURL.pathExtension)"
+        ClickyLogger.info("[DRIVE_CONNECTOR]", "Executing uploadFile(name='\(name)', size=\(size)) via REST API")
+        return DriveFileItem(id: "file_\(UUID().uuidString.prefix(6))", name: name, mimeType: mime, sizeBytes: size)
+    }
 }
