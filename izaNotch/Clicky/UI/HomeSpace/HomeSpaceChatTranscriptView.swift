@@ -29,28 +29,6 @@ extension HomeSpaceRootView {
                     HStack {
                         Spacer()
 
-                        // Start Live Voice Chat Button (MT-29)
-                        Button(action: {
-                            LiveVoiceChatManager.shared.toggleLiveVoiceChat(companionSlug: companion.activeBuddy.slug)
-                        }) {
-                            HStack(spacing: 5) {
-                                Image(systemName: LiveVoiceChatManager.shared.isCallActive ? "phone.down.fill" : "phone.fill")
-                                    .font(.system(size: 10, weight: .bold))
-                                    .foregroundStyle(LiveVoiceChatManager.shared.isCallActive ? Color(hex: "#EF4444") : Color(hex: "#38BDF8"))
-                                Text(LiveVoiceChatManager.shared.isCallActive ? "Akhiri Panggilan" : "Voice Chat")
-                                    .font(.system(size: 11, weight: .semibold))
-                                    .foregroundStyle(.white)
-                            }
-                            .padding(.horizontal, 9)
-                            .padding(.vertical, 4.5)
-                            .background(
-                                Capsule().fill(LiveVoiceChatManager.shared.isCallActive ? Color(hex: "#EF4444").opacity(0.18) : Color.white.opacity(0.08))
-                                    .overlay(Capsule().stroke(LiveVoiceChatManager.shared.isCallActive ? Color(hex: "#EF4444").opacity(0.4) : Color.white.opacity(0.12), lineWidth: 0.8))
-                            )
-                        }
-                        .buttonStyle(.plain)
-                        .help(LiveVoiceChatManager.shared.isCallActive ? "Akhiri sesi voice chat langsung" : "Mulai sesi voice chat langsung dengan \(companion.activeBuddy.name)")
-
                         // Top-Right Action Buttons (Close Only — Expand Eliminated)
                         Button(action: {
                             ClickySoundEngine.shared.play(.close)
@@ -262,10 +240,6 @@ extension HomeSpaceRootView {
                                                         .id("voice-memo-\(message.id)")
                                                 }
 
-                                                if let lvc = message.liveVoiceChat {
-                                                    HomeSpaceLiveVoiceChatCardView(sessionData: lvc)
-                                                        .id("live-voice-chat-\(message.id)")
-                                                }
                                                 if !message.text.isEmpty {
                                                     MarkdownFormattedMessageView(text: message.text)
                                                 }
