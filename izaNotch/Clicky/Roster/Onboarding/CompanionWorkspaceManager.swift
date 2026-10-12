@@ -790,11 +790,36 @@ public final class OutlookConnector: @unchecked Sendable {
             throw NSError(domain: "OutlookError", code: 403, userInfo: [NSLocalizedDescriptionKey: "Scope 'Mail.Read' required"])
         }
         ClickyLogger.info("[OUTLOOK_CONNECTOR]", "Executing readTopMessages(count=\(count)) via Microsoft Graph API")
-        return [
-            OutlookMessageItem(id: "olk_msg_1", senderEmail: "lead@enterprise.com", subject: "Sync Mingguan Outlook", bodySnippet: "Berikut update alur kerja integrasi Microsoft Graph.", receivedDateTime: "2026-10-12T09:15:00Z"),
-            OutlookMessageItem(id: "olk_msg_2", senderEmail: "admin@corp.onmicrosoft.com", subject: "Microsoft 365 Security Notice", bodySnippet: "Aktivitas login perangkat macOS baru terverifikasi.", receivedDateTime: "2026-10-11T16:20:00Z"),
-            OutlookMessageItem(id: "olk_msg_3", senderEmail: "finance@corp.com", subject: "Faktur Pembayaran Q3", bodySnippet: "Lampiran dokumen invoice dan rekonsiliasi.", receivedDateTime: "2026-10-10T12:00:00Z")
-        ]
+
+        guard let url = URL(string: "https://graph.microsoft.com/v1.0/me/mailFolders/inbox/messages?$top=\(count)") else { return [] }
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        if let token = SecretsVault.shared.getSecret(name: "OUTLOOK_TOKEN") {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+
+        do {
+            let (data, response) = try await URLSession.shared.data(for: request)
+            if let httpRes = response as? HTTPURLResponse, httpRes.statusCode == 200,
+               let json = (try? JSONSerialization.jsonObject(with: data)) as? [String: Any],
+               let value = json["value"] as? [[String: Any]] {
+                return value.compactMap { d -> OutlookMessageItem? in
+                    guard let id = d["id"] as? String, let subject = d["subject"] as? String else { return nil }
+                    let fromDict = d["from"] as? [String: Any]
+                    let emailDict = fromDict?["emailAddress"] as? [String: String]
+                    return OutlookMessageItem(
+                        id: id,
+                        senderEmail: emailDict?["address"] ?? "outlook_user",
+                        subject: subject,
+                        bodySnippet: d["bodyPreview"] as? String ?? "",
+                        receivedDateTime: d["receivedDateTime"] as? String ?? ISO8601DateFormatter().string(from: Date())
+                    )
+                }
+            }
+        } catch {
+            ClickyLogger.warning("[OUTLOOK_CONNECTOR]", "Microsoft Graph request failed or offline: \(error.localizedDescription)")
+        }
+        return []
     }
 
     public func createDraft(to: String, subject: String, body: String) async throws -> OutlookMessageItem {
@@ -812,9 +837,36 @@ public final class OutlookConnector: @unchecked Sendable {
     public func listCalendarEvents() async throws -> [OutlookCalendarEvent] {
         ensureScope(.calendarsReadWrite)
         ClickyLogger.info("[OUTLOOK_CONNECTOR]", "Executing listCalendarEvents via Microsoft Graph API")
-        return [
-            OutlookCalendarEvent(id: "olk_evt_1", subject: "Quarterly Strategy", startISO: "2026-10-12T11:00:00Z", endISO: "2026-10-12T12:00:00Z", responseStatus: "accepted")
-        ]
+
+        guard let url = URL(string: "https://graph.microsoft.com/v1.0/me/calendar/events") else { return [] }
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        if let token = SecretsVault.shared.getSecret(name: "OUTLOOK_TOKEN") {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+
+        do {
+            let (data, response) = try await URLSession.shared.data(for: request)
+            if let httpRes = response as? HTTPURLResponse, httpRes.statusCode == 200,
+               let json = (try? JSONSerialization.jsonObject(with: data)) as? [String: Any],
+               let value = json["value"] as? [[String: Any]] {
+                return value.compactMap { d -> OutlookCalendarEvent? in
+                    guard let id = d["id"] as? String, let subject = d["subject"] as? String else { return nil }
+                    let startDict = d["start"] as? [String: String]
+                    let endDict = d["end"] as? [String: String]
+                    return OutlookCalendarEvent(
+                        id: id,
+                        subject: subject,
+                        startISO: startDict?["dateTime"] ?? ISO8601DateFormatter().string(from: Date()),
+                        endISO: endDict?["dateTime"] ?? ISO8601DateFormatter().string(from: Date()),
+                        responseStatus: d["responseStatus"] as? String ?? "accepted"
+                    )
+                }
+            }
+        } catch {
+            ClickyLogger.warning("[OUTLOOK_CONNECTOR]", "Graph calendar request failed or offline: \(error.localizedDescription)")
+        }
+        return []
     }
 }
 // MARK: - Custom MCP Connector (PRD §A8, §A15, S5-mcp, MT-36)
@@ -878,16 +930,10 @@ public final class CustomMCPConnector: @unchecked Sendable {
         }
         lock.unlock()
 
-        let rawServerTools = [
-            MCPToolDefinition(name: "\(serverLabel)_search", description: "Performs query search on server"),
-            MCPToolDefinition(name: "\(serverLabel)_get_item", description: "Fetches item details from server"),
-            MCPToolDefinition(name: "\(serverLabel)_admin_reset", description: "Administrative reset tool")
-        ]
-
-        if config.allowedTools.isEmpty {
-            return rawServerTools
+        // Tools are dynamically derived strictly from registered configuration, ZERO fantasy fallback data!
+        return config.allowedTools.map { toolName in
+            MCPToolDefinition(name: toolName, description: "Tool dynamically registered for server '\(serverLabel)'")
         }
-        return rawServerTools.filter { config.allowedTools.contains($0.name) }
     }
 
     public func callTool(serverLabel: String, toolName: String, arguments: [String: Any]) async throws -> String {

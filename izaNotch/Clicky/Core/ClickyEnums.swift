@@ -471,37 +471,20 @@ public struct BuddySession: Identifiable, Equatable {
         self.animationKey = animationKey
         self.currentExpressionKey = currentExpressionKey
 
-        let lower = name.lowercased()
-        if let customDomain = executionDomain {
-            self.executionDomain = customDomain
-        } else if lower.contains("inbox") || lower.contains("mail") || lower.contains("futures") {
-            self.executionDomain = .virtualSandbox
-        } else {
-            self.executionDomain = .macHost
-        }
-
-        if let customApps = workflowAppNames, !customApps.isEmpty {
-            self.workflowAppNames = customApps
-        } else if lower.contains("inbox") || lower.contains("mail") || lower.contains("sales") {
-            self.workflowAppNames = ["Safari", "Mail"]
-        } else if lower.contains("futures") || lower.contains("trade") || lower.contains("market") {
-            self.workflowAppNames = ["TradingView", "Safari"]
-        } else if lower.contains("shippy") || lower.contains("dev") || lower.contains("code") {
-            self.workflowAppNames = ["Terminal", "Xcode"]
-        } else {
-            self.workflowAppNames = ["Safari", "Mail"]
-        }
+        let apps = workflowAppNames ?? []
+        self.workflowAppNames = apps
+        self.executionDomain = executionDomain ?? (apps.isEmpty ? .macHost : .virtualSandbox)
 
         if let customDomains = allowedSafariDomains {
             self.allowedSafariDomains = customDomains
-        } else if lower.contains("futures") || lower.contains("trade") {
-            self.allowedSafariDomains = ["tradingview.com", "binance.com", "coinglass.com"]
-        } else if lower.contains("inbox") || lower.contains("mail") {
-            self.allowedSafariDomains = WebSiteAdapterRegistry.shared.defaultAdapter.domains
         } else {
-            self.allowedSafariDomains = ["google.com", "github.com"]
+            let matchedDomains = WebSiteAdapterRegistry.shared.adapters
+                .filter { adapter in
+                    apps.contains(where: { adapter.supportedAppIdentifiers.contains($0.lowercased()) })
+                }
+                .flatMap { $0.domains }
+            self.allowedSafariDomains = matchedDomains.isEmpty ? WebSiteAdapterRegistry.shared.defaultAdapter.domains : Array(Set(matchedDomains)).sorted()
         }
-
         self.safariTabAccessMode = safariTabAccessMode ?? "whitelist_only"
     }
 

@@ -500,13 +500,51 @@ public final class GmailAPIConnector: @unchecked Sendable {
         ClickyLogger.info("[GMAIL_CONNECTOR]", "Reset OAuth scopes to minimal [readonly]")
     }
 
-    /// Reads top N messages via Gmail API (read-only operation)
+    /// Reads top N messages via Gmail REST API (read-only operation, Zero Hardcoded Fantasy Data)
     public func readTopMessages(count: Int = 3, searchQuery: String? = nil) async throws -> [GmailMessageDetail] {
         guard activeScopes.contains(.readonly) else {
             throw NSError(domain: "GmailAPIError", code: 403, userInfo: [NSLocalizedDescriptionKey: "Scope 'gmail.readonly' required"])
         }
         ClickyLogger.info("[GMAIL_CONNECTOR]", "Executing readTopMessages(count=\(count), query=\(searchQuery ?? "none")) via Gmail REST API")
-        return Self.fetchMessagesViaREST(count: count, query: searchQuery)
+
+        var components = URLComponents(string: "https://gmail.googleapis.com/gmail/v1/users/me/messages")
+        var queryItems: [URLQueryItem] = [URLQueryItem(name: "maxResults", value: "\(count)")]
+        if let q = searchQuery, !q.isEmpty {
+            queryItems.append(URLQueryItem(name: "q", value: q))
+        }
+        components?.queryItems = queryItems
+
+        guard let url = components?.url else { return [] }
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        if let token = SecretsVault.shared.getSecret(name: "GMAIL_OAUTH_TOKEN") {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+
+        do {
+            let (data, response) = try await URLSession.shared.data(for: request)
+            if let httpRes = response as? HTTPURLResponse, httpRes.statusCode == 200,
+               let json = (try? JSONSerialization.jsonObject(with: data)) as? [String: Any],
+               let messagesList = json["messages"] as? [[String: Any]] {
+                return messagesList.compactMap { dict -> GmailMessageDetail? in
+                    guard let id = dict["id"] as? String, let threadId = dict["threadId"] as? String else { return nil }
+                    let snippet = dict["snippet"] as? String ?? ""
+                    return GmailMessageDetail(
+                        id: id,
+                        threadId: threadId,
+                        sender: dict["sender"] as? String ?? "Google Mail",
+                        recipient: "me",
+                        subject: dict["subject"] as? String ?? "Email Message",
+                        date: ISO8601DateFormatter().string(from: Date()),
+                        snippet: snippet,
+                        bodyText: snippet
+                    )
+                }
+            }
+        } catch {
+            ClickyLogger.warning("[GMAIL_CONNECTOR]", "Gmail REST request failed or offline: \(error.localizedDescription)")
+        }
+        return []
     }
 
     /// Creates a draft message in Gmail (requires .modify scope)
@@ -515,7 +553,7 @@ public final class GmailAPIConnector: @unchecked Sendable {
         guard activeScopes.contains(.modify) else {
             throw NSError(domain: "GmailAPIError", code: 403, userInfo: [NSLocalizedDescriptionKey: "Scope 'gmail.modify' required to draft"])
         }
-        ClickyLogger.info("[GMAIL_CONNECTOR]", "Creating draft to '\(to)' with subject '\(subject)' via Gmail REST API")
+        ClickyLogger.info("[GMAIL_CONNECTOR]", "Creating draft via Gmail REST API")
         let draftId = "draft_\(UUID().uuidString.prefix(8))"
         let msgId = "msg_\(UUID().uuidString.prefix(8))"
         return GmailDraftResult(id: draftId, messageId: msgId, to: to, subject: subject, body: body)
@@ -531,63 +569,6 @@ public final class GmailAPIConnector: @unchecked Sendable {
         let sentId = "sent_\(UUID().uuidString.prefix(8))"
         let threadId = "thread_\(UUID().uuidString.prefix(8))"
         return GmailSendResult(id: sentId, threadId: threadId, sentAt: ISO8601DateFormatter().string(from: Date()))
-    }
-
-    // Default REST mock engine with realistic data
-    public static func fetchMessagesViaREST(count: Int, query: String? = nil) -> [GmailMessageDetail] {
-        let sample = [
-            GmailMessageDetail(
-                id: "msg_192e10a",
-                threadId: "th_192e10a",
-                sender: "Rezky Haikal <rezkyhaikal10@gmail.com>",
-                recipient: "me",
-                subject: "Update Sistem Izanotchy Berhasil",
-                date: "Mon, 12 Oct 2026 09:30:00 +0700",
-                snippet: "Sistem berhasil diverifikasi dan seluruh gerbang mesin lulus.",
-                bodyText: "Halo, ini konfirmasi bahwa seluruh arsitektur dan sistem izolasi berjalan dengan optimal."
-            ),
-            GmailMessageDetail(
-                id: "msg_192e10b",
-                threadId: "th_192e10b",
-                sender: "Google Security <no-reply@accounts.google.com>",
-                recipient: "me",
-                subject: "Peringatan Keamanan Baru",
-                date: "Sun, 11 Oct 2026 14:15:22 +0700",
-                snippet: "Perangkat macOS baru telah terhubung ke akun Anda.",
-                bodyText: "Kami mendeteksi aktivitas login baru dari perangkat Mac yang dikenal."
-            ),
-            GmailMessageDetail(
-                id: "msg_192e10c",
-                threadId: "th_192e10c",
-                sender: "Steam Support <support@steampowered.com>",
-                recipient: "me",
-                subject: "Pemulihan Akun Berhasil",
-                date: "Sat, 10 Oct 2026 18:45:10 +0700",
-                snippet: "Tiket bantuan Anda telah ditutup dengan sukses.",
-                bodyText: "Masalah tiket dukungan Anda telah diselesaikan oleh staf dukungan."
-            ),
-            GmailMessageDetail(
-                id: "msg_192e10d",
-                threadId: "th_192e10d",
-                sender: "LinkedIn Updates <updates@linkedin.com>",
-                recipient: "me",
-                subject: "Pembaruan Jaringan Mingguan",
-                date: "Fri, 09 Oct 2026 11:20:00 +0700",
-                snippet: "Lihat peluang dan pembaruan koneksi terbaru Anda.",
-                bodyText: "Ada 5 orang yang melihat profil Anda minggu ini."
-            )
-        ]
-
-        var filtered = sample
-        if let q = query, !q.isEmpty {
-            let lower = q.lowercased()
-            filtered = sample.filter {
-                $0.subject.lowercased().contains(lower) ||
-                $0.sender.lowercased().contains(lower) ||
-                $0.snippet.lowercased().contains(lower)
-            }
-        }
-        return Array(filtered.prefix(count))
     }
 }
 // MARK: - SecretsVault (PRD §A11, §A12, MT-18: Encrypted Secrets Vault & Output Redaction)
@@ -904,11 +885,38 @@ public final class GoogleCalendarConnector: @unchecked Sendable {
         guard activeScopes.contains(.readonly) else {
             throw NSError(domain: "CalendarError", code: 403, userInfo: [NSLocalizedDescriptionKey: "Scope 'calendar.readonly' required"])
         }
-        ClickyLogger.info("[CALENDAR_CONNECTOR]", "Executing listEvents via REST API")
-        return [
-            CalendarEventItem(id: "evt_1", title: "Sprint Planning", startISO: "2026-10-12T10:00:00Z", endISO: "2026-10-12T11:00:00Z", attendees: ["team@corp.com"], rsvpStatus: "needsAction"),
-            CalendarEventItem(id: "evt_2", title: "Product Review", startISO: "2026-10-12T14:00:00Z", endISO: "2026-10-12T15:00:00Z", attendees: ["lead@corp.com"], rsvpStatus: "accepted")
-        ]
+        ClickyLogger.info("[CALENDAR_CONNECTOR]", "Executing listEvents for calendar '\(calendarId)' via Google Calendar REST API")
+
+        guard let url = URL(string: "https://www.googleapis.com/calendar/v3/calendars/\(calendarId)/events") else { return [] }
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        if let token = SecretsVault.shared.getSecret(name: "GOOGLE_CALENDAR_TOKEN") {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+
+        do {
+            let (data, response) = try await URLSession.shared.data(for: request)
+            if let httpRes = response as? HTTPURLResponse, httpRes.statusCode == 200,
+               let json = (try? JSONSerialization.jsonObject(with: data)) as? [String: Any],
+               let items = json["items"] as? [[String: Any]] {
+                return items.compactMap { d -> CalendarEventItem? in
+                    guard let id = d["id"] as? String, let title = d["summary"] as? String else { return nil }
+                    let startDict = d["start"] as? [String: String]
+                    let endDict = d["end"] as? [String: String]
+                    return CalendarEventItem(
+                        id: id,
+                        title: title,
+                        startISO: startDict?["dateTime"] ?? ISO8601DateFormatter().string(from: Date()),
+                        endISO: endDict?["dateTime"] ?? ISO8601DateFormatter().string(from: Date()),
+                        attendees: [],
+                        rsvpStatus: d["status"] as? String ?? "accepted"
+                    )
+                }
+            }
+        } catch {
+            ClickyLogger.warning("[CALENDAR_CONNECTOR]", "REST request failed or offline: \(error.localizedDescription)")
+        }
+        return []
     }
 
     public func checkFreeBusy(start: Date, end: Date) async throws -> [FreeBusySlot] {
@@ -971,11 +979,38 @@ public final class GoogleDriveConnector: @unchecked Sendable {
         guard activeScopes.contains(.readonly) else {
             throw NSError(domain: "DriveError", code: 403, userInfo: [NSLocalizedDescriptionKey: "Scope 'drive.readonly' required"])
         }
-        ClickyLogger.info("[DRIVE_CONNECTOR]", "Executing searchFiles(query='\(query)') via REST API")
-        return [
-            DriveFileItem(id: "file_001", name: "Q3_Financial_Report.pdf", mimeType: "application/pdf", sizeBytes: 1024 * 512),
-            DriveFileItem(id: "file_002", name: "Roadmap_2026.docx", mimeType: "application/vnd.google-apps.document", sizeBytes: 1024 * 128)
-        ]
+        ClickyLogger.info("[DRIVE_CONNECTOR]", "Executing searchFiles(query='\(query)') via Google Drive REST API")
+
+        var components = URLComponents(string: "https://www.googleapis.com/drive/v3/files")
+        if !query.isEmpty {
+            components?.queryItems = [URLQueryItem(name: "q", value: "name contains '\(query)'")]
+        }
+        guard let url = components?.url else { return [] }
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        if let token = SecretsVault.shared.getSecret(name: "GOOGLE_DRIVE_TOKEN") {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+
+        do {
+            let (data, response) = try await URLSession.shared.data(for: request)
+            if let httpRes = response as? HTTPURLResponse, httpRes.statusCode == 200,
+               let json = (try? JSONSerialization.jsonObject(with: data)) as? [String: Any],
+               let files = json["files"] as? [[String: Any]] {
+                return files.compactMap { d -> DriveFileItem? in
+                    guard let id = d["id"] as? String, let name = d["name"] as? String else { return nil }
+                    return DriveFileItem(
+                        id: id,
+                        name: name,
+                        mimeType: d["mimeType"] as? String ?? "application/octet-stream",
+                        sizeBytes: Int64(d["size"] as? String ?? "0") ?? 0
+                    )
+                }
+            }
+        } catch {
+            ClickyLogger.warning("[DRIVE_CONNECTOR]", "REST request failed or offline: \(error.localizedDescription)")
+        }
+        return []
     }
 
     public func readFile(fileId: String) async throws -> String {
