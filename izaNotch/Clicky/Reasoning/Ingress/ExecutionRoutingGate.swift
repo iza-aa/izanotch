@@ -55,9 +55,9 @@ public final class ExecutionRoutingGate: @unchecked Sendable {
         let targetLower = targetAppName.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
         let intentLower = intentType.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
         // Priority 1: Check ConnectorRegistry (Grok Bot protocol PRD §A5/§F5: "prefer a connector when available")
-        let isEmailIntent = ["inspect", "read", "compose", "send", "search", "view"].contains(intentLower)
-        let isEmailTarget = targetLower == "mail" || targetLower == "gmail" || cleanConnected.contains("mail") || cleanConnected.contains("gmail")
-        if isEmailIntent && isEmailTarget && ConnectorRegistry.shared.isConnected(provider: .gmail) {
+        let emailAppIds = WebSiteAdapterRegistry.shared.adapter(forProviderId: "gmail").supportedAppIdentifiers
+        let isEmailTarget = emailAppIds.contains(targetLower) || cleanConnected.contains(where: { emailAppIds.contains($0) })
+        if isEmailTarget && ConnectorRegistry.shared.isConnected(provider: .gmail) {
             let reason = "Connected Gmail account active via OAuth; routing to tier 'api_connector' (PRD §A5 priority)"
             ClickyLogger.info("[ROUTING]", "Resolved tier 'api_connector' surfaceId='gmail_api' for target '\(targetAppName)' and intent '\(intentType)': \(reason)")
             return ("api_connector", reason, "gmail_api")

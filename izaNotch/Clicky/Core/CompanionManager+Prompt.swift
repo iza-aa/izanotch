@@ -304,7 +304,7 @@ extension CompanionManager {
 
         NATIVE MACOS COMPUTER-USE AUTOMATION (POWERED BY CUA DRIVER):
         You are equipped with 56 native desktop automation tools from Cua Driver.
-        When the user asks you to interact with an application (e.g. close/quit Safari, Terminal, Chrome, click on UI, type, inspect windows):
+        When the user asks you to interact with an application on this Mac (e.g. closing or quitting apps, clicking on UI, typing, inspecting windows):
         ALWAYS INVOKE NATIVE TOOLS DIRECTLY. Do NOT output raw text action tags like [ACTION:...] or <COMPUTER_USE_REQUEST> blocks.
 
         1. APP TERMINATION & CLOSING:
@@ -325,7 +325,7 @@ extension CompanionManager {
 
             computer use & physical mac automation (FULL ACCESS MODE - PRE-APPROVED):
             IMPORTANT: The user has enabled "Always allow computer use" (Full Access).
-            When the user asks you to interact with an application (e.g. Safari, Terminal, TradingView, WhatsApp, Notes, Finder):
+            When the user asks you to interact with any application on this Mac:
             Execute the action immediately using your native tools without asking for confirmation.
             \(tvActionsDesc)
             \(universalDirectives)

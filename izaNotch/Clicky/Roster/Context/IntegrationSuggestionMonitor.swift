@@ -35,24 +35,15 @@ public final class IntegrationSuggestionMonitor: ObservableObject {
     private var isMonitoring = false
     private var inspectionTask: Task<Void, Never>?
 
-    private let browserBundleIDs: Set<String> = [
-        "com.google.Chrome",
-        "com.google.Chrome.beta",
-        "com.google.Chrome.dev",
-        "com.google.Chrome.canary",
-        "com.apple.Safari",
-        "com.apple.SafariTechnologyPreview",
-        "company.thebrowser.Browser",        // Arc
-        "company.thebrowser.BrowserBeta",
-        "com.brave.Browser",
-        "com.brave.Browser.beta",
-        "org.mozilla.firefox",
-        "org.mozilla.firefoxdeveloperedition",
-        "com.microsoft.edgemac",
-        "com.operasoftware.Opera",
-        "com.vivaldi.Vivaldi"
-    ]
-
+    private func isBrowserApplication(bundleID: String) -> Bool {
+        guard !bundleID.isEmpty else { return false }
+        if let dummyURL = URL(string: "https://apple.com") {
+            let appURLs = NSWorkspace.shared.urlsForApplications(toOpen: dummyURL)
+            let browserIds = Set(appURLs.compactMap { Bundle(url: $0)?.bundleIdentifier })
+            if browserIds.contains(bundleID) { return true }
+        }
+        return false
+    }
     private init() {}
 
     public func startMonitoring() {
@@ -127,10 +118,10 @@ public final class IntegrationSuggestionMonitor: ObservableObject {
             try? await Task.sleep(nanoseconds: 120_000_000)
             guard !Task.isCancelled else { return }
 
-            if browserBundleIDs.contains(bundleID) {
-                await inspectBrowser(app: app)
+            if self.isBrowserApplication(bundleID: bundleID) {
+                await self.inspectBrowser(app: app)
             } else {
-                inspectNonBrowserApp(bundleID: bundleID, appName: appName)
+                self.inspectNonBrowserApp(bundleID: bundleID, appName: appName)
             }
         }
     }

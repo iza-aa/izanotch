@@ -163,10 +163,10 @@ public final class WebSiteAdapterRegistry: @unchecked Sendable {
         ),
         WebSiteAdapter(
             id: "browser",
-            name: "Web Browser",
-            domains: ["google.com", "bing.com", "duckduckgo.com"],
-            entryURL: URL(string: "https://www.google.com")!,
-            supportedAppIdentifiers: ["safari", "chrome", "edge", "browser", "web"],
+            name: "Chromium Workspace",
+            domains: [],
+            entryURL: URL(string: "about:blank")!,
+            supportedAppIdentifiers: ["chromium", "browser", "web", "workspace"],
             supportedIntentTypes: ["browse", "search"],
             selectors: WebSiteSelectorMap(
                 toField: "input[type='text'], input[type='search'], textarea",

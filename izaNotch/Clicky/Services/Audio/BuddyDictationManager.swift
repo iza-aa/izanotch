@@ -386,11 +386,10 @@ final class BuddyDictationManager: NSObject, ObservableObject {
         guard !isDictationInProgress else { return }
 
         ClickyLogger.info("[AUDIO]", "startPushToTalk requested (\(startSource))")
-        print("🎙️ BuddyDictationManager: start requested (\(startSource))")
+        print("[AUDIO] BuddyDictationManager: start requested (\(startSource))")
 
         if needsInitialPermissionPrompt {
-            print("🎙️ BuddyDictationManager: requesting initial permissions")
-            NSApplication.shared.activate(ignoringOtherApps: true)
+            print("[AUDIO] BuddyDictationManager: requesting initial permissions")
 
             do {
                 try await Task.sleep(for: .milliseconds(200))
@@ -409,19 +408,16 @@ final class BuddyDictationManager: NSObject, ObservableObject {
 
         guard await requestMicrophoneAndSpeechPermissionsWithoutDuplicatePrompts() else {
             ClickyLogger.error("[AUDIO]", "Microphone / Speech permissions missing or denied")
-            print("🎙️ BuddyDictationManager: permissions missing or denied")
-            isPreparingToRecord = false
+            print("[AUDIO] BuddyDictationManager: permissions missing or denied")
             return
         }
         guard !Task.isCancelled else {
             ClickyLogger.warning("[AUDIO]", "Start cancelled (shortcut released during permission check)")
-            print("🎙️ BuddyDictationManager: start cancelled (shortcut released during permission check)")
-            isPreparingToRecord = false
+            print("[AUDIO] BuddyDictationManager: start cancelled (shortcut released during permission check)")
             return
         }
         guard pendingStartRequestIdentifier == startRequestIdentifier else {
-            print("🎙️ BuddyDictationManager: start request superseded")
-            isPreparingToRecord = false
+            print("[AUDIO] BuddyDictationManager: start request superseded")
             return
         }
 
@@ -447,16 +443,14 @@ final class BuddyDictationManager: NSObject, ObservableObject {
         lastRecordedAudioPowerSampleDate = .distantPast
 
         guard !Task.isCancelled else {
-            print("🎙️ BuddyDictationManager: start cancelled (shortcut released before recording began)")
-            resetSessionState()
+            print("[AUDIO] BuddyDictationManager: start cancelled (shortcut released before recording began)")
             return
         }
 
         do {
             try await startRecognitionSession()
             guard !Task.isCancelled else {
-                print("🎙️ BuddyDictationManager: start cancelled (shortcut released during session start)")
-                audioEngine.stop()
+                print("[AUDIO] BuddyDictationManager: start cancelled (shortcut released during session start)")
                 audioEngine.inputNode.removeTap(onBus: 0)
                 activeTranscriptionSession?.cancel()
                 resetSessionState()
@@ -467,7 +461,7 @@ final class BuddyDictationManager: NSObject, ObservableObject {
             }
             isPreparingToRecord = false
             ClickyLogger.success("[AUDIO]", "Recognition session started successfully (\(transcriptionProvider.displayName))")
-            print("🎙️ BuddyDictationManager: recognition session started")
+            print("[AUDIO] BuddyDictationManager: recognition session started")
         } catch {
             isPreparingToRecord = false
             ClickyLogger.error("[AUDIO]", "Failed to start recognition session: \(error)")
@@ -475,7 +469,7 @@ final class BuddyDictationManager: NSObject, ObservableObject {
                 from: error,
                 fallback: "couldn't start voice input. try again."
             )
-            print("❌ BuddyDictationManager: failed to start recognition session (\(transcriptionProvider.displayName)): \(error)")
+            print("[AUDIO] BuddyDictationManager: failed to start recognition session (\(transcriptionProvider.displayName)): \(error)")
             resetSessionState()
         }
     }
@@ -489,8 +483,7 @@ final class BuddyDictationManager: NSObject, ObservableObject {
         }
         guard !isFinalizingTranscript else { return }
 
-        print("🎙️ BuddyDictationManager: stop requested (\(expectedStartSource))")
-
+        print("[AUDIO] BuddyDictationManager: stop requested (\(expectedStartSource))")
         isRecordingFromMicrophoneButton = false
         isRecordingFromKeyboardShortcut = false
         isFinalizingTranscript = true
@@ -522,8 +515,7 @@ final class BuddyDictationManager: NSObject, ObservableObject {
         activeTranscriptionSession?.cancel()
         activeTranscriptionSession = nil
 
-        print("🎙️ BuddyDictationManager: opening transcription provider \(transcriptionProvider.displayName)")
-
+        print("[AUDIO] BuddyDictationManager: opening transcription provider \(transcriptionProvider.displayName)")
         let activeTranscriptionSession = try await transcriptionProvider.startStreamingSession(
             keyterms: buildTranscriptionKeyterms(),
             onTranscriptUpdate: { [weak self] transcriptText in
@@ -551,8 +543,7 @@ final class BuddyDictationManager: NSObject, ObservableObject {
         )
 
         self.activeTranscriptionSession = activeTranscriptionSession
-        print("🎙️ BuddyDictationManager: provider ready, starting audio engine")
-
+        print("[AUDIO] BuddyDictationManager: provider ready, starting audio engine")
         let inputNode = audioEngine.inputNode
         let inputFormat = inputNode.outputFormat(forBus: 0)
 
@@ -657,36 +648,17 @@ final class BuddyDictationManager: NSObject, ObservableObject {
     }
 
     private func buildTranscriptionKeyterms() -> [String] {
-        var baseKeyterms = [
-            "Safari",
-            "WhatsApp",
-            "Spotify",
-            "Antigravity",
-            "Finder",
-            "Terminal",
-            "Whisky",
-            "Chrome",
-            "Calculator",
-            "Calendar",
-            "Notes",
-            "tutup",
-            "buka",
-            "close",
-            "open",
-            "quit",
-            "Clicky",
-            "Izanotchy",
-            "Claude",
-            "SwiftUI",
-            "Xcode"
-        ]
+        var baseKeyterms: [String] = []
 
-        // Dynamically add running apps from NSWorkspace
+        // Dynamically add running apps from NSWorkspace (Zero Hardcoding)
         let runningAppNames = NSWorkspace.shared.runningApplications
             .filter { $0.activationPolicy == .regular }
             .compactMap { $0.localizedName }
         baseKeyterms.append(contentsOf: runningAppNames)
 
+        // Dynamically add active companion names from roster store
+        let rosterNames = CompanionRosterStore.shared.allCompanions.map { $0.name }
+        baseKeyterms.append(contentsOf: rosterNames)
         let combinedKeyterms = baseKeyterms + contextualKeyterms
         var uniqueNormalizedKeyterms = Set<String>()
         var orderedKeyterms: [String] = []

@@ -81,36 +81,22 @@ public final class InstalledAppsDiscoveryService: ObservableObject {
             var seenBundleIds: Set<String> = []
             var seenNames: Set<String> = []
 
-            // Common priority apps to prioritize near the top
-            let priorityNames = ["Mail", "Safari", "Terminal", "Finder", "TradingView", "Telegram", "Discord", "ChatGPT", "Chrome", "Google Chrome", "Spotify", "Notes", "Calendar"]
-
-            // 1. Resolve well-known core apps via NSWorkspace bundle URLs (guarantees system apps like Safari/Mail are always found)
-            let coreAppBundles = [
-                ("Safari", "com.apple.Safari"),
-                ("Mail", "com.apple.mail"),
-                ("Terminal", "com.apple.Terminal"),
-                ("Finder", "com.apple.finder"),
-                ("TradingView", "com.tradingview.tradingviewapp.desktop"),
-                ("Notes", "com.apple.Notes"),
-                ("Calendar", "com.apple.iCal")
-            ]
-
-            for (name, bundleId) in coreAppBundles {
-                if let appUrl = NSWorkspace.shared.urlForApplication(withBundleIdentifier: bundleId) {
-                    let icon = NSWorkspace.shared.icon(forFile: appUrl.path)
-                    icon.size = NSSize(width: 32, height: 32)
-                    let isRunning = runningBundleIds.contains(bundleId) || runningNames.contains(name.lowercased())
-                    discovered.append(MacInstalledApp(
-                        id: bundleId,
-                        name: name,
-                        path: appUrl.path,
-                        bundleId: bundleId,
-                        icon: icon,
-                        isRunning: isRunning
-                    ))
-                    seenBundleIds.insert(bundleId)
-                    seenNames.insert(name.lowercased())
-                }
+            // 1. Resolve running regular applications first
+            for app in runningApps where app.activationPolicy == .regular {
+                guard let bundleId = app.bundleIdentifier, let appUrl = app.bundleURL else { continue }
+                let name = app.localizedName ?? appUrl.deletingPathExtension().lastPathComponent
+                let icon = NSWorkspace.shared.icon(forFile: appUrl.path)
+                icon.size = NSSize(width: 32, height: 32)
+                discovered.append(MacInstalledApp(
+                    id: bundleId,
+                    name: name,
+                    path: appUrl.path,
+                    bundleId: bundleId,
+                    icon: icon,
+                    isRunning: true
+                ))
+                seenBundleIds.insert(bundleId)
+                seenNames.insert(name.lowercased())
             }
 
             for dir in scanDirs {
@@ -153,13 +139,8 @@ public final class InstalledAppsDiscoveryService: ObservableObject {
                 }
             }
 
-            // Sort: Priority apps first, then running apps, then alphabetical
+            // Sort: Running apps first, then alphabetical
             discovered.sort { a, b in
-                let aPriority = priorityNames.firstIndex(where: { $0.lowercased() == a.name.lowercased() }) ?? 999
-                let bPriority = priorityNames.firstIndex(where: { $0.lowercased() == b.name.lowercased() }) ?? 999
-                if aPriority != bPriority {
-                    return aPriority < bPriority
-                }
                 if a.isRunning != b.isRunning {
                     return a.isRunning && !b.isRunning
                 }

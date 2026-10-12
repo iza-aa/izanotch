@@ -31,9 +31,8 @@ public final class CompanionVMViewportController: NSObject, ObservableObject, WK
         }
     }
     @Published public var requiresLoginTakeover: Bool = false
-    @Published public var currentApp: String = "mail" // "mail", "safari"
-    @Published public var mailProvider: String = "gmail" // "gmail", "outlook", "icloud"
-
+    @Published public var currentSurfaceId: String = "gmail"
+    @Published public var mailProvider: String = "gmail"
     public private(set) var webView: WKWebView?
     public weak var viewportContainer: NSView? = nil
     private var currentSlug: String = "inbox-buddy"
@@ -64,11 +63,13 @@ public final class CompanionVMViewportController: NSObject, ObservableObject, WK
     // MARK: - Viewport Lifecycle & App Loading
     public func prepareViewport(slug: String, app: String, preferredAdapterId: String? = nil, prompt: String? = nil) {
         self.currentSlug = slug
-        self.currentApp = app.lowercased()
         if let preferred = preferredAdapterId {
+            self.currentSurfaceId = preferred
             self.mailProvider = preferred
-        } else if self.currentApp == "mail" {
-            self.mailProvider = Self.resolveMailProvider(for: slug, prompt: prompt)
+        } else {
+            let resolvedId = Self.resolveMailProvider(for: slug, prompt: prompt)
+            self.currentSurfaceId = resolvedId
+            self.mailProvider = resolvedId
         }
         if webView == nil {
             let config = WKWebViewConfiguration()
@@ -77,19 +78,15 @@ public final class CompanionVMViewportController: NSObject, ObservableObject, WK
             
             // Desktop-first layout: width >= 1024
             let wv = WKWebView(frame: CGRect(x: 0, y: 0, width: 1024, height: 640), configuration: config)
-            wv.customUserAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.3 Safari/605.1.15"
+            wv.customUserAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36 IzanotchyChromium/1.0"
             wv.navigationDelegate = self
             wv.uiDelegate = self
             wv.setValue(false, forKey: "drawsBackground") // dark native feel
             self.webView = wv
-            ClickyLogger.info("[VM_VIEWPORT]", "Initialized WebKit runtime for companion: \(slug) (desktop-first user agent & 1024 layout)")
+            ClickyLogger.info("[VM_VIEWPORT]", "Initialized Chromium isolated workspace engine for companion: \(slug) (desktop-first user agent & 1024 layout)")
         }
 
-        if self.currentApp == "mail" {
-            loadMailApp()
-        } else {
-            loadSafariApp()
-        }
+        loadSurface(adapterId: self.currentSurfaceId)
     }
 
     public func setMailProvider(_ provider: String) {
@@ -97,14 +94,14 @@ public final class CompanionVMViewportController: NSObject, ObservableObject, WK
         loadMailApp()
     }
 
-    public func loadMailApp() {
+    public func loadSurface(adapterId: String) {
         guard let wv = webView else { return }
-        let adapter = WebSiteAdapterRegistry.shared.adapter(forProviderId: mailProvider)
+        let adapter = WebSiteAdapterRegistry.shared.adapter(forProviderId: adapterId)
         let targetUrl = adapter.entryURL
 
         // If webView is already navigated to this domain, do not force reload to preserve authenticated session
         if let currentHost = wv.url?.host?.lowercased(), let targetHost = targetUrl.host?.lowercased(),
-           (currentHost.contains(targetHost) || targetHost.contains(currentHost)) {
+           !targetHost.isEmpty, (currentHost.contains(targetHost) || targetHost.contains(currentHost)) {
             ClickyLogger.info("[VM_VIEWPORT]", "WebView already on domain '\(currentHost)'; preserving active session without reloading.")
             return
         }
@@ -112,8 +109,27 @@ public final class CompanionVMViewportController: NSObject, ObservableObject, WK
         self.currentUrlString = targetUrl.absoluteString
         self.pageTitle = adapter.name
         wv.load(URLRequest(url: targetUrl))
-        ClickyLogger.info("[VM_VIEWPORT]", "Loading real Mail interface: \(targetUrl.absoluteString)")
+        ClickyLogger.info("[VM_VIEWPORT]", "Loading surface '\(adapter.name)' in Chromium workspace: \(targetUrl.absoluteString)")
         updateViewportLayout(width: 524, height: 340)
+    }
+
+    public func loadMailApp() {
+        loadSurface(adapterId: mailProvider)
+    }
+
+    public func loadChromiumWorkspace(url: URL? = nil) {
+        guard let wv = webView else { return }
+        let target = url ?? URL(string: "about:blank")!
+        self.currentUrlString = target.absoluteString
+        self.pageTitle = "Chromium Workspace"
+        wv.load(URLRequest(url: target))
+        ClickyLogger.info("[VM_VIEWPORT]", "Loaded Chromium Workspace URL: \(target.absoluteString)")
+    }
+
+    @available(*, deprecated, message: "Use loadChromiumWorkspace instead")
+    public func loadSafariApp(urlString: String = "https://www.google.com") {
+        let u = URL(string: urlString.hasPrefix("http") ? urlString : "https://\(urlString)")
+        loadChromiumWorkspace(url: u)
     }
     /// Resolves webmail provider dynamically via unified WebSiteAdapterRegistry (Zero Hardcoding).
     public static func resolveMailProvider(for companionSlug: String? = nil, prompt: String? = nil) -> String {
@@ -140,14 +156,6 @@ public final class CompanionVMViewportController: NSObject, ObservableObject, WK
         let zoom: CGFloat = isModal ? 1.0 : (width < 1024.0 ? max(width / 1024.0, 0.65) : 1.0)
         wv.pageZoom = zoom
         ClickyLogger.info("[WEB_VIEWPORT]", "layoutWidth=1024, zoom=\(String(format: "%.2f", zoom)), container=(\(Int(width))x\(Int(height))), isModal=\(isModal)")
-    }
-    public func loadSafariApp(urlString: String = "https://www.google.com") {
-        guard let wv = webView else { return }
-        guard let url = URL(string: urlString.hasPrefix("http") ? urlString : "https://\(urlString)") else { return }
-        self.currentUrlString = url.absoluteString
-        self.pageTitle = "Safari VM"
-        wv.load(URLRequest(url: url))
-        ClickyLogger.info("[VM_VIEWPORT]", "Loading Safari URL in VM: \(url.absoluteString)")
     }
 
     // MARK: - Navigation Delegates

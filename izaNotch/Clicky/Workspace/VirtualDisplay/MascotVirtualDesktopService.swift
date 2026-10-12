@@ -447,7 +447,10 @@ public final class MascotVirtualDesktopService: ObservableObject {
         if let cur = currentAppPid, cur > 0 {
             return cur
         }
-        let clean = (currentAppName ?? "Mail").lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+        guard let nameStr = currentAppName, !nameStr.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            return nil
+        }
+        let clean = nameStr.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
         if let app = NSWorkspace.shared.runningApplications.first(where: {
             let name = $0.localizedName?.lowercased() ?? ""
             return name == clean || name.hasPrefix(clean) || name.contains(clean)
