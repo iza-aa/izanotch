@@ -290,7 +290,6 @@ extension CompanionManager {
     public func submitPrompt(_ prompt: String, attachments: [ChatAttachment] = []) {
         let clean = prompt.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !clean.isEmpty else { return }
-
         // 1. Slash command for computer toggle
         if clean.lowercased() == "/computer" || clean.lowercased() == "computer" {
             NotificationCenter.default.post(name: Notification.Name("HomeSpaceOpenComputerModal"), object: nil)
@@ -336,7 +335,6 @@ extension CompanionManager {
                 companionSlug: activeBuddy.slug,
                 connectedApps: activeBuddy.workflowAppNames
             )
-
             if plan.requiresCUA && !plan.isConversational {
                 let targetApp = (plan.targetAppName.isEmpty || plan.targetAppName.lowercased() == "none") ? (activeBuddy.workflowAppNames.first ?? "Workspace") : plan.targetAppName
 

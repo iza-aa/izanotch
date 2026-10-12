@@ -1,7 +1,7 @@
 # PROJECT.md — Izanotchy Roadmap & Current Status
 
 ## Fokus Saat Ini
-TASK-046 Deterministic Surface Pivot (`tasks/TASK_046_DETERMINISTIC_SURFACE_PIVOT.md`):
+TASK-046 Fase C gerbang (8 skenario fasec) → lalu TASK-047 Parity Build (`tasks/TASK_047_PARITY_MICROTASKS.md`): 22 micro-task dalam 6 fase (paritas I/O, skills & routines, connectors & API tier, memori & multi-companion, governance, model capability check) dengan protokol review otomatis per micro-task. Sumber bacaan agent+reviewer: `github-reference/grok-bot/` (S1-S7: HOW_IT_WORKS, 4 PRD_NOTES, REA evidence, app.asar source).
 - Routing gate `executionTier` (web | native_cua) di Ingress — connected apps → permukaan deterministik; tanpa connected apps → Clicky mode.
 - Fase B: pembersihan kode liar terledger (periphery scan + Delete-Zone).
 - Fase C: Web Workspace (WKWebView, observasi/aksi via DOM).
