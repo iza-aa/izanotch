@@ -152,7 +152,7 @@ public final class HomeSpaceWindowManager: ObservableObject {
         if let prompt = prompt, !prompt.isEmpty {
             // Give window a brief moment to draw before triggering query
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
-                NotificationCenter.default.post(name: Notification.Name("HomeSpaceSubmitPrompt"), object: prompt)
+                CompanionManager.shared.submitPrompt(prompt)
             }
         }
     }

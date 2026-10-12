@@ -909,9 +909,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                     let prompt = notif.userInfo?["prompt"] as? String
                     HomeSpaceWindowManager.shared.show()
                     if let prompt = prompt, !prompt.isEmpty {
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
-                            NotificationCenter.default.post(name: Notification.Name("HomeSpaceSubmitPrompt"), object: prompt)
-                        }
+                        CompanionManager.shared.submitPrompt(prompt)
                     }
                 }
         }
@@ -934,9 +932,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
                     HomeSpaceWindowManager.shared.show()
                     if let prompt = prompt, !prompt.isEmpty {
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
-                            NotificationCenter.default.post(name: Notification.Name("HomeSpaceSubmitPrompt"), object: prompt)
-                        }
+                        CompanionManager.shared.submitPrompt(prompt)
                     }
                 }
         }

@@ -284,4 +284,159 @@ extension CompanionManager {
         self.activeCompanion = profile
         ClickyLogger.info("[ROSTER]", "Active companion switched to \(profile.name) (\(profile.cloudColorHex))")
     }
+
+    // MARK: - Core Task Submission (Single Source of Truth for Prompt Execution)
+    @MainActor
+    public func submitPrompt(_ prompt: String, attachments: [ChatAttachment] = []) {
+        let clean = prompt.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !clean.isEmpty else { return }
+
+        // 1. Slash command for computer toggle
+        if clean.lowercased() == "/computer" || clean.lowercased() == "computer" {
+            NotificationCenter.default.post(name: Notification.Name("HomeSpaceOpenComputerModal"), object: nil)
+            return
+        }
+
+        // 2. Slash command for teach mode
+        if clean.lowercased().hasPrefix("/teach") {
+            let taskName = clean.dropFirst(6).trimmingCharacters(in: .whitespacesAndNewlines)
+            let effectiveName = taskName.isEmpty ? "Tugas Terbimbing" : taskName
+            CompanionTeachModeEngine.shared.startTeaching(name: effectiveName)
+            let userMsg = HomeSpaceChatMessage(isUser: true, text: clean)
+            appendChatMessage(userMsg)
+            let teachNotice = HomeSpaceChatMessage(
+                isUser: false,
+                text: "Mode Mengajar Aktif: Mulai demonstrasikan alur '\(effectiveName)'. Setiap aksi terekam menjadi draft skill."
+            )
+            appendChatMessage(teachNotice)
+            return
+        }
+
+        // 3. Append User Message to Chat Transcript
+        let userMsg = HomeSpaceChatMessage(isUser: true, text: clean, attachments: attachments)
+        appendChatMessage(userMsg)
+        ClickySoundEngine.shared.play(.send)
+
+        // 4. Autonomous Task Pipeline
+        Task { @MainActor in
+            var promptWithContext = clean
+            let slashRes = CompanionSkillLibrary.shared.resolveSlashReference(from: clean, for: activeBuddy.slug)
+            if let skill = slashRes.skill {
+                let skillGuidance = CompanionSkillLibrary.shared.formatForSystemPrompt(skill)
+                let baseText = slashRes.remainderPrompt.isEmpty ? skill.whenToUse : slashRes.remainderPrompt
+                promptWithContext = "\(baseText)\n\n\(skillGuidance)"
+            }
+            if !attachments.isEmpty {
+                let desc = attachments.map { "\($0.fileName) (\($0.mimeType))" }.joined(separator: ", ")
+                promptWithContext += " [Attachments: \(desc)]"
+            }
+
+            let plan = await AFMLunaCoordinationBridge.shared.deconstructTaskGoalWithAFM(
+                userPrompt: promptWithContext,
+                companionSlug: activeBuddy.slug,
+                connectedApps: activeBuddy.workflowAppNames
+            )
+
+            if plan.requiresCUA && !plan.isConversational {
+                let targetApp = (plan.targetAppName.isEmpty || plan.targetAppName.lowercased() == "none") ? (activeBuddy.workflowAppNames.first ?? "Workspace") : plan.targetAppName
+
+                let initialQueue = plan.plannedSubGoals.map {
+                    ComputerCardQueueItem(name: $0, statusBadge: "Planned", isChecked: false)
+                }
+
+                var workingPayload = ComputerCardPayload(
+                    cardTitle: "Computer",
+                    status: .working,
+                    instructionText: clean,
+                    snapshotImagePath: CompanionWindowStreamService.shared.activeSnapshotPath,
+                    targetAppName: targetApp,
+                    activeWorkflowApp: targetApp,
+                    queueSummary: "\(plan.plannedSubGoals.count) steps planned by AFM",
+                    queueItems: initialQueue.isEmpty ? [
+                        ComputerCardQueueItem(name: "Inspect \(targetApp) UI", statusBadge: "Starting", isChecked: false),
+                        ComputerCardQueueItem(name: "Execute sub-goals", statusBadge: "Pending", isChecked: false)
+                    ] : initialQueue
+                )
+
+                let assistantMsg = HomeSpaceChatMessage(
+                    isUser: false,
+                    text: "",
+                    computerPayload: workingPayload
+                )
+                appendChatMessage(assistantMsg)
+                let assistantMsgId = assistantMsg.id
+                HomeSpaceWindowManager.shared.ensureOrderFront()
+
+                do {
+                    let finalPayload: ComputerCardPayload
+                    if plan.executionTier == "web" {
+                        ClickyLogger.info("[ROUTING]", "Executing task in Web Workspace (Chromium engine)")
+                        finalPayload = try await WebWorkspaceAgentLoop.shared.executeAutonomousWebTask(
+                            prompt: clean,
+                            slug: activeBuddy.slug,
+                            appName: targetApp,
+                            taskPlan: plan,
+                            onProgress: { progressPayload in
+                                var updated = progressPayload
+                                updated.updatedAt = Date()
+                                self.updateChatMessage(id: assistantMsgId, computerPayload: updated)
+                                HomeSpaceWindowManager.shared.ensureOrderFront()
+                            }
+                        )
+                    } else {
+                        ClickyLogger.info("[ROUTING]", "Executing task in Native CUA (CompanionVMAgentLoop active)")
+                        finalPayload = try await CompanionVMAgentLoop.shared.executeAutonomousTask(
+                            prompt: clean,
+                            slug: activeBuddy.slug,
+                            appName: targetApp,
+                            taskPlan: plan,
+                            onProgress: { progressPayload in
+                                var updated = progressPayload
+                                updated.updatedAt = Date()
+                                self.updateChatMessage(id: assistantMsgId, computerPayload: updated)
+                                HomeSpaceWindowManager.shared.ensureOrderFront()
+                            }
+                        )
+                    }
+
+                    var updated = finalPayload
+                    updated.updatedAt = Date()
+                    let resolvedText: String
+                    if let r = finalPayload.responseToUser?.trimmingCharacters(in: .whitespacesAndNewlines), !r.isEmpty {
+                        resolvedText = r
+                    } else if let s = finalPayload.deliverableSummary?.trimmingCharacters(in: .whitespacesAndNewlines), !s.isEmpty {
+                        resolvedText = s
+                    } else if !finalPayload.instructionText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                        resolvedText = finalPayload.instructionText
+                    } else {
+                        resolvedText = "Pemeriksaan pada \(targetApp) telah selesai dilakukan."
+                    }
+                    updateChatMessage(
+                        id: assistantMsgId,
+                        computerPayload: updated,
+                        text: resolvedText
+                    )
+                    ClickySoundEngine.shared.play(.done)
+                    HomeSpaceWindowManager.shared.ensureOrderFront()
+                } catch {
+                    let failedPayload = ComputerCardPayload(
+                        cardTitle: "Computer",
+                        status: .failed,
+                        instructionText: "Task error: \(error.localizedDescription)",
+                        snapshotImagePath: nil,
+                        targetAppName: targetApp,
+                        activeWorkflowApp: targetApp,
+                        queueSummary: "Execution failed"
+                    )
+                    var updated = failedPayload
+                    updated.updatedAt = Date()
+                    updateChatMessage(id: assistantMsgId, computerPayload: updated, text: "Task error: \(error.localizedDescription)")
+                    HomeSpaceWindowManager.shared.ensureOrderFront()
+                }
+            } else {
+                askViaText(prompt: clean)
+                HomeSpaceWindowManager.shared.ensureOrderFront()
+            }
+        }
+    }
 }
