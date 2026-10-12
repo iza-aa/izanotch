@@ -343,11 +343,195 @@ struct HomeSpaceRootView: View {
     }
 
     func submitPrompt(_ prompt: String) {
+        let clean = prompt.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !clean.isEmpty else { return }
+
+        // F-07 Agent Computer Modal Trigger (/computer)
+        if clean.lowercased() == "/computer" || clean.lowercased() == "computer" {
+            ClickySoundEngine.shared.play(.open)
+            withAnimation(.spring(response: 0.28, dampingFraction: 0.8)) {
+                activeComputerModalPayload = ComputerCardPayload(
+                    cardTitle: "Computer",
+                    status: companion.isProcessingTask ? .working : .done,
+                    instructionText: "Chromium Workspace terisolasi untuk \(companion.activeBuddy.name)",
+                    snapshotImagePath: CompanionVMViewportController.shared.activeSnapshotPath,
+                    targetAppName: "Chromium Workspace",
+                    activeWorkflowApp: "Chromium Workspace",
+                    queueSummary: "Agent Computer"
+                )
+            }
+            inputText = ""
+            isTypingMode = false
+            return
+        }
+
+        // MT-06: Teach-by-Demonstration Trigger (/teach <task-name>)
+        if clean.lowercased().hasPrefix("/teach") {
+            let taskName = clean.dropFirst(6).trimmingCharacters(in: .whitespacesAndNewlines)
+            let effectiveName = taskName.isEmpty ? "Tugas Terbimbing" : taskName
+            CompanionTeachModeEngine.shared.startTeaching(name: effectiveName)
+            inputText = ""
+            isTypingMode = false
+
+            let userMsg = HomeSpaceChatMessage(isUser: true, text: clean)
+            companion.appendChatMessage(userMsg)
+
+            let teachStartNotice = HomeSpaceChatMessage(
+                isUser: false,
+                text: "Mode Mengajar Aktif: Mulai demonstrasikan alur '\(effectiveName)'. Setiap aksi terekam menjadi draft skill 6-field."
+            )
+            companion.appendChatMessage(teachStartNotice)
+            ClickySoundEngine.shared.play(.open)
+            return
+        }
+
+        // Autonomous Task Decomposition Stage (AFM On-Device Reasoner)
+        // Replaces all rigid hardcoded app keyword matching (isEmailAction, isSafariAction)
+        ClickySoundEngine.shared.play(.send)
         let currentAttachments = stagedAttachments
         stagedAttachments = []
+        let userMsg = HomeSpaceChatMessage(isUser: true, text: clean, attachments: currentAttachments)
+        companion.appendChatMessage(userMsg)
         inputText = ""
         isTypingMode = false
-        companion.submitPrompt(prompt, attachments: currentAttachments)
+
+        Task { @MainActor in
+            var promptWithContext = clean
+            let slashRes = CompanionSkillLibrary.shared.resolveSlashReference(from: clean, for: companion.activeBuddy.slug)
+            if let skill = slashRes.skill {
+                let skillGuidance = CompanionSkillLibrary.shared.formatForSystemPrompt(skill)
+                let baseText = slashRes.remainderPrompt.isEmpty ? skill.whenToUse : slashRes.remainderPrompt
+                promptWithContext = "\(baseText)\n\n\(skillGuidance)"
+            }
+            if !currentAttachments.isEmpty {
+                let desc = currentAttachments.map { "\($0.fileName) (\($0.mimeType))" }.joined(separator: ", ")
+                promptWithContext += " [Attachments: \(desc)]"
+            }
+            let plan = await AFMLunaCoordinationBridge.shared.deconstructTaskGoalWithAFM(
+                userPrompt: promptWithContext,
+                companionSlug: companion.activeBuddy.slug,
+                connectedApps: companion.activeBuddy.workflowAppNames
+            )
+            if plan.requiresCUA && !plan.isConversational {
+                let targetApp = (plan.targetAppName.isEmpty || plan.targetAppName.lowercased() == "none") ? (companion.activeBuddy.workflowAppNames.first ?? "Workspace") : plan.targetAppName
+                
+                let initialQueue = plan.plannedSubGoals.map {
+                    ComputerCardQueueItem(name: $0, statusBadge: "Planned", isChecked: false)
+                }
+
+                var workingPayload = ComputerCardPayload(
+                    cardTitle: "Computer",
+                    status: .working,
+                    instructionText: clean,
+                    snapshotImagePath: CompanionWindowStreamService.shared.activeSnapshotPath,
+                    targetAppName: targetApp,
+                    activeWorkflowApp: targetApp,
+                    queueSummary: "\(plan.plannedSubGoals.count) steps planned by AFM",
+                    queueItems: initialQueue.isEmpty ? [
+                        ComputerCardQueueItem(name: "Inspect \(targetApp) UI", statusBadge: "Starting", isChecked: false),
+                        ComputerCardQueueItem(name: "Execute sub-goals", statusBadge: "Pending", isChecked: false)
+                    ] : initialQueue
+                )
+
+                let assistantMsg = HomeSpaceChatMessage(
+                    isUser: false,
+                    text: "",
+                    computerPayload: workingPayload
+                )
+                companion.appendChatMessage(assistantMsg)
+                let assistantMsgId = assistantMsg.id
+                HomeSpaceWindowManager.shared.ensureOrderFront()
+
+                // In-Chat First: Keep action directly inside chat feed (Zero Auto-Maximize)
+                do {
+                    HomeSpaceWindowManager.shared.ensureOrderFront()
+                    let finalPayload: ComputerCardPayload
+                    if plan.executionTier == "web" {
+                        ClickyLogger.info("[ROUTING]", "Executing task in Web Workspace (CompanionVMAgentLoop native bypassed)")
+                        finalPayload = try await WebWorkspaceAgentLoop.shared.executeAutonomousWebTask(
+                            prompt: clean,
+                            slug: companion.activeBuddy.slug,
+                            appName: targetApp,
+                            taskPlan: plan,
+                            onProgress: { progressPayload in
+                                withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+                                    var updated = progressPayload
+                                    updated.updatedAt = Date()
+                                    companion.updateChatMessage(id: assistantMsgId, computerPayload: updated)
+                                }
+                                if self.activeComputerModalPayload != nil {
+                                    self.activeComputerModalPayload = progressPayload
+                                }
+                                HomeSpaceWindowManager.shared.ensureOrderFront()
+                            }
+                        )
+                    } else {
+                        ClickyLogger.info("[ROUTING]", "Executing task in Native CUA (CompanionVMAgentLoop active)")
+                        finalPayload = try await CompanionVMAgentLoop.shared.executeAutonomousTask(
+                            prompt: clean,
+                            slug: companion.activeBuddy.slug,
+                            appName: targetApp,
+                            taskPlan: plan,
+                            onProgress: { progressPayload in
+                                withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+                                    var updated = progressPayload
+                                    updated.updatedAt = Date()
+                                    companion.updateChatMessage(id: assistantMsgId, computerPayload: updated)
+                                }
+                                if self.activeComputerModalPayload != nil {
+                                    self.activeComputerModalPayload = progressPayload
+                                }
+                                HomeSpaceWindowManager.shared.ensureOrderFront()
+                            }
+                        )
+                    }
+                    withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+                        var updated = finalPayload
+                        updated.updatedAt = Date()
+                        let resolvedText: String
+                        if let r = finalPayload.responseToUser?.trimmingCharacters(in: .whitespacesAndNewlines), !r.isEmpty {
+                            resolvedText = r
+                        } else if let s = finalPayload.deliverableSummary?.trimmingCharacters(in: .whitespacesAndNewlines), !s.isEmpty {
+                            resolvedText = s
+                        } else if !finalPayload.instructionText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                            resolvedText = finalPayload.instructionText
+                        } else {
+                            resolvedText = "Pemeriksaan pada \(targetApp) telah selesai dilakukan."
+                        }
+                        companion.updateChatMessage(
+                            id: assistantMsgId,
+                            computerPayload: updated,
+                            text: resolvedText
+                        )
+                    }
+                    if self.activeComputerModalPayload != nil {
+                        self.activeComputerModalPayload = finalPayload
+                    }
+                    ClickySoundEngine.shared.play(.done)
+                    HomeSpaceWindowManager.shared.ensureOrderFront()
+                } catch {
+                    let failedPayload = ComputerCardPayload(
+                        cardTitle: "Computer",
+                        status: .failed,
+                        instructionText: "Task error: \(error.localizedDescription)",
+                        snapshotImagePath: nil,
+                        targetAppName: targetApp,
+                        activeWorkflowApp: targetApp,
+                        queueSummary: "Execution failed"
+                    )
+                    var updated = failedPayload
+                    updated.updatedAt = Date()
+                    companion.updateChatMessage(id: assistantMsgId, computerPayload: updated, text: "Task error: \(error.localizedDescription)")
+                    if self.activeComputerModalPayload != nil {
+                        self.activeComputerModalPayload = failedPayload
+                    }
+                    HomeSpaceWindowManager.shared.ensureOrderFront()
+                }
+            } else {
+                companion.askViaText(prompt: clean)
+                HomeSpaceWindowManager.shared.ensureOrderFront()
+            }
+        }
     }
 
     func openAttachmentPicker() {
