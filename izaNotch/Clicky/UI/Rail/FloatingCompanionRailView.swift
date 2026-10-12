@@ -122,12 +122,12 @@ public struct FloatingCompanionRailView: View {
         let isUnread = isCompanionUnread(companion)
         
         ZStack(alignment: .topTrailing) {
-            GrokBotMarkView(
-                name: companion.name,
-                tintColorHex: companion.cloudColorHex,
-                size: 44,
-                isWorking: false,
-                isSelected: hoveredMascotId == companion.id
+            // Pure 3D Avatar
+            CompanionProceduralAvatarView(
+                definition: companion.avatarDefinition,
+                expressionName: companion.currentExpressionKey ?? "happy",
+                autoBlink: true,
+                size: 48
             )
             .shadow(color: Color.black.opacity(0.35), radius: 4, x: 0, y: 2)
             

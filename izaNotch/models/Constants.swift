@@ -73,7 +73,7 @@ extension Defaults.Keys {
     static let menubarIcon = Key<Bool>("menubarIcon", default: true)
     static let showOnAllDisplays = Key<Bool>("showOnAllDisplays", default: false)
     static let automaticallySwitchDisplay = Key<Bool>("automaticallySwitchDisplay", default: true)
-    static let releaseName = Key<String>("releaseName", default: "Flying Rabbit")
+    static let releaseName = Key<String>("releaseName", default: "Flying Rabbit 🐇🪽")
     
     // MARK: Behavior
     static let minimumHoverDuration = Key<TimeInterval>("minimumHoverDuration", default: 0.3)
@@ -205,7 +205,7 @@ extension Defaults.Keys {
     static let githubPAT = Key<String>("githubPAT", default: "")
     
     // MARK: Antigravity Accounts
-    static let activeAntigravityEmail = Key<String>("activeAntigravityEmail", default: "")
+    static let activeAntigravityEmail = Key<String>("activeAntigravityEmail", default: "rezkyhaikal3@gmail.com")
     
     // MARK: Antigravity AI Bridge
     static let autoStartAntigravityBridge = Key<Bool>("autoStartAntigravityBridge", default: true)

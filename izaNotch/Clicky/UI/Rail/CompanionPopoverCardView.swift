@@ -27,12 +27,12 @@ public struct CompanionPopoverCardView: View {
         VStack(alignment: .leading, spacing: 12) {
             // MARK: - Header
             HStack(spacing: 10) {
-                GrokBotMarkView(
-                    name: companion.name,
-                    tintColorHex: companion.cloudColorHex,
-                    size: 34,
-                    isWorking: isCompanionProcessing,
-                    isSelected: true
+                // Pure 3D Avatar (1:1 Foto 2, 3, 4)
+                CompanionProceduralAvatarView(
+                    definition: companion.avatarDefinition,
+                    expressionName: isCompanionProcessing ? "neutral" : "happy",
+                    autoBlink: true,
+                    size: 34
                 )
                 .frame(width: 34, height: 34)
                 

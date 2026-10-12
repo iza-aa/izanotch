@@ -232,12 +232,20 @@ public struct ComputerUseConsentCardView: View {
             // MARK: - Top Header Row (Avatar, Name, Status, Close Button)
             HStack(alignment: .center, spacing: 12) {
                 // Circular Mascot Avatar with Ambient Aura
-                GrokBotMarkView(
-                    name: request.companionName,
-                    tintColorHex: request.cloudColorHex,
-                    size: 44,
-                    isSelected: true
-                )
+                ZStack {
+                    Circle()
+                        .fill(accentColor.opacity(0.35))
+                        .frame(width: 48, height: 48)
+                        .blur(radius: 8)
+
+                    CompanionProceduralAvatarView(
+                        definition: request.avatarDefinition,
+                        expressionName: "attentive-left",
+                        autoBlink: true,
+                        size: 44
+                    )
+                }
+                .frame(width: 46, height: 46)
 
                 // Companion Name & "Needs a yes" Status Badge
                 VStack(alignment: .leading, spacing: 3) {
