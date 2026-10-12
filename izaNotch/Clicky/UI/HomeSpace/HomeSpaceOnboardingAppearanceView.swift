@@ -57,16 +57,11 @@ extension HomeSpaceRootView {
                                 .blur(radius: 20)
                                 .opacity(0.6)
 
-                            let template = CompanionAvatarLabCatalog.allTemplates.first { $0.id == interviewEngine.selectedTemplateId } ?? CompanionAvatarLabCatalog.allTemplates[0]
-                            CompanionProceduralAvatarView(
-                                definition: template.toAvatarDefinition(
-                                    name: interviewEngine.synthesizedName.isEmpty ? "New Companion" : interviewEngine.synthesizedName,
-                                    cloudColorHex: interviewEngine.customCloudColorHex.isEmpty ? "#38BDF8" : interviewEngine.customCloudColorHex,
-                                    eyesHex: "#111316"
-                                ),
-                                expressionName: interviewEngine.selectedAvatarLabExpression,
-                                autoBlink: true,
-                                size: 84
+                            GrokBotMarkView(
+                                name: interviewEngine.synthesizedName.isEmpty ? "New Teammate" : interviewEngine.synthesizedName,
+                                tintColorHex: interviewEngine.customCloudColorHex.isEmpty ? "#38BDF8" : interviewEngine.customCloudColorHex,
+                                size: 72,
+                                isSelected: true
                             )
                         }
                         .frame(width: 110, height: 104)
@@ -117,11 +112,11 @@ extension HomeSpaceRootView {
                                                     .fill(isSelected ? Color(hex: interviewEngine.customCloudColorHex.isEmpty ? "#38BDF8" : interviewEngine.customCloudColorHex).opacity(0.25) : Color.white.opacity(0.04))
                                                     .frame(width: 44, height: 44)
 
-                                                CompanionProceduralAvatarView(
-                                                    definition: t.toAvatarDefinition(cloudColorHex: isSelected ? interviewEngine.customCloudColorHex : nil),
-                                                    expressionName: "neutral",
-                                                    autoBlink: false,
-                                                    size: 34
+                                                GrokBotMarkView(
+                                                    name: t.name,
+                                                    tintColorHex: isSelected ? interviewEngine.customCloudColorHex : t.defaultColors.bodyHex,
+                                                    size: 34,
+                                                    isSelected: isSelected
                                                 )
                                             }
                                             .overlay(

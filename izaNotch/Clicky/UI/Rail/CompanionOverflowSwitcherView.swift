@@ -47,19 +47,11 @@ public struct CompanionOverflowSwitcherView: View {
                         onSelect(companion.id)
                     } label: {
                         HStack(spacing: 10) {
-                            ZStack {
-                                Circle()
-                                    .fill(companion.cloudColor.opacity(0.35))
-                                    .frame(width: 26, height: 26)
-                                    .blur(radius: 4)
-                                
-                                CompanionProceduralAvatarView(
-                                    definition: companion.avatarDefinition,
-                                    expressionName: "happy",
-                                    autoBlink: true,
-                                    size: 26
-                                )
-                            }
+                            GrokBotMarkView(
+                                name: companion.name,
+                                tintColorHex: companion.cloudColorHex,
+                                size: 26
+                            )
                             .frame(width: 28, height: 28)
                             
                             VStack(alignment: .leading, spacing: 1) {

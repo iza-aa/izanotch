@@ -99,22 +99,13 @@ extension HomeSpaceRootView {
                 Spacer()
 
                 HStack(alignment: .bottom, spacing: 14) {
-                    // Golden Yellow Glowing Mascot (Avatar Lab 3D Strobi)
-                    CompanionProceduralAvatarView(
-                        definition: CompanionAvatarDefinition(
-                            name: "Interview Companion",
-                            colors: AvatarColors(
-                                bodyHex: "#FDE047",
-                                eyesHex: "#111316"
-                            )
-                        ),
-                        expressionName: interviewEngine.isThinking ? "curious-left" : "happy",
-                        autoBlink: true,
-                        size: 72
+                    GrokBotMarkView(
+                        name: "New Teammate",
+                        tintColorHex: "#FACC15",
+                        size: 64,
+                        isWorking: interviewEngine.isThinking,
+                        isSelected: true
                     )
-                    .shadow(color: Color(hex: "#FACC15").opacity(interviewEngine.isThinking ? 0.75 : 0.5), radius: interviewEngine.isThinking ? 20 : 14)
-                    .scaleEffect(interviewEngine.isThinking ? 1.04 : 1.0)
-                    .animation(.easeInOut(duration: 0.8).repeatForever(autoreverses: true), value: interviewEngine.isThinking)
 
                     // Speech Bubble (Foto 4)
                     VStack(alignment: .leading, spacing: 6) {

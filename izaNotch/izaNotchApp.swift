@@ -196,15 +196,15 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             } else if url.host == "test-send-email" || url.host == "send-email" {
                 Task { @MainActor in
                     HomeSpaceWindowManager.shared.show()
-                    NotificationCenter.default.post(name: Notification.Name("HomeSpaceSubmitPrompt"), object: "Tolong kirimkan email laporan ke rezkyhaikal2@gmail.com")
+                    NotificationCenter.default.post(name: Notification.Name("HomeSpaceSubmitPrompt"), object: "Tolong kirimkan email laporan")
                 }
             } else if url.host == "test-proactive-alert" || url.host == "proactive-alert" {
                 Task { @MainActor in
                     CompanionVMBackgroundWatcher.shared.triggerProactiveAlert(
-                        companionSlug: "inbox-buddy",
-                        subject: "Update Kontrak Kemitraan Q4",
-                        sender: "Rezky Haikal",
-                        preview: "Halo, mohon tinjau draf kontrak kemitraan Q4 terlampir..."
+                        companionSlug: CompanionManager.shared.activeBuddy.slug,
+                        subject: "Update Laporan",
+                        sender: "Rekan Tim",
+                        preview: "Mohon tinjau draf laporan terbaru..."
                     )
                 }
             } else if url.host == "trigger-computer-modal" || url.host == "trigger-workflow-modal" {
@@ -724,7 +724,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         
         // Start Clicky companion pipeline (permissions, shortcut monitor, voice pipeline, overlay)
         CompanionManager.shared.start()
-        FloatingCompanionRailWindowManager.shared.start()
+        HomeSpaceWindowManager.shared.show()
 
         // Start Futures Scout Background Watcher (Passive Opt-In Canon)
         Task {

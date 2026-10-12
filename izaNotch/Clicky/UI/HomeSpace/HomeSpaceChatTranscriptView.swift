@@ -271,8 +271,7 @@ extension HomeSpaceRootView {
                                                     ProgressView()
                                                         .scaleEffect(0.55)
                                                         .frame(width: 12, height: 12)
-                                                    Text("⚙️ Tool: \(activeTool)")
-                                                        .font(.system(size: 10, weight: .semibold, design: .monospaced))
+                                                    Text("Tool: \(activeTool)")
                                                         .foregroundColor(Color(hex: "#38BDF8"))
                                                 } else {
                                                     HStack(spacing: 4) {

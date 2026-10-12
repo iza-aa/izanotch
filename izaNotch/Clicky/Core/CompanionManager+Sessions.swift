@@ -164,7 +164,10 @@ extension CompanionManager {
             sessions[idx].lastSnippet = cleanText.isEmpty ? (message.computerPayload?.cardTitle ?? "Computer") : cleanText
             sessions[idx].timestampString = "Just now"
             CompanionRosterStore.shared.appendMessage(sanitizedMessage, forCompanionId: sessions[idx].id)
+            let updatedSessions = sessions
+            self.sessions = updatedSessions
         }
+        objectWillChange.send()
     }
 
     public func updateChatMessage(id: UUID, computerPayload: ComputerCardPayload?, text: String? = nil, egressResult: EgressResult? = nil) {
@@ -196,6 +199,8 @@ extension CompanionManager {
                     sessions[sIdx].lastSnippet = newText
                 }
             }
+            let updatedSessions = sessions
+            self.sessions = updatedSessions
         }
         CompanionRosterStore.shared.updateMessage(id: id, computerPayload: computerPayload, text: text, forCompanionId: activeSessionID)
         objectWillChange.send()

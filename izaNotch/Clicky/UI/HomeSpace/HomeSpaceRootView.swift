@@ -267,12 +267,12 @@ struct HomeSpaceRootView: View {
                 ?? companion.chatMessages.reversed().first(where: { $0.computerPayload != nil })?.computerPayload
                 ?? ComputerCardPayload(
                     cardTitle: "Computer",
-                    status: .done,
-                    instructionText: "Tolong kirimkan email ke rezkyhaikal2@gmail.com",
-                    snapshotImagePath: CompanionWindowStreamService.shared.activeSnapshotPath,
-                    targetAppName: "Mail",
-                    activeWorkflowApp: "Mail",
-                    queueSummary: "Delivered to rezkyhaikal2@gmail.com"
+                    status: companion.isProcessingTask ? .working : .done,
+                    instructionText: "Chromium Workspace untuk \(companion.activeBuddy.name)",
+                    snapshotImagePath: CompanionVMViewportController.shared.activeSnapshotPath,
+                    targetAppName: "Chromium Workspace",
+                    activeWorkflowApp: "Chromium Workspace",
+                    queueSummary: "Agent Computer"
                 )
             withAnimation(.spring(response: 0.32, dampingFraction: 0.82)) {
                 activeComputerModalPayload = payload
