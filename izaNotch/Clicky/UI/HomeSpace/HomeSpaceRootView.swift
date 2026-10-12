@@ -185,19 +185,6 @@ struct HomeSpaceRootView: View {
                 .zIndex(200)
                 .transition(.opacity.combined(with: .scale(scale: 0.96)))
             }
-
-            if let computerPayload = activeComputerModalPayload {
-                HomeSpaceInteractiveComputerModalView(
-                    payload: computerPayload,
-                    onDismiss: {
-                        withAnimation(.spring(response: 0.28, dampingFraction: 0.85)) {
-                            activeComputerModalPayload = nil
-                        }
-                    }
-                )
-                .offset(y: notchHeight)
-                .zIndex(250)
-            }
         }
         .frame(width: 900, height: totalHeight)
         .background(
@@ -335,33 +322,79 @@ struct HomeSpaceRootView: View {
     }
 
     var dynamicWelcomeTitle: String {
-        "Message \(companion.activeBuddy.name)"
+        let nameLower = companion.activeBuddy.name.lowercased()
+        let roleLower = companion.activeBuddy.roleDescription.lowercased()
+
+        if nameLower.contains("futures") || roleLower.contains("analyst") || roleLower.contains("trade") || roleLower.contains("macro") {
+            return "What would you like to analyze?"
+        } else if nameLower.contains("research") || roleLower.contains("research") {
+            return "What would you like to research?"
+        } else if nameLower.contains("shippy") || roleLower.contains("builder") || roleLower.contains("dev") || roleLower.contains("code") {
+            return "What would you like to build?"
+        } else if roleLower.contains("design") || roleLower.contains("creative") || roleLower.contains("art") {
+            return "What would you like to create?"
+        } else if roleLower.contains("write") || roleLower.contains("writer") || roleLower.contains("copy") {
+            return "What would you like to write?"
+        } else if nameLower.contains("inbox") || roleLower.contains("email") || roleLower.contains("mail") || roleLower.contains("inbox") {
+            return "What would you like to handle?"
+        } else if nameLower.contains("clicky") {
+            return "What would you like to explore?"
+        } else {
+            return "How can \(companion.activeBuddy.name) help?"
+        }
     }
 
     var dynamicWelcomeSubtitle: String {
-        companion.activeBuddy.roleDescription.isEmpty ? "AI Teammate ready to complete work across your tools and apps." : companion.activeBuddy.roleDescription
+        let nameLower = companion.activeBuddy.name.lowercased()
+        let roleLower = companion.activeBuddy.roleDescription.lowercased()
+
+        if nameLower.contains("futures") || roleLower.contains("analyst") || roleLower.contains("trade") {
+            return "Ask anything about crypto futures, technical analysis, or market trends."
+        } else if nameLower.contains("research") || roleLower.contains("research") {
+            return "Ask anything about competitor intel, market insights, or document summaries."
+        } else if nameLower.contains("shippy") || roleLower.contains("builder") || roleLower.contains("dev") || roleLower.contains("code") {
+            return "Ask anything about code, web applications, debugging, or Mac automation."
+        } else if nameLower.contains("inbox") || roleLower.contains("email") || roleLower.contains("mail") || roleLower.contains("inbox") {
+            return "Ask anything about sorting your inbox, drafting replies, or email summaries."
+        } else if nameLower.contains("clicky") {
+            return "Ask anything about your screen, spatial navigation, or desktop tasks."
+        } else if !companion.activeBuddy.roleDescription.isEmpty {
+            return "Specialized in \(companion.activeBuddy.roleDescription). Ready to assist with your active tasks."
+        } else {
+            return "Ask anything or assign a task to get started."
+        }
     }
 
     func submitPrompt(_ prompt: String) {
         let clean = prompt.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !clean.isEmpty else { return }
 
-        // F-07 Agent Computer Modal Trigger (/computer)
-        if clean.lowercased() == "/computer" || clean.lowercased() == "computer" {
-            ClickySoundEngine.shared.play(.open)
-            withAnimation(.spring(response: 0.28, dampingFraction: 0.8)) {
-                activeComputerModalPayload = ComputerCardPayload(
-                    cardTitle: "Computer",
-                    status: companion.isProcessingTask ? .working : .done,
-                    instructionText: "Chromium Workspace terisolasi untuk \(companion.activeBuddy.name)",
-                    snapshotImagePath: CompanionVMViewportController.shared.activeSnapshotPath,
-                    targetAppName: "Chromium Workspace",
-                    activeWorkflowApp: "Chromium Workspace",
-                    queueSummary: "Agent Computer"
-                )
-            }
+        // F-07 Quick Verification Trigger (1:1 Foto 1)
+        if clean.lowercased() == "/computer" || clean.lowercased() == "computer" || clean.lowercased() == "test computer" {
+            ClickySoundEngine.shared.play(.send)
             inputText = ""
             isTypingMode = false
+
+            let userMsg = HomeSpaceChatMessage(isUser: true, text: clean)
+            companion.appendChatMessage(userMsg)
+
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                let payload = ComputerCardPayload(
+                    cardTitle: "Computer",
+                    status: .done,
+                    instructionText: "Sign in to Salesforce so I can see the accounts you own.",
+                    snapshotImagePath: nil,
+                    targetAppName: "Salesforce",
+                    queueSummary: "36 drafts queued"
+                )
+                let assistantMsg = HomeSpaceChatMessage(
+                    isUser: false,
+                    text: "",
+                    computerPayload: payload
+                )
+                companion.appendChatMessage(assistantMsg)
+                ClickySoundEngine.shared.play(.done)
+            }
             return
         }
 
