@@ -135,14 +135,13 @@ extension HomeSpaceRootView {
             // Active Companion Quick Info Card at Bottom of Settings Sidebar
             let currentSession = companion.activeBuddy
             HStack(spacing: 9) {
-                CompanionProceduralAvatarView(
-                    definition: currentSession.avatarDefinition,
-                    expressionName: currentSession.currentExpressionKey ?? "happy",
-                    autoBlink: true,
-                    size: 26
+                GrokBotMarkView(
+                    name: currentSession.name,
+                    tintColorHex: currentSession.avatarColorHex,
+                    size: 26,
+                    isSelected: true
                 )
                 .frame(width: 26, height: 26)
-
                 VStack(alignment: .leading, spacing: 1) {
                     Text(currentSession.name)
                         .font(.system(size: 11.5, weight: .bold, design: .rounded))
@@ -175,17 +174,19 @@ extension HomeSpaceRootView {
             // Sub-Section 1A: Top Controls & Search
             VStack(spacing: 12) {
                 HStack {
-                    // Iza White Logo Button (Frameless, NO rounded card background)
                     Button(action: {
                         withAnimation(.spring(response: 0.28, dampingFraction: 0.8)) {
                             isSidebarCollapsed.toggle()
                         }
                     }) {
-                        Image("iza-logo-white")
-                            .renderingMode(.original)
-                            .resizable()
-                            .aspectRatio(contentMode: .fit)
-                            .frame(width: 24, height: 19)
+                        HStack(spacing: 6) {
+                            Image(systemName: "sidebar.left")
+                                .font(.system(size: 13, weight: .semibold))
+                                .foregroundColor(.white.opacity(0.70))
+                            Text("Teammates")
+                                .font(.system(size: 13, weight: .bold, design: .rounded))
+                                .foregroundColor(.white)
+                        }
                     }
                     .buttonStyle(.plain)
                     .help("Toggle Sidebar")
@@ -245,81 +246,49 @@ extension HomeSpaceRootView {
                     ForEach(filteredSessions) { session in
                         let isSelected = session.id == companion.activeSessionID
                         HStack(spacing: 9) {
-                            // Avatar 3D Strobi (Zero Aura, Solid 3D Avatar Lab)
-                            let activeExpression: String = {
-                                if isSelected && animationEngine.isPlaying {
-                                    return animationEngine.currentExpressionKey
-                                }
-                                if let animKey = session.animationKey, !animKey.isEmpty {
-                                    return animKey
-                                }
-                                if let expr = session.currentExpressionKey, !expr.isEmpty {
-                                    return expr
-                                }
-                                return isSelected ? "happy" : "neutral"
-                            }()
-
-                            CompanionProceduralAvatarView(
-                                definition: session.avatarDefinition,
-                                expressionName: activeExpression,
-                                autoBlink: true,
-                                size: 32
+                            GrokBotMarkView(
+                                name: session.name,
+                                tintColorHex: session.avatarColorHex,
+                                size: 30,
+                                isWorking: companion.isProcessingTask && isSelected,
+                                isSelected: isSelected
                             )
-                            .frame(width: 34, height: 34)
 
                             VStack(alignment: .leading, spacing: 2) {
                                 HStack {
                                     Text(session.name)
                                         .font(.system(size: 12.5, weight: isSelected ? .bold : .semibold, design: .rounded))
-                                        .foregroundColor(isSelected ? Color(hex: "#0F172A") : .white)
+                                        .foregroundColor(.white)
 
                                     Spacer(minLength: 4)
 
-                                    Text(session.timestampString)
-                                        .font(.system(size: 10, weight: .regular))
-                                        .foregroundColor(isSelected ? Color(hex: "#0F172A").opacity(0.65) : .white.opacity(0.45))
+                                    if companion.isProcessingTask && isSelected {
+                                        Text("Working")
+                                            .font(.system(size: 9.5, weight: .bold, design: .rounded))
+                                            .foregroundColor(Color(hex: "#38BDF8"))
+                                    } else {
+                                        Text(session.timestampString)
+                                            .font(.system(size: 10, weight: .regular))
+                                            .foregroundColor(.white.opacity(0.40))
+                                    }
                                 }
 
                                 Text(session.lastSnippet.isEmpty ? session.roleDescription : session.lastSnippet)
                                     .font(.system(size: 11, weight: .regular))
-                                    .foregroundColor(isSelected ? Color(hex: "#1E293B") : .white.opacity(0.5))
+                                    .foregroundColor(.white.opacity(isSelected ? 0.75 : 0.45))
                                     .lineLimit(1)
                             }
                         }
                         .padding(.horizontal, 10)
-                        .padding(.vertical, 8)
+                        .padding(.vertical, 7)
                         .contentShape(Rectangle())
                         .background(
-                            Group {
-                                if isSelected {
-                                    ZStack {
-                                        // Sky-blue Gel Capsule (Foto 3 / Foto 5)
-                                        RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                            .fill(
-                                                LinearGradient(
-                                                    colors: [Color(hex: "#C7E5FE"), Color(hex: "#8EC5FC")],
-                                                    startPoint: .top,
-                                                    endPoint: .bottom
-                                                )
-                                            )
-
-                                        // Specular top highlight
-                                        RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                            .stroke(
-                                                LinearGradient(
-                                                    colors: [Color.white.opacity(0.9), Color.white.opacity(0.2)],
-                                                    startPoint: .top,
-                                                    endPoint: .bottom
-                                                ),
-                                                lineWidth: 1
-                                            )
-                                    }
-                                    .shadow(color: Color.black.opacity(0.18), radius: 3, x: 0, y: 1.5)
-                                } else {
-                                    RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                        .fill(Color.clear)
-                                }
-                            }
+                            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                .fill(isSelected ? Color.white.opacity(0.10) : Color.white.opacity(0.02))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                        .stroke(isSelected ? Color.white.opacity(0.14) : Color.clear, lineWidth: 0.8)
+                                )
                         )
                         .simultaneousGesture(
                             TapGesture(count: 2).onEnded {
@@ -379,104 +348,61 @@ extension HomeSpaceRootView {
                 .padding(.horizontal, 10)
             }
 
-            // Sub-Section 1C: Bottom Account Dock (Foto 2 Pro Badge & Foto 5 Gel Quota Bar)
-            // NO horizontal line Divider, NO Apps+, NO i, NO settings gear
+            // Sub-Section 1C: Bottom Account & Computer Status Dock (Grok Bot 1:1)
             VStack(spacing: 8) {
-                // Row 1: Apple Intelligence Profile (Clean, minimal, titanium)
                 HStack(spacing: 8) {
-                    // Apple Logo Smoked Titanium Circle
+                    // User avatar initial circle
                     ZStack {
                         Circle()
-                            .fill(
-                                LinearGradient(
-                                    colors: [Color(hex: "#27272A"), Color(hex: "#18181B")],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
-                            )
+                            .fill(Color.white.opacity(0.12))
                             .frame(width: 26, height: 26)
-                            .overlay(
-                                Circle()
-                                    .stroke(
-                                        LinearGradient(
-                                            colors: [Color.white.opacity(0.30), Color.white.opacity(0.08)],
-                                            startPoint: .topLeading,
-                                            endPoint: .bottomTrailing
-                                        ),
-                                        lineWidth: 0.8
-                                    )
-                            )
-                            .shadow(color: Color.black.opacity(0.4), radius: 3)
+                            .overlay(Circle().stroke(Color.white.opacity(0.16), lineWidth: 0.8))
 
-                        Image(systemName: "apple.logo")
-                            .font(.system(size: 11.5, weight: .bold))
-                            .foregroundStyle(
-                                LinearGradient(
-                                    colors: [Color.white, Color(hex: "#CBD5E1")],
-                                    startPoint: .top,
-                                    endPoint: .bottom
-                                )
-                            )
+                        Text(String(displayEmail.prefix(1)).uppercased())
+                            .font(.system(size: 11, weight: .bold, design: .rounded))
+                            .foregroundColor(.white)
                     }
 
-                    // Title - "Apple Intelligence"
-                    Text("Apple Intelligence")
-                        .font(.system(size: 11.5, weight: .semibold))
-                        .foregroundColor(.white.opacity(0.95))
-                        .lineLimit(1)
+                    VStack(alignment: .leading, spacing: 1) {
+                        Text(displayEmail)
+                            .font(.system(size: 11, weight: .semibold))
+                            .foregroundColor(.white.opacity(0.90))
+                            .lineLimit(1)
 
-                    Spacer()
-                }
-
-                // Row 2: Smoked Titanium Capsule Bar (Neural Engine)
-                GeometryReader { geo in
-                    ZStack(alignment: .leading) {
-                        // Dark glossy capsule track
-                        Capsule()
-                            .fill(
-                                LinearGradient(
-                                    colors: [Color(hex: "#1E2024"), Color(hex: "#141518")],
-                                    startPoint: .top,
-                                    endPoint: .bottom
-                                )
-                            )
-                            .overlay(
-                                Capsule()
-                                    .stroke(
-                                        LinearGradient(
-                                            colors: [Color.white.opacity(0.20), Color.white.opacity(0.06)],
-                                            startPoint: .top,
-                                            endPoint: .bottom
-                                        ),
-                                        lineWidth: 0.8
-                                    )
-                            )
-                            .shadow(color: Color.black.opacity(0.4), radius: 3, x: 0, y: 1)
-
-                        // Subtle inner highlight
-                        Capsule()
-                            .fill(
-                                LinearGradient(
-                                    colors: [Color.white.opacity(0.04), Color.clear],
-                                    startPoint: .top,
-                                    endPoint: .bottom
-                                )
-                            )
-
-                        // Status text (Neural Engine, platinum silver)
-                        HStack {
-                            Spacer()
-                            Text("Neural Engine")
-                                .font(.system(size: 9.5, weight: .heavy, design: .rounded))
-                                .foregroundColor(Color(hex: "#F1F5F9"))
-                            Spacer()
+                        HStack(spacing: 4) {
+                            Circle()
+                                .fill(Color(hex: "#10B981"))
+                                .frame(width: 5, height: 5)
+                            Text("Agent Computer: Ready")
+                                .font(.system(size: 9.5, weight: .medium))
+                                .foregroundColor(.white.opacity(0.50))
                         }
                     }
+
+                    Spacer()
+
+                    Button(action: {
+                        SettingsWindowController.shared.showWindow()
+                    }) {
+                        Image(systemName: "gearshape")
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundColor(.white.opacity(0.55))
+                            .frame(width: 24, height: 24)
+                    }
+                    .buttonStyle(.plain)
+                    .help("Grok Bot Settings (Cmd+,)")
                 }
-                .frame(height: 18)
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 10)
+            .background(
+                Rectangle()
+                    .fill(Color.black.opacity(0.20))
+                    .overlay(
+                        Rectangle().fill(Color.white.opacity(0.06)).frame(height: 0.8),
+                        alignment: .top
+                    )
+            )
         }
     }
 

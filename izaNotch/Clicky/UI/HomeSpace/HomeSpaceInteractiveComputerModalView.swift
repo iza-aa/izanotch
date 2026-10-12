@@ -36,11 +36,15 @@ public struct HomeSpaceInteractiveComputerModalView: View {
             // 2. Centered Interactive Computer Modal
             VStack(spacing: 0) {
                 ZStack(alignment: .topTrailing) {
-                    // Enlarged Virtual Desktop canvas (Live Window Projection)
-                    liveWindowProjectionCanvas
-                        .frame(width: 740, height: 470)
-                        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-
+                    if companion.activeBuddy.isSandboxedVM {
+                        CompanionVMViewportView(onDismiss: onDismiss)
+                            .frame(width: 740, height: 470)
+                            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+                    } else {
+                        liveWindowProjectionCanvas
+                            .frame(width: 740, height: 470)
+                            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+                    }
                     // Close Button [✕] at Top-Right
                     Button(action: {
                         onDismiss()

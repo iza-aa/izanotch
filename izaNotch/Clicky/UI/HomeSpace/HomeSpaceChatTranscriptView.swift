@@ -25,71 +25,40 @@ extension HomeSpaceRootView {
                     .transition(.opacity.combined(with: .scale(scale: 0.98)))
             } else {
                 VStack(spacing: 0) {
-                    // Sub-Section 2A: Clean Header Bar (Clean, NO iza logo, NO capsule card)
-                    HStack {
-                        Spacer()
-
-                        // Start Live Voice Chat Button (MT-29)
-                        Button(action: {
-                            LiveVoiceChatManager.shared.toggleLiveVoiceChat(companionSlug: companion.activeBuddy.slug)
-                        }) {
-                            HStack(spacing: 5) {
-                                Image(systemName: LiveVoiceChatManager.shared.isCallActive ? "phone.down.fill" : "phone.fill")
-                                    .font(.system(size: 10, weight: .bold))
-                                    .foregroundStyle(LiveVoiceChatManager.shared.isCallActive ? Color(hex: "#EF4444") : Color(hex: "#38BDF8"))
-                                Text(LiveVoiceChatManager.shared.isCallActive ? "Akhiri Panggilan" : "Voice Chat")
-                                    .font(.system(size: 11, weight: .semibold))
-                                    .foregroundStyle(.white)
-                            }
-                            .padding(.horizontal, 9)
-                            .padding(.vertical, 4.5)
-                            .background(
-                                Capsule().fill(LiveVoiceChatManager.shared.isCallActive ? Color(hex: "#EF4444").opacity(0.18) : Color.white.opacity(0.08))
-                                    .overlay(Capsule().stroke(LiveVoiceChatManager.shared.isCallActive ? Color(hex: "#EF4444").opacity(0.4) : Color.white.opacity(0.12), lineWidth: 0.8))
-                            )
-                        }
-                        .buttonStyle(.plain)
-                        .help(LiveVoiceChatManager.shared.isCallActive ? "Akhiri sesi voice chat langsung" : "Mulai sesi voice chat langsung dengan \(companion.activeBuddy.name)")
-
-                        // Top-Right Action Buttons (Close Only — Expand Eliminated)
-                        Button(action: {
-                            ClickySoundEngine.shared.play(.close)
-                            onClose()
-                        }) {
-                            Image(systemName: "xmark")
-                                .font(.system(size: 12, weight: .bold))
-                                .foregroundColor(.white.opacity(0.55))
-                        }
-                        .buttonStyle(.plain)
-                        .help("Close back to notch")
-                    }
-                    .padding(.horizontal, 16)
-                    .padding(.top, 14)
-                    .padding(.bottom, 6)
-
+                    // Sub-Section 2A: Clean Grok Bot Header Bar
+                    grokBotHeaderBar
                     if companion.activeBuddy.messages.isEmpty && !companion.isResponding {
-                        // Sub-Section 2B: Clean Modern Centered Welcome State (Zero badge, zero chips, vertically & horizontally centered)
+                        // Sub-Section 2B: Clean Grok Bot Teammate Welcome State
                         VStack(spacing: 0) {
                             Spacer()
 
-                            VStack(spacing: 10) {
-                                Text(dynamicWelcomeTitle)
-                                    .font(.system(size: 21, weight: .bold, design: .rounded))
+                            VStack(spacing: 12) {
+                                GrokBotMarkView(
+                                    name: companion.activeBuddy.name,
+                                    tintColorHex: companion.activeBuddy.avatarColorHex,
+                                    size: 52,
+                                    isWorking: false,
+                                    isSelected: true
+                                )
+                                .padding(.bottom, 4)
+
+                                Text("Message \(companion.activeBuddy.name)")
+                                    .font(.system(size: 20, weight: .bold, design: .rounded))
                                     .foregroundColor(.white)
                                     .multilineTextAlignment(.center)
 
-                                Text(dynamicWelcomeSubtitle)
+                                Text(companion.activeBuddy.roleDescription.isEmpty ? "AI Teammate ready to complete work across your tools and apps." : companion.activeBuddy.roleDescription)
                                     .font(.system(size: 13, weight: .regular))
-                                    .foregroundColor(.white.opacity(0.55))
+                                    .foregroundColor(.white.opacity(0.60))
                                     .multilineTextAlignment(.center)
-                                    .padding(.horizontal, 36)
+                                    .padding(.horizontal, 40)
 
-                                // Real suggestions based on passive active app inspector
+                                // Proactive suggestions based on passive active app inspector
                                 if let suggestion = suggestionMonitor.activeSuggestion, !suggestion.prompt.isEmpty {
                                     FollowUpPillButton(text: suggestion.prompt) {
                                         submitPrompt(suggestion.prompt)
                                     }
-                                    .padding(.top, 12)
+                                    .padding(.top, 14)
                                 }
                             }
                             .frame(maxWidth: .infinity)
@@ -97,7 +66,6 @@ extension HomeSpaceRootView {
                             Spacer()
                         }
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    } else {
                         // Sub-Section 2B: Real Chat Stream & Functional Transcript
                         ScrollViewReader { proxy in
                             ScrollView {
@@ -226,9 +194,6 @@ extension HomeSpaceRootView {
                                                     }
                                                 }
                                                 if let egress = message.egressResult ?? message.computerPayload?.egressResult {
-                                                    HomeSpaceEgressReportView(result: egress)
-                                                        .id("egress-report-\(message.id)")
-
                                                     ForEach(egress.deliverables) { deliv in
                                                         HomeSpaceDeliverableCardView(deliverable: deliv) { revisedPath in
                                                             let name = URL(fileURLWithPath: revisedPath).lastPathComponent
@@ -390,17 +355,17 @@ extension HomeSpaceRootView {
                     }
                 }
 
-                // Sub-Section 2C: Floating Action Dock (1:1 Foto 1 & Foto 5, Centered compact width, zero color patch)
+                // Sub-Section 2C: Grok Bot Action Composer (Clean Minimalist Dock)
                     HStack {
                         Spacer()
 
-                        VStack(spacing: 4) {
+                        VStack(spacing: 6) {
                             if let activeTool = toolDispatcher.currentExecutingToolName {
                                 HStack(spacing: 6) {
                                     ProgressView()
                                         .scaleEffect(0.55)
                                         .frame(width: 12, height: 12)
-                                    Text("⚙️ Tool: \(activeTool)")
+                                    Text("Tool: \(activeTool)")
                                         .font(.system(size: 10, weight: .semibold, design: .monospaced))
                                         .foregroundColor(Color(hex: "#38BDF8"))
                                 }
@@ -417,8 +382,8 @@ extension HomeSpaceRootView {
                                 .transition(.opacity.combined(with: .scale(scale: 0.95)))
                             }
 
-                            HStack(spacing: 10) {
-                                // Blue Circular Mic Button (Foto 1 - Clean Minimal)
+                            HStack(spacing: 8) {
+                                // Dictation Mic Button (Clean minimal dark)
                                 Button(action: {
                                     if companion.buddyDictationManager.isRecordingFromMicrophoneButton {
                                         ClickySoundEngine.shared.play(.close)
@@ -438,35 +403,15 @@ extension HomeSpaceRootView {
                                         }
                                     }
                                 }) {
-                                    ZStack {
-                                        Circle()
-                                            .fill(
-                                                LinearGradient(
-                                                    colors: companion.buddyDictationManager.isRecordingFromMicrophoneButton ?
-                                                        [Color(hex: "#FCA5A5"), Color(hex: "#EF4444")] :
-                                                        [Color(hex: "#C7E5FE"), Color(hex: "#72B5FD")],
-                                                    startPoint: .top,
-                                                    endPoint: .bottom
-                                                )
-                                            )
-                                            .frame(width: 38, height: 38)
-                                            .overlay(
-                                                Circle().stroke(Color.white.opacity(0.8), lineWidth: 1)
-                                            )
-                                            .shadow(
-                                                color: companion.buddyDictationManager.isRecordingFromMicrophoneButton ?
-                                                    Color.red.opacity(0.5) : Color(hex: "#60A5FA").opacity(0.4),
-                                                radius: 5, y: 2
-                                            )
-
-                                        Image(systemName: companion.buddyDictationManager.isRecordingFromMicrophoneButton ? "stop.fill" : "mic.fill")
-                                            .font(.system(size: companion.buddyDictationManager.isRecordingFromMicrophoneButton ? 11 : 13, weight: .bold))
-                                            .foregroundColor(companion.buddyDictationManager.isRecordingFromMicrophoneButton ? .white : Color(hex: "#0F172A"))
-                                    }
+                                    Image(systemName: companion.buddyDictationManager.isRecordingFromMicrophoneButton ? "stop.circle.fill" : "mic.fill")
+                                        .font(.system(size: 13, weight: .semibold))
+                                        .foregroundColor(companion.buddyDictationManager.isRecordingFromMicrophoneButton ? Color(hex: "#EF4444") : .white.opacity(0.70))
+                                        .frame(width: 32, height: 32)
+                                        .background(Circle().fill(Color.white.opacity(0.06)))
+                                        .overlay(Circle().stroke(Color.white.opacity(0.10), lineWidth: 0.8))
                                 }
                                 .buttonStyle(.plain)
-                                .help(companion.buddyDictationManager.isRecordingFromMicrophoneButton ? "Click to stop recording" : "Click to dictate voice or hold Control + Option")
-
+                                .help(companion.buddyDictationManager.isRecordingFromMicrophoneButton ? "Stop dictation" : "Dictate voice message")
                                 // Input Pill & Staged Attachments & Teach Mode (MT-03, MT-06)
                                 VStack(alignment: .leading, spacing: 4) {
                                     if CompanionTeachModeEngine.shared.isRecording {
@@ -480,7 +425,7 @@ extension HomeSpaceRootView {
                                             Spacer()
                                             Button(action: {
                                                 withAnimation(.spring(response: 0.25, dampingFraction: 0.8)) {
-                                                    CompanionTeachModeEngine.shared.finishTeaching()
+                                                    _ = CompanionTeachModeEngine.shared.finishTeaching()
                                                 }
                                             }) {
                                                 Text("Selesai")
@@ -675,12 +620,6 @@ extension HomeSpaceRootView {
                     .padding(.top, 8)
                     .padding(.bottom, 12)
                 }
-            }
-
-            // Section 3: Character Inspector Sidebar (1:1 Foto 1, Slide-Over Overlay)
-            if isCharacterSidebarOpen && !isCreatingNewBuddy && !isEditingCharacter {
-                characterInspectorSidebar
-                    .transition(.move(edge: .trailing).combined(with: .opacity))
             }
 
         }

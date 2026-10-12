@@ -45,14 +45,13 @@ extension HomeSpaceRootView {
             VStack(alignment: .leading, spacing: 18) {
                 // 1. Live Hero Avatar Preview & Name/Role (Clean Minimalist Form)
                 HStack(spacing: 16) {
-                    CompanionProceduralAvatarView(
-                        definition: currentEditDefinition,
-                        expressionName: animationEngine.isPlaying ? animationEngine.currentExpressionKey : editAvatarLabExpression,
-                        autoBlink: true,
-                        size: 72
+                    GrokBotMarkView(
+                        name: editName.isEmpty ? companion.activeBuddy.name : editName,
+                        tintColorHex: editCloudColorHex.isEmpty ? companion.activeBuddy.avatarColorHex : editCloudColorHex,
+                        size: 64,
+                        isSelected: true
                     )
-                    .frame(width: 76, height: 76)
-
+                    .frame(width: 68, height: 68)
                     VStack(alignment: .leading, spacing: 6) {
                         // Name & Role Inputs (Zero redundant buttons, zero extra pills)
                         HStack(spacing: 10) {
@@ -147,23 +146,13 @@ extension HomeSpaceRootView {
                                     }
                                 }
                             }) {
-                                ZStack {
-                                    if isSelected {
-                                        Circle()
-                                            .stroke(Color(hex: editCloudColorHex.isEmpty ? "#FF233B" : editCloudColorHex), lineWidth: 2)
-                                            .frame(width: 40, height: 40)
-                                    }
-
-                                    CompanionProceduralAvatarView(
-                                        definition: template.toAvatarDefinition(cloudColorHex: isSelected ? editCloudColorHex : nil),
-                                        expressionName: "neutral",
-                                        autoBlink: false,
-                                        size: 28
-                                    )
-                                    .frame(width: 32, height: 32)
-                                }
-                                .frame(width: 42, height: 42)
-                                .contentShape(Circle())
+                                GrokBotMarkView(
+                                    name: template.name,
+                                    tintColorHex: isSelected && !editCloudColorHex.isEmpty ? editCloudColorHex : template.defaultColors.bodyHex,
+                                    size: 30,
+                                    isSelected: isSelected
+                                )
+                                .frame(width: 32, height: 32)
                             }
                             .buttonStyle(.plain)
                             .help(template.name)
@@ -569,5 +558,27 @@ extension HomeSpaceRootView {
         }
         ClickySoundEngine.shared.play(.send)
     }
+    var currentPresetDisplayName: String {
+        if let p = CompanionAvatarLabCatalog.allPresets.first(where: { $0.semanticKey == editAvatarLabExpression || $0.id == editAvatarLabExpression }) {
+            return "\(p.badgeNumber)  \(p.displayName)"
+        }
+        return "00  Neutral Upward"
+    }
 
+    var currentAnimationDisplayName: String {
+        if let s = animationEngine.currentSequence {
+            return s.displayName
+        }
+        return "Select Sequence (23 available)..."
+    }
+
+    var editingSessionSlug: String {
+        let sanitized = editName.lowercased()
+            .replacingOccurrences(of: " ", with: "-")
+            .filter { $0.isLetter || $0.isNumber || $0 == "-" }
+        if !sanitized.isEmpty {
+            return sanitized
+        }
+        return companion.activeBuddy.slug
+    }
 }
